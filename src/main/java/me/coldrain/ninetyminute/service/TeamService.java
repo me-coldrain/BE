@@ -1,17 +1,20 @@
 package me.coldrain.ninetyminute.service;
 
 import lombok.RequiredArgsConstructor;
+import me.coldrain.ninetyminute.dto.TeamListSearch;
+import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
 import me.coldrain.ninetyminute.entity.Record;
 import me.coldrain.ninetyminute.entity.Team;
 import me.coldrain.ninetyminute.entity.Time;
 import me.coldrain.ninetyminute.entity.Weekday;
-import me.coldrain.ninetyminute.repository.RecordRepository;
-import me.coldrain.ninetyminute.repository.TeamRepository;
-import me.coldrain.ninetyminute.repository.TimeRepository;
-import me.coldrain.ninetyminute.repository.WeekdayRepository;
+import me.coldrain.ninetyminute.repository.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TeamService {
 
     private final TeamRepository teamRepository;
+    private final TeamQueryRepository teamQueryRepository;
     private final WeekdayRepository weekdayRepository;
     private final TimeRepository timeRepository;
     private final RecordRepository recordRepository;
@@ -44,5 +48,9 @@ public class TeamService {
 
         request.getTime()
                 .forEach(time -> timeRepository.save(new Time(time, team)));
+    }
+
+    public Page<TeamListSearch> searchTeamList(final TeamListSearchCondition searchCondition, final Pageable pageable) {
+        return teamQueryRepository.findAllTeamListSearch(searchCondition, pageable);
     }
 }
