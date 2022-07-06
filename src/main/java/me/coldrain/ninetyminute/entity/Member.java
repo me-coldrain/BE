@@ -40,4 +40,8 @@ public class Member extends TimeStamped {
 
     private String phone;
 
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    private MemberRoleEnum role;
+
 }
