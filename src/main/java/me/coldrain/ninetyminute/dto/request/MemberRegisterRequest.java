@@ -17,5 +17,5 @@ public class MemberRegisterRequest {
     private String password;
 
     @NotNull
-    private String confirmPassword;
+    private String confirmpassword;
 }

@@ -37,8 +37,8 @@ public class MemberController {
     //회원정보 수정
     @PatchMapping("/{member_id}")
     public ResponseEntity<?> memberEdit(@PathVariable Long member_id,
-                                        @RequestPart(value = "profileImageFile", required = false) MultipartFile profileImageFile,
-                                        @RequestPart(value = "editMember") MemberEditRequest memberEditRequest){
+                                        @RequestPart(value = "profileimagefile", required = false) MultipartFile profileImageFile,
+                                        @RequestPart(value = "editmember") MemberEditRequest memberEditRequest){
         return memberService.memberEdit(member_id, profileImageFile, memberEditRequest);
     }
 
