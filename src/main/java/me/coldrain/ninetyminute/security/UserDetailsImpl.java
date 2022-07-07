@@ -13,7 +13,6 @@ import java.util.Collection;
 public class UserDetailsImpl implements UserDetails {
     private final Member member;
 //    private Long id;
-//    private String userid;
 //    private String nickname;
 //    private UserRoleEnum role;
 
