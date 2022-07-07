@@ -11,9 +11,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpClientErrorException;
 
 @ControllerAdvice
+@Slf4j
 public class ExceptionController {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+//    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 //    @ExceptionHandler(CustomSignUpException.class)
 //    @ResponseBody

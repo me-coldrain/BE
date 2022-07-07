@@ -32,7 +32,6 @@ public class AuthenticationEntryPointHandler implements AuthenticationEntryPoint
         if(exception.equals("ExpiredJwtException")) {
             errorCode = ErrorCode.ExpiredJwtException;
             setResponse(response, errorCode);
-            return;
         }
     }
 
