@@ -10,7 +10,6 @@ import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
 import me.coldrain.ninetyminute.entity.Member;
 import me.coldrain.ninetyminute.entity.Team;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
-import me.coldrain.ninetyminute.service.AwsS3Service;
 import me.coldrain.ninetyminute.service.ParticipationService;
 import me.coldrain.ninetyminute.service.TeamService;
 import org.springframework.data.domain.Page;
@@ -31,6 +30,7 @@ public class TeamController {
 
     /**
      * 팀 등록 API
+     * 한 명당 하나의 팀만 개설할 수 있습니다.
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(value = "/home/teams", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -53,7 +53,10 @@ public class TeamController {
      * 팀 목록 조회 API
      */
     @GetMapping("/home/teams")
-    public Page<TeamListSearch> selectTeams(final TeamListSearchCondition searchCondition, final Pageable pageable) {
+    public Page<TeamListSearch> selectTeams(
+            final TeamListSearchCondition searchCondition,
+            final Pageable pageable) {
+
         return teamService.searchTeamList(searchCondition, pageable);
     }
 
@@ -61,7 +64,9 @@ public class TeamController {
      * 팀 참여 질문 조회 API
      */
     @GetMapping("/teams/{team_id}/questions")
-    public TeamParticipationQuestionResponse getQuestion(final @PathVariable("team_id") Long teamId) {
+    public TeamParticipationQuestionResponse getQuestion(
+            final @PathVariable("team_id") Long teamId) {
+
         final String question = teamService.findQuestionByTeamId(teamId);
         return new TeamParticipationQuestionResponse(question);
     }
@@ -72,33 +77,38 @@ public class TeamController {
     @PostMapping("/home/teams/{team_id}/answer")
     public void participate(
             final @PathVariable("team_id") Long teamId,
-            final @RequestBody TeamParticipateRequest request) {
+            final @RequestBody TeamParticipateRequest request,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        // TODO: 2022-07-07 로그인 한 회원이 참여 하도록 로직 변경 필요
-        participationService.participate(teamId, request);
+        final Member member = userDetails.getUser();
+        participationService.participate(teamId, member, request);
     }
 
     /**
      * 신청한 팀원 승인 API
+     * 팀 개설자만 승인을 할 수 있습니다.
      */
     @PatchMapping("/teams/{team_id}/members/{member_id}/offer")
     public void approve(
             final @PathVariable("team_id") Long teamId,
-            final @PathVariable("member_id") Long memberId) {
+            final @PathVariable("member_id") Long memberId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        // TODO: 2022-07-07 팀 등록자만 승인/수락을 할 수 있도록 로직 작성 필요
-        participationService.approve(teamId, memberId);
+        final Member member = userDetails.getUser();
+        participationService.approve(teamId, memberId, member);
     }
 
     /**
      * 신청한 팀원 거절 API
+     * 팀 개설자만 거절을 할 수 있습니다.
      */
     @DeleteMapping("/teams/{team_id}/members/{member_id}/offer")
     public void disapprove(
             final @PathVariable("team_id") Long teamId,
-            final @PathVariable("member_id") Long memberId) {
+            final @PathVariable("member_id") Long memberId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        // TODO: 2022-07-07 팀 등록자만 승인/수락을 할 수 있도록 로직 작성 필요
-        participationService.disapprove(teamId, memberId);
+        final Member member = userDetails.getUser();
+        participationService.disapprove(teamId, memberId, member);
     }
 }
