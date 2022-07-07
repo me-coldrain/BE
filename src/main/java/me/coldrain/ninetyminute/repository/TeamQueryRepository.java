@@ -28,13 +28,13 @@ public class TeamQueryRepository {
             final Pageable pageable) {
 
         // TODO: 2022-07-07 모집 중 팀만 조회되도록 변경해야 함.
-        List<TeamListSearch> content = queryFactory.select(new QTeamListSearch(
+        final List<TeamListSearch> content = queryFactory.select(new QTeamListSearch(
                         team.id,
                         team.name,
                         JPAExpressions.select(participation.count())
                                 .from(participation)
-                                .where(participation.team.id.eq(team.id)
-                                        .and(participation.approved).eq(true)),
+                                .where(participation.approved.eq(true)
+                                        , participation.team.id.eq(team.id)),
                         team.mainArea))
                 .from(team)
                 .where(containsIgnoreCaseTeamName(searchCondition.getTeamName()),
