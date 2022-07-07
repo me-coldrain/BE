@@ -32,4 +32,20 @@ public class ParticipationService {
 
         participationRepository.save(participation);
     }
+
+    @Transactional
+    public void approve(final Long teamId, final Long memberId) {
+        final Participation participation = participationRepository.findByTeamIdAndMemberId(teamId, memberId)
+                .orElseThrow(() -> new IllegalArgumentException("참여 이력이 존재하지 않습니다."));
+
+        participation.changeApproved(true);
+    }
+
+    @Transactional
+    public void disapprove(final Long teamId, final Long memberId) {
+        final Participation participation = participationRepository.findByTeamIdAndMemberId(teamId, memberId)
+                .orElseThrow(() -> new IllegalArgumentException("참여 이력이 존재하지 않습니다."));
+
+        participationRepository.delete(participation);
+    }
 }
