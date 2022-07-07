@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.plaf.synth.SynthOptionPaneUI;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -34,9 +36,8 @@ public class MemberService {
 
     //회원가입
     public ResponseEntity<?> memberSignup(MemberRegisterRequest memberRegisterRequest){
-        if(!memberRegisterRequest.getPassword().equals(memberRegisterRequest.getConfirmPassword())){
+        if(!memberRegisterRequest.getPassword().equals(memberRegisterRequest.getConfirmpassword())){
             return new ResponseEntity<>("재확인 비밀번호가 다릅니다.",HttpStatus.BAD_REQUEST);
-
         } else {
             MemberRoleEnum role = MemberRoleEnum.USER;
             Member member = new Member(memberRegisterRequest, role);
@@ -82,14 +83,25 @@ public class MemberService {
         Member member = memberRepository.findById(member_id).orElseThrow(
                 () -> new NullPointerException("존재하지 않는 회원입니다."));
 
-        if(member.getProfileUrl() == null){
-            Map<String, String> proFileUrl = awsS3Service.uploadFile(profileImageFile);
-            member.memberUpdate(proFileUrl, memberEditRequest);
-
+        if(profileImageFile.isEmpty()){
+            Map<String, String> profileImg = new HashMap<>();
+            profileImg.put("url", "/localhost:8080/basicprofileimage.png");
+            profileImg.put("transImgFileName", "basicimage");
+            member.memberUpdate(profileImg, memberEditRequest);
         } else {
-            awsS3Service.deleteFile(member.getProfilename());
-            Map<String, String> proFileUrl = awsS3Service.uploadFile(profileImageFile);
-            member.memberUpdate(proFileUrl, memberEditRequest);
+            if(member.getProfileUrl() == null){
+                Map<String, String> profileImg = awsS3Service.uploadFile(profileImageFile);
+                member.memberUpdate(profileImg, memberEditRequest);
+            } else {
+                if(member.getProfileName().equals("basicimage")){
+                    Map<String, String> profileImg = awsS3Service.uploadFile(profileImageFile);
+                    member.memberUpdate(profileImg, memberEditRequest);
+                } else {
+                    awsS3Service.deleteFile(member.getProfileName());
+                    Map<String, String> profileImg = awsS3Service.uploadFile(profileImageFile);
+                    member.memberUpdate(profileImg, memberEditRequest);
+                }
+            }
         }
         return new ResponseEntity<>(jwtTokenCreate(member), HttpStatus.OK);
     }
