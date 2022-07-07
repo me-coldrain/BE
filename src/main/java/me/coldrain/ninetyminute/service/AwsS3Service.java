@@ -47,7 +47,7 @@ public class AwsS3Service {
 
         Map<String , String> result = new HashMap<>();
         result.put("url" , String.valueOf(amazonS3.getUrl(bucket,fileName)));
-        result.put("fileName" , rawFileName);
+//        result.put("fileName" , rawFileName);
         result.put("transImgFileName", fileName);
         return result;
     }
