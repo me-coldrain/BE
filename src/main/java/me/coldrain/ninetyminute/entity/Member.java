@@ -31,7 +31,7 @@ public class Member extends TimeStamped {
     private Ability ability; // 능력치
     @Column(unique = true)
     private Long kakaoId;
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String username;
     @Column(nullable = false)
     private String password;
