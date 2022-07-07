@@ -1,9 +1,6 @@
 package me.coldrain.ninetyminute.entity;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -52,5 +49,19 @@ public class Team extends TimeStamped {
     public void addTime(Time time) {
         timeList.add(time);
         time.changeTime(this);
+    }
+
+    @Builder
+    public Team(String name, String mainArea, Integer point, String teamProfileUrl, String introduce, List<Weekday> weekdays, List<Time> timeList, String preferredArea, String question, Record record) {
+        this.name = name;
+        this.mainArea = mainArea;
+        this.point = point;
+        this.teamProfileUrl = teamProfileUrl;
+        this.introduce = introduce;
+        this.weekdays = weekdays;
+        this.timeList = timeList;
+        this.preferredArea = preferredArea;
+        this.question = question;
+        this.record = record;
     }
 }

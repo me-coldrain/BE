@@ -1,14 +1,10 @@
 package me.coldrain.ninetyminute.entity;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString
 @Getter
 public class Record extends TimeStamped {
@@ -24,4 +20,23 @@ public class Record extends TimeStamped {
     private Integer drawCount;
     private Double winRate;
     private Integer winPoint;
+
+    public Record() {
+        this.totalGameCount = 0;
+        this.winCount = 0;
+        this.loseCount = 0;
+        this.drawCount = 0;
+        this.winRate = 0.0;
+        this.winPoint = 0;
+    }
+
+    @Builder
+    public Record(Integer totalGameCount, Integer winCount, Integer loseCount, Integer drawCount, Double winRate, Integer winPoint) {
+        this.totalGameCount = totalGameCount;
+        this.winCount = winCount;
+        this.loseCount = loseCount;
+        this.drawCount = drawCount;
+        this.winRate = winRate;
+        this.winPoint = winPoint;
+    }
 }
