@@ -73,6 +73,7 @@ public class TeamController {
 
     /**
      * 팀 참여 신청 API
+     * 한 번 참여 신청한 팀은 다시 참여 신청을 할 수 없습니다.
      */
     @PostMapping("/home/teams/{team_id}/answer")
     public void participate(

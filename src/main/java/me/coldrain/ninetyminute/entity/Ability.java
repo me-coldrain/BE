@@ -22,7 +22,7 @@ public class Ability extends TimeStamped {
     private Integer mvpPoint;
     private Integer charmingPoint;
 
-    public Ability(){
+    public Ability() {
         this.strikerPoint = 0;
         this.midfielderPoint = 0;
         this.defenderPoint = 0;
@@ -31,7 +31,7 @@ public class Ability extends TimeStamped {
         this.charmingPoint = 0;
     }
 
-    public Ability(Integer strikerPoint, Integer midfielderPoint, Integer defenderPoint, Integer goalkeeperPoint, Integer mvpPoint, Integer charmingPoint){
+    public Ability(Integer strikerPoint, Integer midfielderPoint, Integer defenderPoint, Integer goalkeeperPoint, Integer mvpPoint, Integer charmingPoint) {
         this.strikerPoint = strikerPoint;
         this.midfielderPoint = midfielderPoint;
         this.defenderPoint = defenderPoint;
