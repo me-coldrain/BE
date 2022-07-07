@@ -7,12 +7,17 @@ import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.TeamParticipateRequest;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
 import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
+import me.coldrain.ninetyminute.entity.Member;
+import me.coldrain.ninetyminute.entity.Team;
+import me.coldrain.ninetyminute.security.UserDetailsImpl;
+import me.coldrain.ninetyminute.service.AwsS3Service;
 import me.coldrain.ninetyminute.service.ParticipationService;
 import me.coldrain.ninetyminute.service.TeamService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -29,12 +34,19 @@ public class TeamController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(value = "/home/teams", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void registerTeam(final TeamRegisterRequest request) {
+    public void registerTeam(
+            final TeamRegisterRequest request,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
         log.info("registerTeam.TeamRegisterRequest = {}", request);
-        // TODO: 2022-07-06 팀은 회원당 단 1개만 생성할 수 있도록 Validation 처리 필요.
-        // TODO: 2022-07-06 팀 사진은 S3에 저장될 수 있도록 구현 필요.
-        // TODO: 2022-07-06 회원과 팀을 설정해 줘야 함. -> member.setTeam(team)
-        teamService.registerTeam(request);
+
+        final Member member = userDetails.getUser();
+        final Team openTeam = member.getOpenTeam();
+        if (openTeam != null) {
+            throw new IllegalArgumentException("이미 개설한 팀이 존재 합니다.");
+        }
+
+        teamService.registerTeam(request, member.getId());
     }
 
     /**

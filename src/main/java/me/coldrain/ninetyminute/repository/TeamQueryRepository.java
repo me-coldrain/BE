@@ -35,7 +35,9 @@ public class TeamQueryRepository {
                                 .from(participation)
                                 .where(participation.approved.eq(true)
                                         , participation.team.id.eq(team.id)),
-                        team.mainArea))
+                        team.mainArea,
+                        team.createdDate,
+                        team.modifiedDate))
                 .from(team)
                 .where(containsIgnoreCaseTeamName(searchCondition.getTeamName()),
                         containsAddress(searchCondition.getAddress())
