@@ -5,17 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
-import me.coldrain.ninetyminute.entity.Team;
+import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
 import me.coldrain.ninetyminute.service.TeamService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -44,5 +40,14 @@ public class TeamController {
     @GetMapping("/home/teams")
     public Page<TeamListSearch> selectTeams(final TeamListSearchCondition searchCondition, final Pageable pageable) {
         return teamService.searchTeamList(searchCondition, pageable);
+    }
+
+    /**
+     * 팀 참여 질문 조회 API
+     */
+    @GetMapping("/teams/{team_id}/questions")
+    public TeamParticipationQuestionResponse getQuestion(final @PathVariable("team_id") Long teamId) {
+        final String question = teamService.findQuestionByTeamId(teamId);
+        return new TeamParticipationQuestionResponse(question);
     }
 }
