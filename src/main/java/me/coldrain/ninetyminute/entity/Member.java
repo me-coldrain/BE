@@ -35,15 +35,15 @@ public class Member extends TimeStamped {
     private String username;
     @Column(nullable = false)
     private String password;
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String nickname;
     @Column
-    private String profilename;
+    private String profileName;
     @Column
     private String profileUrl;
-    @Column(nullable = false)
+    @Column
     private String position;
-    @Column(nullable = false)
+    @Column
     private String contact;
     @Column
     private String phone;
@@ -68,7 +68,7 @@ public class Member extends TimeStamped {
 
     public void memberUpdate(Map<String, String> profileImg, MemberEditRequest params){
         this.nickname = params.getNickname();
-        this.profilename = profileImg.get("transImgFileName");
+        this.profileName = profileImg.get("transImgFileName");
         this.profileUrl = profileImg.get("url");
         this.position = params.getPosition();
         this.contact = params.getContact();
