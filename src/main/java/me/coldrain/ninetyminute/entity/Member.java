@@ -52,6 +52,10 @@ public class Member extends TimeStamped {
     @Enumerated(value = EnumType.STRING)
     private MemberRoleEnum role;
 
+    public void setOpenTeam(Team openTeam) {
+        this.openTeam = openTeam;
+    }
+
     public Member(MemberRegisterRequest params, MemberRoleEnum role) {
         this.username = params.getEmail();
         this.password = params.getPassword();
