@@ -34,4 +34,8 @@ public class Participation extends TimeStamped {
         this.approved = approved;
         this.answer = answer;
     }
+
+    public void changeApproved(Boolean status) {
+        this.approved = status;
+    }
 }

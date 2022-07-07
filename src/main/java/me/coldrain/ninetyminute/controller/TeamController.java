@@ -7,7 +7,6 @@ import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.TeamParticipateRequest;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
 import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
-import me.coldrain.ninetyminute.entity.Member;
 import me.coldrain.ninetyminute.service.ParticipationService;
 import me.coldrain.ninetyminute.service.TeamService;
 import org.springframework.data.domain.Page;
@@ -65,5 +64,29 @@ public class TeamController {
 
         // TODO: 2022-07-07 로그인 한 회원이 참여 하도록 로직 변경 필요
         participationService.participate(teamId, request);
+    }
+
+    /**
+     * 신청한 팀원 승인 API
+     */
+    @PatchMapping("/teams/{team_id}/members/{member_id}/offer")
+    public void approve(
+            final @PathVariable("team_id") Long teamId,
+            final @PathVariable("member_id") Long memberId) {
+
+        // TODO: 2022-07-07 팀 등록자만 승인/수락을 할 수 있도록 로직 작성 필요
+        participationService.approve(teamId, memberId);
+    }
+
+    /**
+     * 신청한 팀원 거절 API
+     */
+    @DeleteMapping("/teams/{team_id}/members/{member_id}/offer")
+    public void disapprove(
+            final @PathVariable("team_id") Long teamId,
+            final @PathVariable("member_id") Long memberId) {
+
+        // TODO: 2022-07-07 팀 등록자만 승인/수락을 할 수 있도록 로직 작성 필요
+        participationService.disapprove(teamId, memberId);
     }
 }
