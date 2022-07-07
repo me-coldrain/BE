@@ -53,4 +53,9 @@ public class TeamService {
     public Page<TeamListSearch> searchTeamList(final TeamListSearchCondition searchCondition, final Pageable pageable) {
         return teamQueryRepository.findAllTeamListSearch(searchCondition, pageable);
     }
+
+    public String findQuestionByTeamId(final Long teamId) {
+        return teamRepository.findQuestionByTeamId(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("등록된 팀 질문이 존재하지 않습니다."));
+    }
 }
