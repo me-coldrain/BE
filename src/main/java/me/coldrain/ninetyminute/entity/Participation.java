@@ -1,9 +1,6 @@
 package me.coldrain.ninetyminute.entity;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -29,4 +26,12 @@ public class Participation extends TimeStamped {
     private Boolean approved;
 
     private String answer;
+
+    @Builder
+    public Participation(Member member, Team team, Boolean approved, String answer) {
+        this.member = member;
+        this.team = team;
+        this.approved = approved;
+        this.answer = answer;
+    }
 }

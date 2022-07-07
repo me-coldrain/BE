@@ -4,8 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
+import me.coldrain.ninetyminute.dto.request.TeamParticipateRequest;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
 import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
+import me.coldrain.ninetyminute.entity.Member;
+import me.coldrain.ninetyminute.service.ParticipationService;
 import me.coldrain.ninetyminute.service.TeamService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class TeamController {
 
     private final TeamService teamService;
+    private final ParticipationService participationService;
 
     /**
      * 팀 등록 API
@@ -49,5 +53,17 @@ public class TeamController {
     public TeamParticipationQuestionResponse getQuestion(final @PathVariable("team_id") Long teamId) {
         final String question = teamService.findQuestionByTeamId(teamId);
         return new TeamParticipationQuestionResponse(question);
+    }
+
+    /**
+     * 팀 참여 신청 API
+     */
+    @PostMapping("/home/teams/{team_id}/answer")
+    public void participate(
+            final @PathVariable("team_id") Long teamId,
+            final @RequestBody TeamParticipateRequest request) {
+
+        // TODO: 2022-07-07 로그인 한 회원이 참여 하도록 로직 변경 필요
+        participationService.participate(teamId, request);
     }
 }
