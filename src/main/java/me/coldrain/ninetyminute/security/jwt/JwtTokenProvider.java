@@ -29,9 +29,9 @@ public class JwtTokenProvider {
     private String secretKey;
 
 
-    private final long accessTokenValidTime = 10 * 60 * 1000L;   // access 토큰 유효시간 5분
+    private final long accessTokenValidTime = 60 * 60 * 1000L;   // access 토큰 유효시간 60분
 
-    private final long refreshTokenValidTime = 60 * 60 * 1000L; // refresh 토큰 유효시간 30분
+//    private final long refreshTokenValidTime = 60 * 60 * 1000L; // refresh 토큰 유효시간 60분
 
     // 객체 초기화, secretKey를 Base64로 인코딩
     @PostConstruct
@@ -45,15 +45,15 @@ public class JwtTokenProvider {
         headers.put("type", "token");
 
         Map<String, Object> payloads = new HashMap<>();
-        payloads.put("username", member.getUsername());
+//        payloads.put("username", member.getUsername());
         payloads.put("Role", member.getRole());
-        payloads.put("nickname",member.getNickname());
+        payloads.put("nickname", member.getNickname());
 
         return Jwts.builder()
                 .setHeaderParam("typ","JWT")
                 .setHeader(headers)
                 .setClaims(payloads)
-                .setSubject(member.getUsername())
+                .setSubject(member.getNickname())
 
                 //토큰 생성 시간
                 .setIssuedAt(new Date(System.currentTimeMillis()))
@@ -67,24 +67,24 @@ public class JwtTokenProvider {
     }
 
     // Refresh 토큰 생성
-    public String createRefreshToken(Member member) {
-        Map<String, Object> headers = new HashMap<>();
-        headers.put("type", "token");
-
-        return Jwts.builder()
-                .setHeaderParam("typ","JWT")
-                .setHeader(headers)
-
-                //토큰 생성 시간
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-
-                //토큰 만료 시간
-                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidTime))
-
-                //토큰 암호화
-                .signWith(SignatureAlgorithm.HS256, secretKey)
-                .compact();
-    }
+//    public String createRefreshToken(Member member) {
+//        Map<String, Object> headers = new HashMap<>();
+//        headers.put("type", "token");
+//
+//        return Jwts.builder()
+//                .setHeaderParam("typ","JWT")
+//                .setHeader(headers)
+//
+//                //토큰 생성 시간
+//                .setIssuedAt(new Date(System.currentTimeMillis()))
+//
+//                //토큰 만료 시간
+//                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidTime))
+//
+//                //토큰 암호화
+//                .signWith(SignatureAlgorithm.HS256, secretKey)
+//                .compact();
+//    }
 
     // JWT 토큰에서 인증 정보 조회
     public Authentication getAuthentication(String token) {
