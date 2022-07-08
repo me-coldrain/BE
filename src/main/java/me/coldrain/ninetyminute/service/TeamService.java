@@ -88,4 +88,23 @@ public class TeamService {
         team.changeRecruit(true);
         team.setQuestion(request.getQuestion());
     }
+
+    @Transactional
+    public void endRecruit(final Long teamId, final Member member) {
+        final Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+
+        final Long openTeamId = member.getOpenTeam().getId();
+        if (!openTeamId.equals(teamId)) {
+            throw new IllegalArgumentException("팀 개설자만 팀원 모집 종료를 할 수 있습니다.");
+        }
+
+        final Boolean recruit = team.getRecruit();
+        if (recruit.equals(false)) {
+            throw new IllegalArgumentException("이미 팀원 모집을 종료 상태입니다.");
+        }
+
+        team.changeRecruit(false);
+        team.setQuestion(null);
+    }
 }
