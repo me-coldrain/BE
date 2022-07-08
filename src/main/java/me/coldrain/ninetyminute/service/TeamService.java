@@ -3,6 +3,7 @@ package me.coldrain.ninetyminute.service;
 import lombok.RequiredArgsConstructor;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
+import me.coldrain.ninetyminute.dto.request.RecruitStartRequest;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
 import me.coldrain.ninetyminute.entity.*;
 import me.coldrain.ninetyminute.repository.*;
@@ -10,9 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +42,7 @@ public class TeamService {
                 .mainArea(request.getMainArea())
                 .preferredArea(request.getPreferredArea())
                 .point(0)
+                .recruit(false)
                 .record(emptyRecord)
                 .build();
 
@@ -64,5 +63,29 @@ public class TeamService {
     public String findQuestionByTeamId(final Long teamId) {
         return teamRepository.findQuestionByTeamId(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("등록된 팀 질문이 존재하지 않습니다."));
+    }
+
+    public Team findById(final Long teamId) {
+        return teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+    }
+
+    @Transactional
+    public void startRecruit(final Long teamId, final Member member, final RecruitStartRequest request) {
+        final Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+
+        final Long openTeamId = member.getOpenTeam().getId();
+        if (!openTeamId.equals(teamId)) {
+            throw new IllegalArgumentException("팀 개설자만 팀원 모집을 할 수 있습니다.");
+        }
+
+        final Boolean recruit = team.getRecruit();
+        if (recruit.equals(true)) {
+            throw new IllegalArgumentException("이미 팀원 모집 중입니다.");
+        }
+
+        team.changeRecruit(true);
+        team.setQuestion(request.getQuestion());
     }
 }

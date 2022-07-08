@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
+import me.coldrain.ninetyminute.dto.request.RecruitStartRequest;
 import me.coldrain.ninetyminute.dto.request.TeamParticipateRequest;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
 import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
@@ -19,6 +20,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class TeamController {
     private final ParticipationService participationService;
 
     /**
+     * Author: 상운
      * 팀 등록 API
      * 한 명당 하나의 팀만 개설할 수 있습니다.
      */
@@ -50,6 +54,7 @@ public class TeamController {
     }
 
     /**
+     * Author: 상운
      * 팀 목록 조회 API
      */
     @GetMapping("/home/teams")
@@ -61,6 +66,7 @@ public class TeamController {
     }
 
     /**
+     * Author: 상운
      * 팀 참여 질문 조회 API
      */
     @GetMapping("/teams/{team_id}/questions")
@@ -72,10 +78,11 @@ public class TeamController {
     }
 
     /**
+     * Author: 상운
      * 팀 참여 신청 API
      * 한 번 참여 신청한 팀은 다시 참여 신청을 할 수 없습니다.
      */
-    @PostMapping("/home/teams/{team_id}/answer")
+    @PostMapping("/home/teams/{team_id}/participate")
     public void participate(
             final @PathVariable("team_id") Long teamId,
             final @RequestBody TeamParticipateRequest request,
@@ -86,6 +93,7 @@ public class TeamController {
     }
 
     /**
+     * Author: 상운
      * 신청한 팀원 승인 API
      * 팀 개설자만 승인을 할 수 있습니다.
      */
@@ -100,6 +108,7 @@ public class TeamController {
     }
 
     /**
+     * Author: 상운
      * 신청한 팀원 거절 API
      * 팀 개설자만 거절을 할 수 있습니다.
      */
@@ -111,5 +120,19 @@ public class TeamController {
 
         final Member member = userDetails.getUser();
         participationService.disapprove(teamId, memberId, member);
+    }
+
+    /**
+     * Author: 상운
+     * 팀원 모집 시작 API
+     */
+    @PostMapping("/home/teams/{team_id}/recruit/start")
+    public void startRecruit(
+            final @PathVariable("team_id") Long teamId,
+            final @RequestBody RecruitStartRequest request,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        final Member member = userDetails.getUser();
+        teamService.startRecruit(teamId, member, request);
     }
 }

@@ -3,6 +3,7 @@ package me.coldrain.ninetyminute.dto.request;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Getter
