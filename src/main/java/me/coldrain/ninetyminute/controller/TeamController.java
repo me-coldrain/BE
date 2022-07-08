@@ -135,4 +135,17 @@ public class TeamController {
         final Member member = userDetails.getUser();
         teamService.startRecruit(teamId, member, request);
     }
+
+    /**
+     * Author: 상운
+     * 팀원 모집 종료 API
+     */
+    @PostMapping("/home/teams/{team_id}/recruit/end")
+    public void endRecruit(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        final Member member = userDetails.getUser();
+        teamService.endRecruit(teamId, member);
+    }
 }
