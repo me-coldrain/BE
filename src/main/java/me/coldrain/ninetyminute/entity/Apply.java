@@ -1,10 +1,7 @@
 package me.coldrain.ninetyminute.entity;
 
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -28,4 +25,15 @@ public class Apply extends TimeStamped {
     private Team team;                  // 대결을 신청 받은 팀
 
     private Boolean approved;
+
+    public void changeApproved(Boolean approved) {
+        this.approved = approved;
+    }
+
+    @Builder
+    public Apply(Team applyTeam, Team team, Boolean approved) {
+        this.applyTeam = applyTeam;
+        this.team = team;
+        this.approved = approved;
+    }
 }
