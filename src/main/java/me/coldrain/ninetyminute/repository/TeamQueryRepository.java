@@ -36,7 +36,7 @@ public class TeamQueryRepository {
             final TeamListSearchCondition searchCondition,
             final Pageable pageable) {
 
-        // TODO: 2022-07-09 검색 피렅에 요일, 시간, 승률, 모집상태, 대결 등록 상태도 추가해야 함.
+        // TODO: 2022-07-09 검색 필터에 요일, 시간, 승률, 모집상태, 대결 등록 상태도 추가해야 함.
         final List<TeamListSearch> content = queryFactory.select(new QTeamListSearch(
                         team.id,
                         team.name,
