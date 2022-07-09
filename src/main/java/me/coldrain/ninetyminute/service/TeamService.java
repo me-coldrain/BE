@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
-import me.coldrain.ninetyminute.entity.Record;
-import me.coldrain.ninetyminute.entity.Team;
-import me.coldrain.ninetyminute.entity.Time;
-import me.coldrain.ninetyminute.entity.Weekday;
+import me.coldrain.ninetyminute.entity.*;
 import me.coldrain.ninetyminute.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -27,21 +25,30 @@ public class TeamService {
     private final TimeRepository timeRepository;
     private final RecordRepository recordRepository;
 
+    private final MemberRepository memberRepository;
+    private final AwsS3Service awsS3Service;
+
     @Transactional
-    public void registerTeam(final TeamRegisterRequest request) {
+    public void registerTeam(final TeamRegisterRequest request, final Long memberId) {
+        //final Map<String, String> uploadFile = awsS3Service.uploadFile(request.getTeamImageFile());
+        //final String imageFileUrl = uploadFile.get("url"); // -> 버켓 생성 후 주석 풀기
+
+        final Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+
         final Record emptyRecord = recordRepository.save(new Record());
         final Team team = Team.builder()
                 .name(request.getTeamName())
-                .teamProfileUrl(null) // 추후 S3 링크로 변경
+//                .teamProfileUrl(imageFileUrl) // -> 버켓 생성 후 주석 풀기
                 .introduce(request.getIntroduce())
                 .mainArea(request.getMainArea())
                 .preferredArea(request.getPreferredArea())
-                .question(request.getQuestion())
                 .point(0)
                 .record(emptyRecord)
                 .build();
 
         teamRepository.save(team);
+        member.setOpenTeam(team);
 
         request.getWeekday()
                 .forEach(weekday -> weekdayRepository.save(new Weekday(weekday, team)));

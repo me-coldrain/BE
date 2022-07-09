@@ -1,8 +1,6 @@
 package me.coldrain.ninetyminute.dto.request;
 
 import lombok.*;
-import me.coldrain.ninetyminute.entity.Time;
-import me.coldrain.ninetyminute.entity.Weekday;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -26,6 +24,4 @@ public class TeamRegisterRequest {
     private List<String> time;
 
     private String preferredArea;
-
-    private String question;
 }
