@@ -52,6 +52,7 @@ public class TeamController {
             final TeamListSearchCondition searchCondition,
             final Pageable pageable) {
 
+        log.info("selectTeams.searchCondition = {}", searchCondition);
         return teamService.searchTeamList(searchCondition, pageable);
     }
 
