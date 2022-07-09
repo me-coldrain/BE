@@ -130,4 +130,21 @@ public class TeamService {
 
         team.changeMatch(true);
     }
+
+    @Transactional
+    public void cancelMatch(final Long teamId, final Member member) {
+        final Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+
+        final Long openTeamId = member.getOpenTeam().getId();
+        if (!openTeamId.equals(team.getId())) {
+            throw new IllegalArgumentException("팀 개설자가 아닙니다.");
+        }
+
+        if (team.getMatch().equals(false)) {
+            throw new IllegalArgumentException("이미 매칭 등록 상태가 아닙니다.");
+        }
+
+        team.changeMatch(false);
+    }
 }

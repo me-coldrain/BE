@@ -147,4 +147,16 @@ public class TeamController {
 
         teamService.registMatch(teamId, userDetails.getUser());
     }
+
+    /**
+     * Author: 상운
+     * 대결 등록 취소 API
+     */
+    @PostMapping("/home/teams/{team_id}/match/cancel")
+    public void cancelMatch(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        teamService.cancelMatch(teamId, userDetails.getUser());
+    }
 }
