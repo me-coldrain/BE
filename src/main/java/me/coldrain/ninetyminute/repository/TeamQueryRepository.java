@@ -7,23 +7,30 @@ import lombok.RequiredArgsConstructor;
 import me.coldrain.ninetyminute.dto.QTeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
-import me.coldrain.ninetyminute.entity.QRecord;
+import me.coldrain.ninetyminute.entity.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static me.coldrain.ninetyminute.entity.QParticipation.participation;
 import static me.coldrain.ninetyminute.entity.QRecord.record;
 import static me.coldrain.ninetyminute.entity.QTeam.team;
+import static me.coldrain.ninetyminute.entity.QTime.time1;
+import static me.coldrain.ninetyminute.entity.QWeekday.weekday1;
 
 @Repository
 @RequiredArgsConstructor
 public class TeamQueryRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final WeekdayRepository weekdayRepository;
+    private final TimeRepository timeRepository;
 
     public Page<TeamListSearch> findAllTeamListSearch(
             final TeamListSearchCondition searchCondition,
@@ -57,6 +64,22 @@ public class TeamQueryRepository {
                 .limit(pageable.getPageSize())
                 .orderBy(team.createdDate.desc())
                 .fetch();
+
+        content.forEach(c -> {
+            final List<String> weekdays = weekdayRepository.findAllByTeamId(c.getTeamId())
+                    .stream()
+                    .map(Weekday::getWeekday)
+                    .collect(toList());
+
+            c.setWeekdays(weekdays);
+
+            final List<String> timeList = timeRepository.findAllByTeamId(c.getTeamId())
+                    .stream()
+                    .map(Time::getTime)
+                    .collect(toList());
+
+            c.setTime(timeList);
+        });
 
         // TODO: 2022-07-07 6:42 Total 구하는 쿼리도 구해야 한다.
         return new PageImpl<>(content, pageable, 0);

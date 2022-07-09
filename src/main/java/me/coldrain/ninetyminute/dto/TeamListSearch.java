@@ -4,6 +4,8 @@ import com.querydsl.core.annotations.QueryProjection;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import me.coldrain.ninetyminute.entity.Time;
+import me.coldrain.ninetyminute.entity.Weekday;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,8 +23,8 @@ public class TeamListSearch {
     private String mainArea;
 
     private String preferredArea;
-    //private List<String> weekdays;
-    //private List<String> time;
+    private List<String> weekdays;
+    private List<String> time;
     private Double winRate;
     private Boolean recruit;
     private Boolean match;
