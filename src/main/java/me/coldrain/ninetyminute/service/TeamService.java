@@ -152,6 +152,11 @@ public class TeamService {
 
     @Transactional
     public void leaveTeam(final Long teamId, final Member member) {
+        final Long openTeamId = member.getOpenTeam().getId();
+        if (openTeamId.equals(teamId)) {
+            throw new IllegalArgumentException("팀 개설자는 팀을 탈퇴 할 수 없습니다.");
+        }
+
         final Participation participation = participationRepository.findByTeamIdAndMemberId(teamId, member.getId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 팀에 참여 중이 아닙니다."));
 
