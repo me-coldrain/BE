@@ -8,8 +8,6 @@ import me.coldrain.ninetyminute.dto.request.RecruitStartRequest;
 import me.coldrain.ninetyminute.dto.request.TeamParticipateRequest;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
 import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
-import me.coldrain.ninetyminute.entity.Member;
-import me.coldrain.ninetyminute.entity.Team;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import me.coldrain.ninetyminute.service.ParticipationService;
 import me.coldrain.ninetyminute.service.TeamService;
@@ -158,5 +156,17 @@ public class TeamController {
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         teamService.cancelMatch(teamId, userDetails.getUser());
+    }
+
+    /**
+     * Author: 상운
+     * 팀 탈퇴 API
+     */
+    @DeleteMapping("/home/teams/{team_id}/leave")
+    public void leaveTeam(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        teamService.leaveTeam(teamId, userDetails.getUser());
     }
 }

@@ -22,6 +22,7 @@ public class TeamService {
     private final WeekdayRepository weekdayRepository;
     private final TimeRepository timeRepository;
     private final RecordRepository recordRepository;
+    private final ParticipationRepository participationRepository;
 
     private final MemberRepository memberRepository;
     private final AwsS3Service awsS3Service;
@@ -146,5 +147,17 @@ public class TeamService {
         }
 
         team.changeMatch(false);
+    }
+
+    @Transactional
+    public void leaveTeam(final Long teamId, final Member member) {
+        final Participation participation = participationRepository.findByTeamIdAndMemberId(teamId, member.getId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 팀에 참여 중이 아닙니다."));
+
+        if (participation.getApproved().equals(false)) {
+            throw new IllegalArgumentException("참여 신청 상태에서는 팀 탈퇴를 할 수 없습니다.");
+        }
+
+        participationRepository.delete(participation);
     }
 }
