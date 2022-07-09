@@ -57,11 +57,15 @@ public class TeamService {
         teamRepository.save(team);
         member.setOpenTeam(team);
 
-        request.getWeekday()
-                .forEach(weekday -> weekdayRepository.save(new Weekday(weekday, team)));
+        if (request.getWeekday() != null) {
+            request.getWeekday()
+                    .forEach(weekday -> weekdayRepository.save(new Weekday(weekday, team)));
+        }
 
-        request.getTime()
-                .forEach(time -> timeRepository.save(new Time(time, team)));
+        if (request.getTime() != null) {
+            request.getTime()
+                    .forEach(time -> timeRepository.save(new Time(time, team)));
+        }
     }
 
     public Page<TeamListSearch> searchTeamList(final TeamListSearchCondition searchCondition, final Pageable pageable) {
