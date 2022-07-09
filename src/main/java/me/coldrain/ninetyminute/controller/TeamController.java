@@ -169,4 +169,36 @@ public class TeamController {
 
         teamService.leaveTeam(teamId, userDetails.getUser());
     }
+
+    /**
+     * Author: 상운
+     * 대결 신청 API
+     */
+    @PostMapping("/home/teams/{team_id}/match/apply")
+    public void applyMatch(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        final Long applyTeamId = userDetails.getUser()
+                .getOpenTeam()
+                .getId();
+
+        teamService.applyMatch(applyTeamId, teamId);
+    }
+
+    /**
+     * Author: 상운
+     * 대결 신청 취소 API
+     */
+    @PostMapping("/home/teams/{team_id}/match/apply/cancel")
+    public void cancelApplyMatch(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        final Long applyTeamId = userDetails.getUser()
+                .getOpenTeam()
+                .getId();
+
+        teamService.cancelApplyMatch(applyTeamId, teamId);
+    }
 }

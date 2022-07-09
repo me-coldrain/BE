@@ -23,6 +23,7 @@ public class TeamService {
     private final TimeRepository timeRepository;
     private final RecordRepository recordRepository;
     private final ParticipationRepository participationRepository;
+    private final ApplyRepository applyRepository;
 
     private final MemberRepository memberRepository;
     private final AwsS3Service awsS3Service;
@@ -159,5 +160,29 @@ public class TeamService {
         }
 
         participationRepository.delete(participation);
+    }
+
+    @Transactional
+    public void applyMatch(final Long applyTeamId, final Long teamId) {
+        final Team applyTeam = teamRepository.findById(applyTeamId)
+                .orElseThrow(() -> new IllegalArgumentException("대결 신청 팀을 찾을 수 없습니다."));
+        final Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+
+        final Apply apply = Apply.builder()
+                .applyTeam(applyTeam)
+                .team(team)
+                .approved(false)
+                .build();
+
+        applyRepository.save(apply);
+    }
+
+    @Transactional
+    public void cancelApplyMatch(final Long applyTeamId, final Long teamId) {
+        final Apply apply = applyRepository.findByApplyTeamIdAndTeamId(applyTeamId, teamId)
+                .orElseThrow(() -> new IllegalArgumentException("대결 신청 정보를 찾을 수 없습니다."));
+
+        applyRepository.delete(apply);
     }
 }
