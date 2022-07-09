@@ -20,8 +20,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -44,13 +42,7 @@ public class TeamController {
 
         log.info("registerTeam.TeamRegisterRequest = {}", request);
 
-        final Member member = userDetails.getUser();
-        final Team openTeam = member.getOpenTeam();
-        if (openTeam != null) {
-            throw new IllegalArgumentException("이미 개설한 팀이 존재 합니다.");
-        }
-
-        teamService.registerTeam(request, member.getId());
+        teamService.registerTeam(request, userDetails.getUser().getId());
     }
 
     /**
@@ -88,8 +80,7 @@ public class TeamController {
             final @RequestBody TeamParticipateRequest request,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        final Member member = userDetails.getUser();
-        participationService.participate(teamId, member, request);
+        participationService.participate(teamId, userDetails.getUser(), request);
     }
 
     /**
@@ -103,8 +94,7 @@ public class TeamController {
             final @PathVariable("member_id") Long memberId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        final Member member = userDetails.getUser();
-        participationService.approve(teamId, memberId, member);
+        participationService.approve(teamId, memberId, userDetails.getUser());
     }
 
     /**
@@ -118,8 +108,7 @@ public class TeamController {
             final @PathVariable("member_id") Long memberId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        final Member member = userDetails.getUser();
-        participationService.disapprove(teamId, memberId, member);
+        participationService.disapprove(teamId, memberId, userDetails.getUser());
     }
 
     /**
@@ -132,8 +121,7 @@ public class TeamController {
             final @RequestBody RecruitStartRequest request,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        final Member member = userDetails.getUser();
-        teamService.startRecruit(teamId, member, request);
+        teamService.startRecruit(teamId, userDetails.getUser(), request);
     }
 
     /**
@@ -145,7 +133,18 @@ public class TeamController {
             final @PathVariable("team_id") Long teamId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        final Member member = userDetails.getUser();
-        teamService.endRecruit(teamId, member);
+        teamService.endRecruit(teamId, userDetails.getUser());
+    }
+
+    /**
+     * Author: 상운
+     * 대결 등록 API
+     */
+    @PostMapping("/home/teams/{team_id}/match/regist")
+    public void registMatch(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        teamService.registMatch(teamId, userDetails.getUser());
     }
 }

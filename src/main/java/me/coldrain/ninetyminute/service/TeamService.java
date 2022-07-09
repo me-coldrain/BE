@@ -34,6 +34,11 @@ public class TeamService {
         final Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
+        final Team openTeam = member.getOpenTeam();
+        if (openTeam != null) {
+            throw new IllegalArgumentException("이미 개설한 팀이 존재 합니다.");
+        }
+
         final Record emptyRecord = recordRepository.save(new Record());
         final Team team = Team.builder()
                 .name(request.getTeamName())
@@ -43,6 +48,7 @@ public class TeamService {
                 .preferredArea(request.getPreferredArea())
                 .point(0)
                 .recruit(false)
+                .match(false)
                 .record(emptyRecord)
                 .build();
 
@@ -106,5 +112,22 @@ public class TeamService {
 
         team.changeRecruit(false);
         team.setQuestion(null);
+    }
+
+    @Transactional
+    public void registMatch(final Long teamId, final Member member) {
+        final Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+
+        final Long openTeamId = member.getOpenTeam().getId();
+        if (!openTeamId.equals(team.getId())) {
+            throw new IllegalArgumentException("팀 개설자가 아닙니다.");
+        }
+
+        if (team.getMatch().equals(true)) {
+            throw new IllegalArgumentException("이미 매칭 등록 상태입니다.");
+        }
+
+        team.changeMatch(true);
     }
 }
