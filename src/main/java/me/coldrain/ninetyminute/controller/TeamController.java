@@ -49,7 +49,7 @@ public class TeamController {
      * 팀 목록 조회 API
      */
     @GetMapping("/home/teams")
-    public Slice<TeamListSearch> selectTeams(
+    public Page<TeamListSearch> selectTeams(
             final TeamListSearchCondition searchCondition,
             final Pageable pageable) {
 

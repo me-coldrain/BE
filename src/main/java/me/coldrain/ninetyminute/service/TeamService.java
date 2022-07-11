@@ -69,7 +69,7 @@ public class TeamService {
         }
     }
 
-    public Slice<TeamListSearch> searchTeamList(final TeamListSearchCondition searchCondition, final Pageable pageable) {
+    public Page<TeamListSearch> searchTeamList(final TeamListSearchCondition searchCondition, final Pageable pageable) {
         return teamQueryRepository.findAllTeamListSearch(searchCondition, pageable);
     }
 
