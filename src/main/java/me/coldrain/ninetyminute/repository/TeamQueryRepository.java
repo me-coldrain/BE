@@ -2,19 +2,20 @@ package me.coldrain.ninetyminute.repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.QTeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.entity.Time;
 import me.coldrain.ninetyminute.entity.Weekday;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -22,6 +23,7 @@ import static me.coldrain.ninetyminute.entity.QParticipation.participation;
 import static me.coldrain.ninetyminute.entity.QRecord.record;
 import static me.coldrain.ninetyminute.entity.QTeam.team;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class TeamQueryRepository {
@@ -35,7 +37,7 @@ public class TeamQueryRepository {
             final Pageable pageable) {
 
         // TODO: 2022-07-09 검색 필터에 승률도 추가해야 함.
-        final List<TeamListSearch> content = queryFactory.select(
+        List<TeamListSearch> content = queryFactory.select(
                         new QTeamListSearch(
                                 team.id,
                                 team.name,
@@ -66,7 +68,7 @@ public class TeamQueryRepository {
                 .orderBy(team.createdDate.desc())
                 .fetch();
 
-        final JPAQuery<Long> countQuery = queryFactory.select(team.count())
+        final Long total = queryFactory.select(team.count())
                 .from(team)
                 .where(containsIgnoreCaseTeamName(searchCondition.getTeamName()),   // 팀 이름
                         containsAddress(searchCondition.getAddress()),  // 주소
@@ -74,37 +76,39 @@ public class TeamQueryRepository {
                         eqRecruit(searchCondition.getRecruit()) // 모집 상태
                 )
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize());
+                .limit(pageable.getPageSize())
+                .fetchOne();
 
         for (TeamListSearch c : content) {
             final List<String> weekdays = this.findWeekdaysByTeamId(c.getTeamId());
             c.setWeekdays(weekdays);
 
-            if (searchCondition.getWeekdays() != null) {
-                final boolean weekdaysContains = weekdays.stream()
-                        .anyMatch(wd -> searchCondition.getWeekdays().contains(wd));
-                if (!weekdaysContains) {
-                    content.remove(c);
-                }
-            }
-
             final List<String> timeList = this.findTimeAllByTeamId(c.getTeamId());
             c.setTime(timeList);
-
-            if (searchCondition.getTime() != null) {
-                final boolean timeContains = timeList.stream()
-                        .anyMatch(t -> searchCondition.getTime().contains(t));
-
-                if (!timeContains) {
-                    content.remove(c);
-                }
-            }
         }
 
-        // count 쿼리 생략
-        // 1. 페이지 시작이면서 컨텐츠 사이즈가 페이지 사이즈보다 작을 때
-        // 2. 마지막 페이지 일 때 (offset + 컨텐츠 사이즈를 더해서 전체 사이즈를 구한다.)
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+        List<TeamListSearch> filteredContent = new ArrayList<>();
+        if (searchCondition.getWeekdays() != null) {
+            content.forEach(c -> {
+                boolean anyMatch = c.getWeekdays()
+                        .stream()
+                        .anyMatch(wd -> searchCondition.getWeekdays().contains(wd));
+                if (anyMatch) {
+                    filteredContent.add(c);
+                }
+            });
+        } else if (searchCondition.getTime() != null) {
+            content.forEach(c -> {
+                boolean anyMatch = c.getTime().stream()
+                        .anyMatch(t -> searchCondition.getTime().contains(t));
+                if (anyMatch) {
+                    filteredContent.add(c);
+                }
+            });
+        }
+
+        content = new ArrayList<>(filteredContent);
+        return new PageImpl<>(content, pageable, total != null ? total : 0);
     }
 
     private BooleanExpression eqMatch(Boolean match) {
