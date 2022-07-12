@@ -40,12 +40,13 @@ public class MemberService {
 
     //회원가입
     @Transactional
-    public ResponseEntity<?> memberSignup(MemberRegisterRequest memberRegisterRequest){
-        if(!memberRegisterRequest.getPassword().equals(memberRegisterRequest.getConfirmpassword())){
-            return new ResponseEntity<>("재확인 비밀번호가 다릅니다.",HttpStatus.BAD_REQUEST);
+    public ResponseEntity<?> memberSignup(MemberRegisterRequest memberRegisterRequest) {
+        if (!memberRegisterRequest.getPassword().equals(memberRegisterRequest.getConfirmpassword())) {
+            return new ResponseEntity<>("재확인 비밀번호가 다릅니다.", HttpStatus.BAD_REQUEST);
         } else {
             final Ability emptyAbility = abilityRepository.save(new Ability());
             MemberRoleEnum role = MemberRoleEnum.USER;
+
             Member member = new Member(memberRegisterRequest, role, emptyAbility);
             member.encryptPassword(passwordEncoder);
             memberRepository.save(member);
@@ -55,10 +56,10 @@ public class MemberService {
     }
 
     //아이디 중복 확인
-    public  ResponseEntity<?> duplicateCheckEmail(MemberEmailDuplicateRequest memberEmailDuplicateRequest){
+    public ResponseEntity<?> duplicateCheckEmail(MemberEmailDuplicateRequest memberEmailDuplicateRequest) {
         MemberDuplicateResponse memberDuplicateResponse = new MemberDuplicateResponse();
         Optional<Member> found = memberRepository.findByUsername(memberEmailDuplicateRequest.getEmail());
-        if(found.isPresent()){
+        if (found.isPresent()) {
             memberDuplicateResponse.setExist(true);
             memberDuplicateResponse.setMessage("중복된 이메일입니다.");
         } else {
@@ -69,10 +70,10 @@ public class MemberService {
     }
 
     //닉네임 중복 확인
-    public  ResponseEntity<?> duplicateCheckNickname(MemberNicknameDuplicateRequest memberNicknameDuplicateRequest){
+    public ResponseEntity<?> duplicateCheckNickname(MemberNicknameDuplicateRequest memberNicknameDuplicateRequest) {
         MemberDuplicateResponse memberDuplicateResponse = new MemberDuplicateResponse();
         Optional<Member> found = memberRepository.findByNickname(memberNicknameDuplicateRequest.getNickname());
-        if(found.isPresent()){
+        if (found.isPresent()) {
             memberDuplicateResponse.setExist(true);
             memberDuplicateResponse.setMessage("중복된 닉네임입니다.");
         } else {
@@ -85,35 +86,30 @@ public class MemberService {
     //회원정보 수정
     public ResponseEntity<?> memberEdit(Long member_id,
                                         MultipartFile profileImageFile,
-                                        MemberEditRequest memberEditRequest){
+                                        MemberEditRequest memberEditRequest) {
         Member member = memberRepository.findById(member_id).orElseThrow(
                 () -> new NullPointerException("존재하지 않는 회원입니다."));
 
-        if(profileImageFile.isEmpty()){
+        if (profileImageFile.isEmpty()) {
             Map<String, String> profileImg = new HashMap<>();
             profileImg.put("url", "/localhost:8080/basicprofileimage.png");
             profileImg.put("transImgFileName", "basicimage");
             member.memberUpdate(profileImg, memberEditRequest);
         } else {
-            if(member.getProfileUrl() == null){
+            if (member.getProfileName().equals("basicimage")) {
                 Map<String, String> profileImg = awsS3Service.uploadFile(profileImageFile);
                 member.memberUpdate(profileImg, memberEditRequest);
             } else {
-                if(member.getProfileName().equals("basicimage")){
-                    Map<String, String> profileImg = awsS3Service.uploadFile(profileImageFile);
-                    member.memberUpdate(profileImg, memberEditRequest);
-                } else {
-                    awsS3Service.deleteFile(member.getProfileName());
-                    Map<String, String> profileImg = awsS3Service.uploadFile(profileImageFile);
-                    member.memberUpdate(profileImg, memberEditRequest);
-                }
+                awsS3Service.deleteFile(member.getProfileName());
+                Map<String, String> profileImg = awsS3Service.uploadFile(profileImageFile);
+                member.memberUpdate(profileImg, memberEditRequest);
             }
         }
         return new ResponseEntity<>(jwtTokenCreate(member), HttpStatus.OK);
     }
 
     //로그인
-    public ResponseEntity<?> memberLogin(MemberLoginRequest memberLoginRequest){
+    public ResponseEntity<?> memberLogin(MemberLoginRequest memberLoginRequest) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(memberLoginRequest.getEmail(), memberLoginRequest.getPassword()));
@@ -125,10 +121,10 @@ public class MemberService {
     }
 
     //JWT 토큰 생성기
-    private JwtTokenResponse jwtTokenCreate(Member member){
+    private JwtTokenResponse jwtTokenCreate(Member member) {
         JwtTokenResponse jwtTokenResponse = new JwtTokenResponse();
 
-        if(member.getNickname() == null){
+        if (member.getNickname() == null) {
             String accessToken = jwtTokenProvider.createnewAccessToken(member);
             jwtTokenResponse.setAccesstoken(accessToken);
             jwtTokenResponse.setFirst(true);
@@ -136,8 +132,6 @@ public class MemberService {
             String accessToken = jwtTokenProvider.createnewAccessToken(member);
             jwtTokenResponse.setAccesstoken(accessToken);
         }
-//        jwtTokenResponse.setCode(201);
-//        jwtTokenResponse.setMessage("Access토큰이 발급되었습니다.");
         return jwtTokenResponse;
     }
 }
