@@ -4,10 +4,13 @@ import lombok.RequiredArgsConstructor;
 import me.coldrain.ninetyminute.dto.request.*;
 import me.coldrain.ninetyminute.dto.response.JwtTokenResponse;
 import me.coldrain.ninetyminute.dto.response.MemberDuplicateResponse;
+import me.coldrain.ninetyminute.entity.Ability;
 import me.coldrain.ninetyminute.entity.Member;
 import me.coldrain.ninetyminute.entity.MemberRoleEnum;
+import me.coldrain.ninetyminute.entity.Record;
 import me.coldrain.ninetyminute.exception.AuthenticationException;
 import me.coldrain.ninetyminute.exception.ErrorCode;
+import me.coldrain.ninetyminute.repository.AbilityRepository;
 import me.coldrain.ninetyminute.repository.MemberRepository;
 import me.coldrain.ninetyminute.security.jwt.JwtTokenProvider;
 import org.springframework.http.HttpStatus;
@@ -30,17 +33,20 @@ import java.util.Optional;
 public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
+    private final AbilityRepository abilityRepository;
     private final AwsS3Service awsS3Service;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
 
     //회원가입
+    @Transactional
     public ResponseEntity<?> memberSignup(MemberRegisterRequest memberRegisterRequest){
         if(!memberRegisterRequest.getPassword().equals(memberRegisterRequest.getConfirmpassword())){
             return new ResponseEntity<>("재확인 비밀번호가 다릅니다.",HttpStatus.BAD_REQUEST);
         } else {
+            final Ability emptyAbility = abilityRepository.save(new Ability());
             MemberRoleEnum role = MemberRoleEnum.USER;
-            Member member = new Member(memberRegisterRequest, role);
+            Member member = new Member(memberRegisterRequest, role, emptyAbility);
             member.encryptPassword(passwordEncoder);
             memberRepository.save(member);
 

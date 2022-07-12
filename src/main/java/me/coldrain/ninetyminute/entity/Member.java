@@ -53,21 +53,22 @@ public class Member extends TimeStamped {
     private MemberRoleEnum role;
 
     public void setOpenTeam(Team openTeam) {
-        this.openTeam = openTeam;
+          this.openTeam = openTeam;
     }
-
-    public Member(MemberRegisterRequest params, MemberRoleEnum role) {
+    public Member(MemberRegisterRequest params, MemberRoleEnum role, Ability ability) {
         this.username = params.getEmail();
         this.password = params.getPassword();
         this.role = role;
         this.kakaoId = null;
+        this.ability = ability;
     }
 
-    public Member(String password, MemberRoleEnum role, Long kakaoId) {
+    public Member(String password, MemberRoleEnum role, Long kakaoId, Ability ability) {
         this.username = null;
         this.password = password;
         this.role = role;
         this.kakaoId = kakaoId;
+        this.ability = ability;
     }
 
     public void memberUpdate(Map<String, String> profileImg, MemberEditRequest params){

@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import me.coldrain.ninetyminute.dto.response.JwtTokenResponse;
+import me.coldrain.ninetyminute.entity.Ability;
 import me.coldrain.ninetyminute.entity.Member;
 import me.coldrain.ninetyminute.entity.MemberRoleEnum;
+import me.coldrain.ninetyminute.repository.AbilityRepository;
 import me.coldrain.ninetyminute.repository.MemberRepository;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import me.coldrain.ninetyminute.security.jwt.JwtTokenProvider;
@@ -28,6 +30,7 @@ import java.util.UUID;
 public class KakaoMemberService {
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
+    private final AbilityRepository abilityRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
     public ResponseEntity<?> kakaoLogin(String code) throws JsonProcessingException {
@@ -114,13 +117,14 @@ public class KakaoMemberService {
         if (kakaomember == null) {
             // 회원가입
             // password: random UUID
+            final Ability emptyAbility = abilityRepository.save(new Ability());
             String password = UUID.randomUUID().toString();
             String encodedPassword = passwordEncoder.encode(password);
 
             // role: 소셜 로그인 사용자
             MemberRoleEnum role = MemberRoleEnum.SOCIAL;
 
-            kakaomember = new Member(encodedPassword, role, kakaoUserId);
+            kakaomember = new Member(encodedPassword, role, kakaoUserId, emptyAbility);
             return memberRepository.save(kakaomember);
         }
         return kakaomember;

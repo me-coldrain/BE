@@ -4,11 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
+import me.coldrain.ninetyminute.dto.request.RecruitStartRequest;
 import me.coldrain.ninetyminute.dto.request.TeamParticipateRequest;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
 import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
-import me.coldrain.ninetyminute.entity.Member;
-import me.coldrain.ninetyminute.entity.Team;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import me.coldrain.ninetyminute.service.ParticipationService;
 import me.coldrain.ninetyminute.service.TeamService;
@@ -29,6 +28,7 @@ public class TeamController {
     private final ParticipationService participationService;
 
     /**
+     * Author: 상운
      * 팀 등록 API
      * 한 명당 하나의 팀만 개설할 수 있습니다.
      */
@@ -40,16 +40,11 @@ public class TeamController {
 
         log.info("registerTeam.TeamRegisterRequest = {}", request);
 
-        final Member member = userDetails.getUser();
-        final Team openTeam = member.getOpenTeam();
-        if (openTeam != null) {
-            throw new IllegalArgumentException("이미 개설한 팀이 존재 합니다.");
-        }
-
-        teamService.registerTeam(request, member.getId());
+        teamService.registerTeam(request, userDetails.getUser().getId());
     }
 
     /**
+     * Author: 상운
      * 팀 목록 조회 API
      */
     @GetMapping("/home/teams")
@@ -57,10 +52,12 @@ public class TeamController {
             final TeamListSearchCondition searchCondition,
             final Pageable pageable) {
 
+        log.info("selectTeams.searchCondition = {}", searchCondition);
         return teamService.searchTeamList(searchCondition, pageable);
     }
 
     /**
+     * Author: 상운
      * 팀 참여 질문 조회 API
      */
     @GetMapping("/teams/{team_id}/questions")
@@ -72,19 +69,21 @@ public class TeamController {
     }
 
     /**
+     * Author: 상운
      * 팀 참여 신청 API
+     * 한 번 참여 신청한 팀은 다시 참여 신청을 할 수 없습니다.
      */
-    @PostMapping("/home/teams/{team_id}/answer")
+    @PostMapping("/home/teams/{team_id}/participate")
     public void participate(
             final @PathVariable("team_id") Long teamId,
             final @RequestBody TeamParticipateRequest request,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        final Member member = userDetails.getUser();
-        participationService.participate(teamId, member, request);
+        participationService.participate(teamId, userDetails.getUser(), request);
     }
 
     /**
+     * Author: 상운
      * 신청한 팀원 승인 API
      * 팀 개설자만 승인을 할 수 있습니다.
      */
@@ -94,11 +93,11 @@ public class TeamController {
             final @PathVariable("member_id") Long memberId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        final Member member = userDetails.getUser();
-        participationService.approve(teamId, memberId, member);
+        participationService.approve(teamId, memberId, userDetails.getUser());
     }
 
     /**
+     * Author: 상운
      * 신청한 팀원 거절 API
      * 팀 개설자만 거절을 할 수 있습니다.
      */
@@ -108,7 +107,99 @@ public class TeamController {
             final @PathVariable("member_id") Long memberId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        final Member member = userDetails.getUser();
-        participationService.disapprove(teamId, memberId, member);
+        participationService.disapprove(teamId, memberId, userDetails.getUser());
+    }
+
+    /**
+     * Author: 상운
+     * 팀원 모집 시작 API
+     */
+    @PostMapping("/home/teams/{team_id}/recruit/start")
+    public void startRecruit(
+            final @PathVariable("team_id") Long teamId,
+            final @RequestBody RecruitStartRequest request,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        teamService.startRecruit(teamId, userDetails.getUser(), request);
+    }
+
+    /**
+     * Author: 상운
+     * 팀원 모집 종료 API
+     */
+    @PostMapping("/home/teams/{team_id}/recruit/end")
+    public void endRecruit(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        teamService.endRecruit(teamId, userDetails.getUser());
+    }
+
+    /**
+     * Author: 상운
+     * 대결 등록 API
+     */
+    @PostMapping("/home/teams/{team_id}/match/regist")
+    public void registMatch(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        teamService.registMatch(teamId, userDetails.getUser());
+    }
+
+    /**
+     * Author: 상운
+     * 대결 등록 취소 API
+     */
+    @PostMapping("/home/teams/{team_id}/match/cancel")
+    public void cancelMatch(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        teamService.cancelMatch(teamId, userDetails.getUser());
+    }
+
+    /**
+     * Author: 상운
+     * 팀 탈퇴 API
+     */
+    @DeleteMapping("/home/teams/{team_id}/leave")
+    public void leaveTeam(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        teamService.leaveTeam(teamId, userDetails.getUser());
+    }
+
+    /**
+     * Author: 상운
+     * 대결 신청 API
+     */
+    @PostMapping("/home/teams/{team_id}/match/apply")
+    public void applyMatch(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        final Long applyTeamId = userDetails.getUser()
+                .getOpenTeam()
+                .getId();
+
+        teamService.applyMatch(applyTeamId, teamId);
+    }
+
+    /**
+     * Author: 상운
+     * 대결 신청 취소 API
+     */
+    @PostMapping("/home/teams/{team_id}/match/apply/cancel")
+    public void cancelApplyMatch(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        final Long applyTeamId = userDetails.getUser()
+                .getOpenTeam()
+                .getId();
+
+        teamService.cancelApplyMatch(applyTeamId, teamId);
     }
 }

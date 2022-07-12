@@ -1,14 +1,11 @@
 package me.coldrain.ninetyminute.entity;
 
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
 
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString
 @Getter
 public class Ability extends TimeStamped {
@@ -24,4 +21,22 @@ public class Ability extends TimeStamped {
     private Integer goalkeeperPoint;
     private Integer mvpPoint;
     private Integer charmingPoint;
+
+    public Ability() {
+        this.strikerPoint = 0;
+        this.midfielderPoint = 0;
+        this.defenderPoint = 0;
+        this.goalkeeperPoint = 0;
+        this.mvpPoint = 0;
+        this.charmingPoint = 0;
+    }
+
+    public Ability(Integer strikerPoint, Integer midfielderPoint, Integer defenderPoint, Integer goalkeeperPoint, Integer mvpPoint, Integer charmingPoint) {
+        this.strikerPoint = strikerPoint;
+        this.midfielderPoint = midfielderPoint;
+        this.defenderPoint = defenderPoint;
+        this.goalkeeperPoint = goalkeeperPoint;
+        this.mvpPoint = mvpPoint;
+        this.charmingPoint = charmingPoint;
+    }
 }
