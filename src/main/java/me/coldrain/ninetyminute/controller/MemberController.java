@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/members")
@@ -18,19 +20,19 @@ public class MemberController {
 
     //회원가입
     @PostMapping("/signup")
-    public ResponseEntity<?> memberSignup(@RequestBody MemberRegisterRequest memberRegisterRequest){
+    public ResponseEntity<?> memberSignup(@RequestBody @Valid MemberRegisterRequest memberRegisterRequest) {
         return memberService.memberSignup(memberRegisterRequest);
     }
 
     //아이디 중복 확인
     @PostMapping("/email/exist")
-    public ResponseEntity<?> duplicateCheckEmail(@RequestBody MemberEmailDuplicateRequest memberEmailDuplicateRequest){
+    public ResponseEntity<?> duplicateCheckEmail(@RequestBody @Valid MemberEmailDuplicateRequest memberEmailDuplicateRequest) {
         return memberService.duplicateCheckEmail(memberEmailDuplicateRequest);
     }
 
     //닉네임 중복 확인
     @PostMapping("/nickname/exist")
-    public ResponseEntity<?> duplicateCheckNickname(@RequestBody MemberNicknameDuplicateRequest memberNicknameDuplicateRequest){
+    public ResponseEntity<?> duplicateCheckNickname(@RequestBody @Valid MemberNicknameDuplicateRequest memberNicknameDuplicateRequest) {
         return memberService.duplicateCheckNickname(memberNicknameDuplicateRequest);
     }
 
@@ -38,13 +40,13 @@ public class MemberController {
     @PatchMapping("/{member_id}")
     public ResponseEntity<?> memberEdit(@PathVariable Long member_id,
                                         @RequestPart(value = "profileimagefile", required = false) MultipartFile profileImageFile,
-                                        @RequestPart(value = "editmember") MemberEditRequest memberEditRequest){
+                                        @RequestPart(value = "editmember") @Valid MemberEditRequest memberEditRequest) {
         return memberService.memberEdit(member_id, profileImageFile, memberEditRequest);
     }
 
     //로그인
     @PostMapping("/login")
-    public ResponseEntity<?> memberLogin(@RequestBody MemberLoginRequest memberLoginRequest){
+    public ResponseEntity<?> memberLogin(@RequestBody @Valid MemberLoginRequest memberLoginRequest) {
         return memberService.memberLogin(memberLoginRequest);
     }
 
@@ -52,7 +54,7 @@ public class MemberController {
     @GetMapping("/kakao/login")
     public ResponseEntity<?> kakaoLogin(@RequestParam String code) throws JsonProcessingException {
         //프론트엔드 인가코드 요청 방법
-        //https://kauth.kakao.com/oauth/authorize?client_id=3c2e867a60400604cd64199c1ec0227a&redirect_uri=http://localhost:8080/user/kakao/callback&response_type=code
+        //https://kauth.kakao.com/oauth/authorize?client_id=3c2e867a60400604cd64199c1ec0227a&redirect_uri=http://localhost:8080/api/members/kakao/login&response_type=code
         return kakaoMemberService.kakaoLogin(code);
     }
 }

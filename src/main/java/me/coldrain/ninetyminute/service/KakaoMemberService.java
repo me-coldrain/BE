@@ -61,7 +61,7 @@ public class KakaoMemberService {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
         body.add("client_id", "3c2e867a60400604cd64199c1ec0227a");
-        body.add("redirect_uri", "http://localhost:8080/member/kakao/callback");
+        body.add("redirect_uri", "http://localhost:8080/api/members/kakao/login");
         body.add("code", code);
 
         // HTTP 요청 보내기
@@ -136,10 +136,10 @@ public class KakaoMemberService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    private JwtTokenResponse jwtTokenCreate(Member kakaoMember){
+    private JwtTokenResponse jwtTokenCreate(Member kakaoMember) {
         JwtTokenResponse jwtTokenResponse = new JwtTokenResponse();
 
-        if(kakaoMember.getNickname() == null){
+        if (kakaoMember.getNickname() == null) {
             String accessToken = jwtTokenProvider.createnewAccessToken(kakaoMember);
             jwtTokenResponse.setAccesstoken(accessToken);
             jwtTokenResponse.setFirst(true);
