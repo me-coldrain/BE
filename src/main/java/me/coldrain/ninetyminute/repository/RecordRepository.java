@@ -7,10 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface RecordRepository extends JpaRepository<Record, Long> {
-    @Query("SELECT R.id FROM Record R")
-    List<Long> findFirst10ByOrderByWinPointDesc();
+    List<Record> findFirst10ByOrderByWinPointDesc();
 
-    @Query("SELECT R.id FROM Record R")
-    List<Long> findAllByOrderByWinPointDesc();
+    List<Record> findAllByOrderByWinPointDesc();
 
 }

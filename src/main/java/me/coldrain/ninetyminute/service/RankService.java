@@ -5,9 +5,7 @@ import me.coldrain.ninetyminute.dto.response.MyRankResponse;
 import me.coldrain.ninetyminute.dto.response.MyTeamRankResponse;
 import me.coldrain.ninetyminute.dto.response.RankerMemberResponse;
 import me.coldrain.ninetyminute.dto.response.RankerTeamResponse;
-import me.coldrain.ninetyminute.entity.Member;
-import me.coldrain.ninetyminute.entity.Participation;
-import me.coldrain.ninetyminute.entity.Team;
+import me.coldrain.ninetyminute.entity.*;
 import me.coldrain.ninetyminute.repository.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,9 +27,9 @@ public class RankService {
     public ResponseEntity<?> teamRankGet() {
         List<RankerTeamResponse> rankerTeamResponsesList = new ArrayList<>();
 
-        List<Long> Top10TeamList = recordRepository.findFirst10ByOrderByWinPointDesc();
-        for (Long aLong : Top10TeamList) {
-            Team rankerTeam = teamRepository.findById(aLong).orElseThrow(
+        List<Record> Top10TeamList = recordRepository.findFirst10ByOrderByWinPointDesc();
+        for (Record record_id : Top10TeamList) {
+            Team rankerTeam = teamRepository.findByRecord_Id(record_id.getId()).orElseThrow(
                     () -> new NullPointerException("존재하지 않는 팀 입니다."));
 
             RankerTeamResponse rankerTeamResponse = new RankerTeamResponse(
@@ -52,9 +50,9 @@ public class RankService {
         switch (ability) {
 
             case "mvp":
-                List<Long> Top10MvpPointMemberList = abilityRepository.findFirst10ByOrderByMvpPointDesc();
-                for (Long memberId : Top10MvpPointMemberList) {
-                    Member rankerMember = memberRepository.findById(memberId).orElseThrow(
+                List<Ability> Top10MvpPointMemberList = abilityRepository.findFirst10ByOrderByMvpPointDesc();
+                for (Ability ability_id : Top10MvpPointMemberList) {
+                    Member rankerMember = memberRepository.findByAbility_Id(ability_id.getId()).orElseThrow(
                             () -> new NullPointerException("존재하지 않는 회원 입니다."));
 
                     RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
@@ -69,82 +67,90 @@ public class RankService {
                 }
                 break;
 
-            case "Striker":
-                List<Long> Top10StrikerPointMemberList = abilityRepository.findFirst10ByOrderByStrikerPointDesc();
-                for (Long memberId : Top10StrikerPointMemberList) {
-                    Member rankerMember = memberRepository.findById(memberId).orElseThrow(
+            case "striker":
+                List<Ability> Top10StrikerPointMemberList = abilityRepository.findFirst10ByOrderByStrikerPointDesc();
+                for (Ability ability_id : Top10StrikerPointMemberList) {
+                    Member rankerMember = memberRepository.findByAbility_Id(ability_id.getId()).orElseThrow(
                             () -> new NullPointerException("존재하지 않는 회원 입니다."));
 
-                    RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
-                            rankerMember.getId(),
-                            rankerMember.getProfileUrl(),
-                            rankerMember.getNickname(),
-                            rankerMember.getPosition(),
-                            rankerMember.getAbility().getMvpPoint(),
-                            rankerMember.getAbility().getStrikerPoint()
-                    );
-                    rankerMemberResponseList.add(rankerMemberResponse);
+                    if (rankerMember.getPosition().equals("striker")) {
+                        RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
+                                rankerMember.getId(),
+                                rankerMember.getProfileUrl(),
+                                rankerMember.getNickname(),
+                                rankerMember.getPosition(),
+                                rankerMember.getAbility().getMvpPoint(),
+                                rankerMember.getAbility().getStrikerPoint()
+                        );
+                        rankerMemberResponseList.add(rankerMemberResponse);
+                    }
                 }
                 break;
 
             case "midfielder":
-                List<Long> Top10midfielderPointMemberList = abilityRepository.findFirst10ByOrderByMidfielderPointDesc();
-                for (Long memberId : Top10midfielderPointMemberList) {
-                    Member rankerMember = memberRepository.findById(memberId).orElseThrow(
+                List<Ability> Top10midfielderPointMemberList = abilityRepository.findFirst10ByOrderByMidfielderPointDesc();
+                for (Ability ability_id : Top10midfielderPointMemberList) {
+                    Member rankerMember = memberRepository.findByAbility_Id(ability_id.getId()).orElseThrow(
                             () -> new NullPointerException("존재하지 않는 회원 입니다."));
 
-                    RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
-                            rankerMember.getId(),
-                            rankerMember.getProfileUrl(),
-                            rankerMember.getNickname(),
-                            rankerMember.getPosition(),
-                            rankerMember.getAbility().getMvpPoint(),
-                            rankerMember.getAbility().getMidfielderPoint()
-                    );
-                    rankerMemberResponseList.add(rankerMemberResponse);
+                    if (rankerMember.getPosition().equals("midfielder")) {
+                        RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
+                                rankerMember.getId(),
+                                rankerMember.getProfileUrl(),
+                                rankerMember.getNickname(),
+                                rankerMember.getPosition(),
+                                rankerMember.getAbility().getMvpPoint(),
+                                rankerMember.getAbility().getMidfielderPoint()
+                        );
+                        rankerMemberResponseList.add(rankerMemberResponse);
+                    }
                 }
                 break;
 
             case "defender":
-                List<Long> Top10defenderPointMemberList = abilityRepository.findFirst10ByOrderByDefenderPointDescDesc();
-                for (Long memberId : Top10defenderPointMemberList) {
-                    Member rankerMember = memberRepository.findById(memberId).orElseThrow(
+                List<Ability> Top10defenderPointMemberList = abilityRepository.findFirst10ByOrderByDefenderPointDesc();
+                for (Ability ability_id : Top10defenderPointMemberList) {
+                    Member rankerMember = memberRepository.findByAbility_Id(ability_id.getId()).orElseThrow(
                             () -> new NullPointerException("존재하지 않는 회원 입니다."));
 
-                    RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
-                            rankerMember.getId(),
-                            rankerMember.getProfileUrl(),
-                            rankerMember.getNickname(),
-                            rankerMember.getPosition(),
-                            rankerMember.getAbility().getMvpPoint(),
-                            rankerMember.getAbility().getDefenderPoint()
-                    );
-                    rankerMemberResponseList.add(rankerMemberResponse);
+                    if (rankerMember.getPosition().equals("defender")) {
+                        RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
+                                rankerMember.getId(),
+                                rankerMember.getProfileUrl(),
+                                rankerMember.getNickname(),
+                                rankerMember.getPosition(),
+                                rankerMember.getAbility().getMvpPoint(),
+                                rankerMember.getAbility().getDefenderPoint()
+                        );
+                        rankerMemberResponseList.add(rankerMemberResponse);
+                    }
                 }
                 break;
 
             case "goalkeeper":
-                List<Long> Top10goalkeeperPointMemberList = abilityRepository.findFirst10ByOrderByGoalkeeperPointDesc();
-                for (Long memberId : Top10goalkeeperPointMemberList) {
-                    Member rankerMember = memberRepository.findById(memberId).orElseThrow(
+                List<Ability> Top10goalkeeperPointMemberList = abilityRepository.findFirst10ByOrderByGoalkeeperPointDesc();
+                for (Ability ability_id : Top10goalkeeperPointMemberList) {
+                    Member rankerMember = memberRepository.findByAbility_Id(ability_id.getId()).orElseThrow(
                             () -> new NullPointerException("존재하지 않는 회원 입니다."));
 
-                    RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
-                            rankerMember.getId(),
-                            rankerMember.getProfileUrl(),
-                            rankerMember.getNickname(),
-                            rankerMember.getPosition(),
-                            rankerMember.getAbility().getMvpPoint(),
-                            rankerMember.getAbility().getGoalkeeperPoint()
-                    );
-                    rankerMemberResponseList.add(rankerMemberResponse);
+                    if (rankerMember.getPosition().equals("goalkeeper")) {
+                        RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
+                                rankerMember.getId(),
+                                rankerMember.getProfileUrl(),
+                                rankerMember.getNickname(),
+                                rankerMember.getPosition(),
+                                rankerMember.getAbility().getMvpPoint(),
+                                rankerMember.getAbility().getGoalkeeperPoint()
+                        );
+                        rankerMemberResponseList.add(rankerMemberResponse);
+                    }
                 }
                 break;
 
             case "charming":
-                List<Long> Top10charmingPointMemberList = abilityRepository.findFirst10ByOrderByCharmingPointDesc();
-                for (Long memberId : Top10charmingPointMemberList) {
-                    Member rankerMember = memberRepository.findById(memberId).orElseThrow(
+                List<Ability> Top10charmingPointMemberList = abilityRepository.findFirst10ByOrderByCharmingPointDesc();
+                for (Ability ability_id : Top10charmingPointMemberList) {
+                    Member rankerMember = memberRepository.findByAbility_Id(ability_id.getId()).orElseThrow(
                             () -> new NullPointerException("존재하지 않는 회원 입니다."));
 
                     RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
@@ -158,28 +164,6 @@ public class RankService {
                     rankerMemberResponseList.add(rankerMemberResponse);
                 }
                 break;
-
-//            default:
-//                List<Long> Top10defaultMemberList = abilityRepository.findFirst10ByOrderByMvpPointDesc();
-//                for(int i=0; i<Top10defaultMemberList.size(); i++){
-//                    Member rankerMember = memberRepository.findById(Top10defaultMemberList.get(i)).orElseThrow(
-//                            () -> new NullPointerException("존재하지 않는 회원 입니다."));
-//
-//                    RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
-//                            rankerMember.getId(),
-//                            rankerMember.getProfileUrl(),
-//                            rankerMember.getNickname(),
-//                            rankerMember.getPosition(),
-//                            rankerMember.getAbility().getMvpPoint(),
-//                            rankerMember.getAbility().getStrikerPoint(),
-//                            rankerMember.getAbility().getMidfielderPoint(),
-//                            rankerMember.getAbility().getDefenderPoint(),
-//                            rankerMember.getAbility().getGoalkeeperPoint(),
-//                            rankerMember.getAbility().getCharmingPoint()
-//                    );
-//                    rankerMemberResponseList.add(rankerMemberResponse);
-//                }
-//                break;
         }
         return new ResponseEntity<>(rankerMemberResponseList, HttpStatus.OK);
     }
@@ -193,8 +177,8 @@ public class RankService {
         String position = myRank.getPosition();
 
         switch (position) {
-            case "Striker":
-                List<Long> myStrikerPointRank = abilityRepository.findAllByOrderByStrikerPointDesc();
+            case "striker":
+                List<Ability> myStrikerPointRank = abilityRepository.findAllByOrderByStrikerPointDesc();
 
                 MyRankResponse myStrikerRankResponse = new MyRankResponse(
                         myRank.getId(),
@@ -203,13 +187,13 @@ public class RankService {
                         myRank.getPosition(),
                         myRank.getAbility().getMvpPoint(),
                         myRank.getAbility().getStrikerPoint(),
-                        myStrikerPointRank.indexOf(myRank.getId())+1
+                        myStrikerPointRank.indexOf(myRank.getAbility()) + 1
                 );
                 myRankResponseList.add(myStrikerRankResponse);
                 break;
 
             case "midfielder":
-                List<Long> myMidfielderPointRank = abilityRepository.findAllByOrderByMidfielderPointDesc();
+                List<Ability> myMidfielderPointRank = abilityRepository.findAllByOrderByMidfielderPointDesc();
 
                 MyRankResponse myMidfielderRankResponse = new MyRankResponse(
                         myRank.getId(),
@@ -217,14 +201,14 @@ public class RankService {
                         myRank.getNickname(),
                         myRank.getPosition(),
                         myRank.getAbility().getMvpPoint(),
-                        myRank.getAbility().getStrikerPoint(),
-                        myMidfielderPointRank.indexOf(myRank.getId())+1
+                        myRank.getAbility().getMidfielderPoint(),
+                        myMidfielderPointRank.indexOf(myRank.getAbility()) + 1
                 );
                 myRankResponseList.add(myMidfielderRankResponse);
                 break;
 
             case "defender":
-                List<Long> myDefenderPointRank = abilityRepository.findAllByOrderByDefenderPointDesc();
+                List<Ability> myDefenderPointRank = abilityRepository.findAllByOrderByDefenderPointDesc();
 
                 MyRankResponse myDefenderRankResponse = new MyRankResponse(
                         myRank.getId(),
@@ -232,14 +216,14 @@ public class RankService {
                         myRank.getNickname(),
                         myRank.getPosition(),
                         myRank.getAbility().getMvpPoint(),
-                        myRank.getAbility().getStrikerPoint(),
-                        myDefenderPointRank.indexOf(myRank.getId())+1
+                        myRank.getAbility().getDefenderPoint(),
+                        myDefenderPointRank.indexOf(myRank.getAbility()) + 1
                 );
                 myRankResponseList.add(myDefenderRankResponse);
                 break;
 
             case "goalkeeper":
-                List<Long> myGoalkeeperPointRank = abilityRepository.findAllByOrderByGoalkeeperPointDesc();
+                List<Ability> myGoalkeeperPointRank = abilityRepository.findAllByOrderByGoalkeeperPointDesc();
 
                 MyRankResponse myGoalkeeperRankResponse = new MyRankResponse(
                         myRank.getId(),
@@ -247,8 +231,8 @@ public class RankService {
                         myRank.getNickname(),
                         myRank.getPosition(),
                         myRank.getAbility().getMvpPoint(),
-                        myRank.getAbility().getStrikerPoint(),
-                        myGoalkeeperPointRank.indexOf(myRank.getId())+1
+                        myRank.getAbility().getGoalkeeperPoint(),
+                        myGoalkeeperPointRank.indexOf(myRank.getAbility()) + 1
                 );
                 myRankResponseList.add(myGoalkeeperRankResponse);
                 break;
@@ -259,7 +243,7 @@ public class RankService {
     //로그인 사용자가 참여하고 있는 팀의 랭킹 조회
     public ResponseEntity<?> myTeamRankGet(Long member_id) {
         List<MyTeamRankResponse> myTeamRankResponseList = new ArrayList<>();
-        List<Long> myTeamWinPointRank = recordRepository.findAllByOrderByWinPointDesc();
+        List<Record> myTeamWinPointRank = recordRepository.findAllByOrderByWinPointDesc();
 
         Member myOpenTeam = memberRepository.findById(member_id).orElseThrow(
                 () -> new NullPointerException("존재하지 않는 사용자 입니다."));
@@ -269,7 +253,7 @@ public class RankService {
                     myOpenTeam.getOpenTeam().getMainArea(),
                     myOpenTeam.getOpenTeam().getName(),
                     myOpenTeam.getOpenTeam().getRecord().getWinPoint(),
-                    myTeamWinPointRank.indexOf(myOpenTeam.getOpenTeam().getId())+1
+                    myTeamWinPointRank.indexOf(myOpenTeam.getOpenTeam().getRecord()) + 1
             );
             myTeamRankResponseList.add(myTeamRankResponse);
         }
@@ -281,7 +265,7 @@ public class RankService {
                     participation.getTeam().getMainArea(),
                     participation.getTeam().getName(),
                     participation.getTeam().getRecord().getWinPoint(),
-                    myTeamWinPointRank.indexOf(participation.getTeam().getId())+1
+                    myTeamWinPointRank.indexOf(participation.getTeam().getRecord()) + 1
             );
             myTeamRankResponseList.add(myTeamRankResponse);
         }

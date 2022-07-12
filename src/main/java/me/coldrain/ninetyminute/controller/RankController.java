@@ -21,8 +21,8 @@ public class RankController {
 
     //개인 포지션 랭킹 조회
     @GetMapping("/api/home/rank/members")
-    public ResponseEntity<?> memberRankGet(@RequestParam("abilityPoint") String abilityPoint) {
-        return rankService.memberRankGet(abilityPoint);
+    public ResponseEntity<?> memberRankGet(@RequestParam("ability") String ability) {
+        return rankService.memberRankGet(ability);
     }
 
     //로그인 사용자 개인 랭킹

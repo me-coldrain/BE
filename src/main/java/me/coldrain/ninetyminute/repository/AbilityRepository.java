@@ -2,41 +2,30 @@ package me.coldrain.ninetyminute.repository;
 
 import me.coldrain.ninetyminute.entity.Ability;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
 public interface AbilityRepository extends JpaRepository<Ability, Long> {
 
     //TOP10 개인 랭킹 조회
-    @Query("SELECT A.id FROM Ability A")
-    List<Long> findFirst10ByOrderByMvpPointDesc();
+    List<Ability> findFirst10ByOrderByMvpPointDesc();
 
-    @Query("SELECT A.id FROM Ability A")
-    List<Long> findFirst10ByOrderByStrikerPointDesc();
+    List<Ability> findFirst10ByOrderByStrikerPointDesc();
 
-    @Query("SELECT A.id FROM Ability A")
-    List<Long> findFirst10ByOrderByMidfielderPointDesc();
+    List<Ability> findFirst10ByOrderByMidfielderPointDesc();
 
-    @Query("SELECT A.id FROM Ability A")
-    List<Long> findFirst10ByOrderByDefenderPointDescDesc();
+    List<Ability> findFirst10ByOrderByDefenderPointDesc();
 
-    @Query("SELECT A.id FROM Ability A")
-    List<Long> findFirst10ByOrderByGoalkeeperPointDesc();
+    List<Ability> findFirst10ByOrderByGoalkeeperPointDesc();
 
-    @Query("SELECT A.id FROM Ability A")
-    List<Long> findFirst10ByOrderByCharmingPointDesc();
+    List<Ability> findFirst10ByOrderByCharmingPointDesc();
 
     //개별 랭킹 확인을 위한 포지션별 랭킹 전체 조회
-    @Query("SELECT A.id FROM Ability A")
-    List<Long> findAllByOrderByStrikerPointDesc();
+    List<Ability> findAllByOrderByStrikerPointDesc();
 
-    @Query("SELECT A.id FROM Ability A")
-    List<Long> findAllByOrderByMidfielderPointDesc();
+    List<Ability> findAllByOrderByMidfielderPointDesc();
 
-    @Query("SELECT A.id FROM Ability A")
-    List<Long> findAllByOrderByDefenderPointDesc();
+    List<Ability> findAllByOrderByDefenderPointDesc();
 
-    @Query("SELECT A.id FROM Ability A")
-    List<Long> findAllByOrderByGoalkeeperPointDesc();
+    List<Ability> findAllByOrderByGoalkeeperPointDesc();
 }
