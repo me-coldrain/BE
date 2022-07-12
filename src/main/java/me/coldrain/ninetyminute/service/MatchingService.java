@@ -1,13 +1,18 @@
 package me.coldrain.ninetyminute.service;
 
 import lombok.RequiredArgsConstructor;
+<<<<<<< HEAD
 import me.coldrain.ninetyminute.dto.request.ApprovedMatchRequest;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
 import me.coldrain.ninetyminute.entity.Apply;
+=======
+import me.coldrain.ninetyminute.dto.response.ApprovedMatchResponse;
+>>>>>>> bb511c2 (Feat: "경기 성사 목록 조회 API")
 import me.coldrain.ninetyminute.entity.BeforeMatching;
 import me.coldrain.ninetyminute.entity.Member;
 import me.coldrain.ninetyminute.repository.ApplyRepository;
 import me.coldrain.ninetyminute.repository.BeforeMatchingRepository;
+<<<<<<< HEAD
 import me.coldrain.ninetyminute.repository.TeamRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,5 +88,56 @@ public class MatchingService {
             }
             return offerMatchResponseList;
         } else throw new IllegalArgumentException("이 팀의 주장이 아님니다.");
+=======
+import me.coldrain.ninetyminute.repository.MemberRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+
+
+@RequiredArgsConstructor
+@Transactional
+@Service
+public class MatchingService {
+
+    final MemberRepository memberRepository;
+    final ApplyRepository applyRepository;
+    final BeforeMatchingRepository beforeMatchingRepository;
+
+
+    public List<ApprovedMatchResponse> searchApprovedMatch(Long team_id, Member member) {
+
+        List<BeforeMatching> beforeMatchingList = beforeMatchingRepository.findAllByBeforeMatching(team_id);    // apply 의 approved == true 일 때만
+        List<ApprovedMatchResponse> approvedMatchResponseList = new ArrayList<>();
+
+        for (BeforeMatching beforeMatching : beforeMatchingList) {
+            Member captainMember = memberRepository.findByOpenTeamID(beforeMatching.getApply().getApplyTeam().getId()).orElseThrow(() -> new IllegalAccessError(
+                    "해당 팀을 찾을 수 없습니다."));
+            Long applyTeamId = beforeMatching.getApply().getApplyTeam().getId();
+            LocalDateTime from = LocalDateTime.now();
+            LocalDateTime to = LocalDateTime.ofInstant(beforeMatching.getMatchDate().toInstant(), ZoneId.systemDefault());
+            ApprovedMatchResponse approvedMatchResponse = ApprovedMatchResponse.builder()
+                    .matchId(beforeMatching.getApply().getId())
+                    .opposingTeamId(beforeMatching.getApply().getApplyTeam().getId())
+                    .opposingTeamName(beforeMatching.getOpposingTeamName())
+                    .contact(captainMember.getContact())
+                    .phone(captainMember.getPhone())
+                    .createdAtMatch(java.sql.Timestamp.valueOf(applyRepository.findByApplyTeamIdAndTeamId(applyTeamId, team_id).orElseThrow(() ->
+                            new IllegalAccessError("해당 팀을 찾을 수 없습니다.")).getCreatedDate()))
+                    .matchDate(beforeMatching.getMatchDate())
+                    .dDay(ChronoUnit.DAYS.between(from, to))
+                    .matchLocation(beforeMatching.getLocation())
+                    .createdDate(beforeMatching.getCreatedDate())
+                    .modifiedDate(beforeMatching.getModifiedDate())
+                    .build();
+            approvedMatchResponseList.add(approvedMatchResponse);
+        }
+        return approvedMatchResponseList;
+>>>>>>> bb511c2 (Feat: "경기 성사 목록 조회 API")
     }
 }
