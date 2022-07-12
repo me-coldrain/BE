@@ -110,6 +110,7 @@ public class MatchingService {
     final BeforeMatchingRepository beforeMatchingRepository;
 
 
+    @Transactional(readOnly = true)
     public List<ApprovedMatchResponse> searchApprovedMatch(Long team_id, Member member) {
 
         List<BeforeMatching> beforeMatchingList = beforeMatchingRepository.findAllByBeforeMatching(team_id);    // apply 의 approved == true 일 때만
