@@ -20,7 +20,7 @@ public class MatchingController {
     /*
      * Author: 병민
      * 대결 수락 정보 저장 API
-     * apply 의 approved 가 ture 일 때 목록을 조회 할 수 있습니다.
+     * 대결 수락 시 대결 상세 정보 저장 및 apply 상태 변경.
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/teams/{apply_team_id}/matches")
