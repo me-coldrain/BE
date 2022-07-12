@@ -71,7 +71,7 @@ public class MatchingController {
      * 대결 성사 목록 조회 API
      * apply 의 approved 가 ture 일 때 목록을 조회 할 수 있습니다.
      */
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/teams/{team_id}/matches")
     public List<ApprovedMatchResponse> searchApprovedMatch(
             final @PathVariable Long team_id,
