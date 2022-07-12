@@ -18,8 +18,8 @@ public class MyParticipationTeamListResponse {
     private int headCount;
     private String mainArea;
     private String preferredArea;
-    private List<Weekday> weekdays;
-    private List<Time> time;
+    private List<String> weekdays;
+    private List<String> time;
     private double winRate;
     private boolean recruit;
     private boolean match;
