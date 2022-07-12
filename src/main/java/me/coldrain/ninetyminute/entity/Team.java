@@ -23,6 +23,9 @@ public class Team extends TimeStamped {
     private String teamProfileUrl;
     private String introduce;
 
+    private Boolean recruit;
+    private Boolean match;
+
     @OneToMany(mappedBy = "team")
     private List<Weekday> weekdays = new ArrayList<>(); // ['MON', 'TUE']
 
@@ -40,6 +43,17 @@ public class Team extends TimeStamped {
     @JoinColumn(name = "history_id")
     private History history;
 
+    public void changeRecruit(Boolean recruit) {
+        this.recruit = recruit;
+    }
+
+    public void changeMatch(Boolean match) {
+        this.match = match;
+    }
+
+    public void setQuestion(String question) {
+        this.question = question;
+    }
 
     public void addWeekday(Weekday weekday) {
         weekdays.add(weekday);
@@ -52,16 +66,20 @@ public class Team extends TimeStamped {
     }
 
     @Builder
-    public Team(String name, String mainArea, Integer point, String teamProfileUrl, String introduce, List<Weekday> weekdays, List<Time> timeList, String preferredArea, String question, Record record) {
+
+    public Team(String name, String mainArea, Integer point, String teamProfileUrl, String introduce, Boolean recruit, List<Weekday> weekdays, List<Time> timeList, String preferredArea, String question, Record record, History history, Boolean match) {
         this.name = name;
         this.mainArea = mainArea;
         this.point = point;
         this.teamProfileUrl = teamProfileUrl;
         this.introduce = introduce;
+        this.recruit = recruit;
         this.weekdays = weekdays;
         this.timeList = timeList;
         this.preferredArea = preferredArea;
         this.question = question;
         this.record = record;
+        this.history = history;
+        this.match = match;
     }
 }
