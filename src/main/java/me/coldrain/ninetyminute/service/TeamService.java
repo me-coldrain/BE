@@ -13,6 +13,8 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -31,8 +33,8 @@ public class TeamService {
 
     @Transactional
     public void registerTeam(final TeamRegisterRequest request, final Long memberId) {
-        //final Map<String, String> uploadFile = awsS3Service.uploadFile(request.getTeamImageFile());
-        //final String imageFileUrl = uploadFile.get("url"); // -> 버켓 생성 후 주석 풀기
+        final Map<String, String> uploadFile = awsS3Service.uploadFile(request.getTeamImageFile());
+        final String imageFileUrl = uploadFile.get("url");
 
         final Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
@@ -45,7 +47,7 @@ public class TeamService {
         final Record emptyRecord = recordRepository.save(new Record());
         final Team team = Team.builder()
                 .name(request.getTeamName())
-//                .teamProfileUrl(imageFileUrl) // -> 버켓 생성 후 주석 풀기
+                .teamProfileUrl(imageFileUrl)
                 .introduce(request.getIntroduce())
                 .mainArea(request.getMainArea())
                 .preferredArea(request.getPreferredArea())
