@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.RecruitStartRequest;
+import me.coldrain.ninetyminute.dto.request.TeamModifyRequest;
 import me.coldrain.ninetyminute.dto.request.TeamParticipateRequest;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
 import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
@@ -201,5 +202,18 @@ public class TeamController {
                 .getId();
 
         teamService.cancelApplyMatch(applyTeamId, teamId);
+    }
+
+    /**
+     * Author: 상운
+     * 팀 수정 API
+     */
+    @PatchMapping("/home/teams/{team_id}")
+    public void modifyTeam(
+            final @PathVariable("team_id") Long teamId,
+            final @RequestBody TeamModifyRequest request,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        teamService.modifyTeam(teamId, request, userDetails.getUser().getId());
     }
 }

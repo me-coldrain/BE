@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.RecruitStartRequest;
+import me.coldrain.ninetyminute.dto.request.TeamModifyRequest;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
 import me.coldrain.ninetyminute.entity.*;
 import me.coldrain.ninetyminute.repository.*;
@@ -196,5 +197,32 @@ public class TeamService {
                 .orElseThrow(() -> new IllegalArgumentException("대결 신청 정보를 찾을 수 없습니다."));
 
         applyRepository.delete(apply);
+    }
+
+    @Transactional
+    public void modifyTeam(final Long teamId, final TeamModifyRequest request, final Long id) {
+        final Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+
+        // 기존 파일 삭제
+        awsS3Service.deleteFile(team.getTeamProfileUrl());
+
+        // 파일 신규 저장
+        final Map<String, String> uploadFile = awsS3Service.uploadFile(request.getTeamImageFile());
+
+        // 기존 weekdays, time 제거
+        weekdayRepository.findAllByTeamId(teamId)
+                        .forEach(wd -> weekdayRepository.deleteById(wd.getId()));
+        timeRepository.findAllByTeamId(teamId)
+                        .forEach(t -> timeRepository.deleteById(t.getId()));
+
+        team.modifyTeam(
+                uploadFile.get("url"),
+                request.getIntroduce(),
+                request.getMainArea(),
+                request.getPreferredArea(),
+                request.getWeekdays(),
+                request.getTime()
+        );
     }
 }
