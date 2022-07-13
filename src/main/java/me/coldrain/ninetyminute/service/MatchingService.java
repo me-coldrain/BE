@@ -38,7 +38,7 @@ public class MatchingService {
             );
 
             applyMatch.changeApproved(true);
-            applyRepository.save(applyMatch);
+//            applyRepository.save(applyMatch);
 
             BeforeMatching beforeMatching = BeforeMatching.builder()
                     .apply(applyMatch)
@@ -83,5 +83,22 @@ public class MatchingService {
             }
             return offerMatchResponseList;
         } else throw new IllegalArgumentException("이 팀의 주장이 아님니다.");
+    }
+
+    @Transactional
+    public void confirmEndMatch(Long teamId, Long matchId, Member member) {
+        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                () -> new IllegalArgumentException("찾는 대결이 존재하지 않습니다.")
+                );
+
+        Apply applyMatch = applyRepository.findById(beforeMatching.getApply().getId()).orElseThrow(
+                () -> new IllegalArgumentException("성사된 대결이 아닙니다.")
+        );
+
+        if (member.getOpenTeam().getId().equals(teamId)) {
+            applyMatch.changeEndMatchStatus(true);
+        } else if(member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
+            applyMatch.changeOpposingTeamEndMatchStatus(true);
+        } else throw new IllegalArgumentException("해당 대결의 주장이 아닙니다.");
     }
 }

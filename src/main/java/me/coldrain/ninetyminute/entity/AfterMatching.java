@@ -22,4 +22,5 @@ public class AfterMatching extends TimeStamped {
     private String mood_maker;
     private Integer score;
     private Integer opposingScore;
+    private Boolean admitStatus;    // true : 점수 인정/ false : 점수 불인정 -> 정정 요청
 }

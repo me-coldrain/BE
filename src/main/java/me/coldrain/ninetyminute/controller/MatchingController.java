@@ -34,7 +34,6 @@ public class MatchingController {
         return matchingService.searchOfferMatches(teamId, userDetails.getUser());
     }
 
-
     /*
      * Author: 병민
      * 대결 수락 정보 저장 API
@@ -46,7 +45,6 @@ public class MatchingController {
             final @PathVariable Long apply_team_id,
             final @RequestBody ApprovedMatchRequest approvedMatchRequest,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
         return matchingService.approvedMatch(apply_team_id, approvedMatchRequest, userDetails.getUser());
     }
 
@@ -60,7 +58,16 @@ public class MatchingController {
     public void cancelApplyMatch(
             final @PathVariable Long apply_team_id,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
         matchingService.rejectApplyMatch(apply_team_id, userDetails.getUser().getOpenTeam().getId());
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/teams/{team_id}/matches/{match_id}")
+    public void confirmEndMatch(
+            final @PathVariable("team_id") Long teamId,
+            final @PathVariable("match_id") Long matchId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        matchingService.confirmEndMatch(teamId, matchId, userDetails.getUser());
     }
 }

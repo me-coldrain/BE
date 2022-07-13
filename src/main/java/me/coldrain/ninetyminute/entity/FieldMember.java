@@ -21,6 +21,8 @@ public class FieldMember extends TimeStamped {
 
     private String position;
 
+    private Boolean anonymous;
+
     @OneToOne
     @JoinColumn(name = "team_id")
     private Team team;
