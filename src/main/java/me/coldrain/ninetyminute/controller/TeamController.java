@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
-import me.coldrain.ninetyminute.dto.request.RecruitStartRequest;
-import me.coldrain.ninetyminute.dto.request.TeamModifyRequest;
-import me.coldrain.ninetyminute.dto.request.TeamParticipateRequest;
-import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
+import me.coldrain.ninetyminute.dto.request.*;
 import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import me.coldrain.ninetyminute.service.ParticipationService;
@@ -179,13 +176,14 @@ public class TeamController {
     @PostMapping("/home/teams/{team_id}/match/apply")
     public void applyMatch(
             final @PathVariable("team_id") Long teamId,
+            final @RequestBody ApplyRequest applyRequest,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         final Long applyTeamId = userDetails.getUser()
                 .getOpenTeam()
                 .getId();
 
-        teamService.applyMatch(applyTeamId, teamId);
+        teamService.applyMatch(applyTeamId, applyRequest, teamId);
     }
 
     /**
