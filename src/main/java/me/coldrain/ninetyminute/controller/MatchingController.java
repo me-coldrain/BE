@@ -61,6 +61,11 @@ public class MatchingController {
         matchingService.rejectApplyMatch(apply_team_id, userDetails.getUser().getOpenTeam().getId());
     }
 
+    /*
+     * Author: 병민
+     * 대결 종료 확인 API
+     * 대결 종료 확인 버튼 수행 API -> 대결 각 팀의 경기 종료 상태를 apply 에 저장.
+     */
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/teams/{team_id}/matches/{match_id}")
     public void confirmEndMatch(
