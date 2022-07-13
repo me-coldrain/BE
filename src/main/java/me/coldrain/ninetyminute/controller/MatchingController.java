@@ -23,7 +23,7 @@ public class MatchingController {
      * 대결 수락 시 대결 상세 정보 저장 및 apply 상태 변경.
      */
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/teams/{apply_team_id}/matches")
+    @PostMapping("/teams/{apply_team_id}/apply")
     public String searchApprovedMatch(
             final @PathVariable Long apply_team_id,
             final @RequestBody ApprovedMatchRequest approvedMatchRequest,
