@@ -48,4 +48,12 @@ public class MatchingService {
             return "완료됐습니다.";
         } else throw new IllegalArgumentException("자신의 팀에 대결 신청은 불가능합니다.");
     }
+
+    @Transactional
+    public void rejectApplyMatch(Long applyTeamId, Long teamId) {
+        Apply applyMatch = applyRepository.findByApplyTeamIdAndTeamId(applyTeamId, teamId).orElseThrow(
+                () -> new IllegalArgumentException("신청한 대결이 존재하지 않습니다.")
+        );
+        applyRepository.delete(applyMatch);
+    }
 }
