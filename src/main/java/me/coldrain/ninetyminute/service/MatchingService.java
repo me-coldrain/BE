@@ -2,6 +2,7 @@ package me.coldrain.ninetyminute.service;
 
 import lombok.RequiredArgsConstructor;
 import me.coldrain.ninetyminute.dto.request.ApprovedMatchRequest;
+import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
 import me.coldrain.ninetyminute.entity.Apply;
 import me.coldrain.ninetyminute.entity.BeforeMatching;
 import me.coldrain.ninetyminute.entity.Member;
@@ -10,6 +11,9 @@ import me.coldrain.ninetyminute.repository.BeforeMatchingRepository;
 import me.coldrain.ninetyminute.repository.TeamRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -55,5 +59,29 @@ public class MatchingService {
                 () -> new IllegalArgumentException("신청한 대결이 존재하지 않습니다.")
         );
         applyRepository.delete(applyMatch);
+    }
+
+
+    public List<OfferMatchResponse> searchOfferMatches(Long teamId, Member member) {
+        List<OfferMatchResponse> offerMatchResponseList = new ArrayList<>();
+        if (member.getOpenTeam().getId().equals(teamId)) {
+            List<Apply> applyList = applyRepository.findAllByTeamIdOOrderByCreatedDate(teamId);
+            // 해당 팀에 신청된 경기가 없어도 null이 전달되야한다.
+            if (!applyList.isEmpty()) {
+                for (Apply apply : applyList) {
+                    OfferMatchResponse offerMatchResponse = OfferMatchResponse.builder()
+                            .opposingTeamId(apply.getApplyTeam().getId())
+                            .opposingTeamName(apply.getApplyTeam().getName())
+                            .opposingTeamPoint(apply.getApplyTeam().getPoint())
+                            .winRate(apply.getApplyTeam().getRecord().getWinRate())
+                            .greeting(apply.getGreeting())
+                            .createdDate(apply.getCreatedDate())
+                            .modifiedDate(apply.getModifiedDate())
+                            .build();
+                    offerMatchResponseList.add(offerMatchResponse);
+                }
+            }
+            return offerMatchResponseList;
+        } else throw new IllegalArgumentException("이 팀의 주장이 아님니다.");
     }
 }

@@ -3,6 +3,7 @@ package me.coldrain.ninetyminute.service;
 import lombok.RequiredArgsConstructor;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
+import me.coldrain.ninetyminute.dto.request.ApplyRequest;
 import me.coldrain.ninetyminute.dto.request.RecruitStartRequest;
 import me.coldrain.ninetyminute.dto.request.TeamModifyRequest;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
@@ -10,7 +11,6 @@ import me.coldrain.ninetyminute.entity.*;
 import me.coldrain.ninetyminute.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -176,7 +176,7 @@ public class TeamService {
     }
 
     @Transactional
-    public void applyMatch(final Long applyTeamId, final Long teamId) {
+    public void applyMatch(final Long applyTeamId, ApplyRequest applyRequest, final Long teamId) {
         final Team applyTeam = teamRepository.findById(applyTeamId)
                 .orElseThrow(() -> new IllegalArgumentException("대결 신청 팀을 찾을 수 없습니다."));
         final Team team = teamRepository.findById(teamId)
@@ -185,6 +185,7 @@ public class TeamService {
         final Apply apply = Apply.builder()
                 .applyTeam(applyTeam)
                 .team(team)
+                .greeting(applyRequest.getGreeting())
                 .approved(false)
                 .build();
 
