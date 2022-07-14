@@ -31,4 +31,5 @@ public class SubstituteMember extends TimeStamped {
     private AfterMatching afterMatching;
 
     private String position;
+    private Boolean anonymous;
 }

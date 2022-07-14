@@ -2,15 +2,11 @@ package me.coldrain.ninetyminute.service;
 
 import lombok.RequiredArgsConstructor;
 import me.coldrain.ninetyminute.dto.request.ApprovedMatchRequest;
-import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
-import me.coldrain.ninetyminute.entity.Apply;
+import me.coldrain.ninetyminute.dto.request.fieldMemberRequest;
 import me.coldrain.ninetyminute.dto.response.ApprovedMatchResponse;
-import me.coldrain.ninetyminute.entity.BeforeMatching;
-import me.coldrain.ninetyminute.entity.Member;
-import me.coldrain.ninetyminute.repository.ApplyRepository;
-import me.coldrain.ninetyminute.repository.BeforeMatchingRepository;
-import me.coldrain.ninetyminute.repository.MemberRepository;
-import me.coldrain.ninetyminute.repository.TeamRepository;
+import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
+import me.coldrain.ninetyminute.entity.*;
+import me.coldrain.ninetyminute.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +25,7 @@ public class MatchingService {
     private final TeamRepository teamRepository;
     private final ApplyRepository applyRepository;
     private final BeforeMatchingRepository beforeMatchingRepository;
+    private final FieldMemberRepository fieldMemberRepository;
 
     @Transactional
     public String approveApplyMatch(Long applyTeamId, Long applyId, ApprovedMatchRequest approvedMatchRequest, Member member) {
@@ -125,5 +122,42 @@ public class MatchingService {
             approvedMatchResponseList.add(approvedMatchResponse);
         }
         return approvedMatchResponseList;
+    }
+
+    @Transactional
+    public void makeTeamFormation(Long teamId, Long matchId, List<fieldMemberRequest> fieldMemberRequestList, Member member) {
+        if (member.getOpenTeam().getId().equals(teamId)) {
+            BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                    () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다.")
+            );
+            Team team = teamRepository.findById(teamId).orElseThrow(
+                    () -> new IllegalArgumentException("해당 팀을 찾을 수 없습니다.")
+            );
+            for (fieldMemberRequest fieldMemberRequest : fieldMemberRequestList) {
+                if (fieldMemberRequest.getAnonymous()) {
+                    Member anonymous = null;
+                    FieldMember fieldMember = FieldMember.builder()
+                            .position(fieldMemberRequest.getPosition())
+                            .anonymous(fieldMemberRequest.getAnonymous())
+                            .member(anonymous)
+                            .team(team)
+                            .beforeMatching(beforeMatching)
+                            .afterMatching(null)
+                            .build();
+                    fieldMemberRepository.save(fieldMember);
+                } else {
+                    Member registerMember = memberRepository.findById(fieldMemberRequest.getMemberId()).orElse(null);
+                    FieldMember fieldMember = FieldMember.builder()
+                            .position(fieldMemberRequest.getPosition())
+                            .anonymous(fieldMemberRequest.getAnonymous())
+                            .member(registerMember)
+                            .team(team)
+                            .beforeMatching(beforeMatching)
+                            .afterMatching(null)
+                            .build();
+                    fieldMemberRepository.save(fieldMember);
+                }
+            }
+        } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
     }
 }
