@@ -48,7 +48,6 @@ public class MatchingController {
             final @PathVariable("apply_id") Long applyId,
             final @RequestBody ApprovedMatchRequest approvedMatchRequest,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
         return matchingService.approveApplyMatch(applyTeamId, applyId, approvedMatchRequest, userDetails.getUser());
     }
 
@@ -63,7 +62,6 @@ public class MatchingController {
             final @PathVariable("apply_team_id") Long applyTeamId,
             final @PathVariable("apply_id") Long applyId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
         matchingService.rejectApplyMatch(applyTeamId, applyId, userDetails.getUser());
     }
 
@@ -88,8 +86,7 @@ public class MatchingController {
     public ApprovedMatchResponse searchApprovedMatchDetail(
             @PathVariable("team_id") Long teamId,
             @PathVariable("match_id") Long matchId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) {
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return matchingService.searchApprovedMatchDetail(teamId, matchId, userDetails.getUser());
     }
 
@@ -104,8 +101,7 @@ public class MatchingController {
             @PathVariable("team_id") Long teamId,
             @PathVariable("match_id") Long matchId,
             @RequestBody List<fieldMemberRequest> fieldMemberRequestList,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) {
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
         matchingService.makeTeamFormation(teamId, matchId, fieldMemberRequestList, userDetails.getUser());
     }
 
@@ -119,10 +115,8 @@ public class MatchingController {
     public void cancelApprovedMatch(
             @PathVariable("team_id") Long teamId,
             @PathVariable("match_id") Long matchId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) {
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
         matchingService.cancelApprovedMatch(teamId, matchId, userDetails.getUser());
-        matchingService.rejectApplyMatch(apply_team_id, userDetails.getUser().getOpenTeam().getId());
     }
 
     /*
@@ -135,8 +129,7 @@ public class MatchingController {
     public void confirmEndMatch(
             final @PathVariable("team_id") Long teamId,
             final @PathVariable("match_id") Long matchId,
-            final @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) {
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
         matchingService.confirmEndMatch(teamId, matchId, userDetails.getUser());
     }
 }
