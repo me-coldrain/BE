@@ -34,7 +34,6 @@ public class MatchingController {
         return matchingService.searchOfferMatches(teamId, userDetails.getUser());
     }
 
-
     /*
      * Author: 병민
      * 대결 수락 정보 저장 API
