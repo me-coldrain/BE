@@ -48,7 +48,7 @@ public class MyInfoService {
 
         Member member = memberRepository.findById(member_id).orElseThrow(() -> new NullPointerException("등록된 사용자가 아닙니다."));
         if (member.getOpenTeam() != null) {
-            int headCount = participationRepository.findAllByTeamId(member.getOpenTeam().getId()).size() + 1;
+            int headCount = participationRepository.findAllByTeamIdTrue(member.getOpenTeam().getId()).size() + 1;
 
             List<String> openTeamWeekdays = new ArrayList<>();
             List<Weekday> openTeamWeekdayList = weekdayRepository.findAllByTeamId(member.getOpenTeam().getId());
@@ -85,7 +85,7 @@ public class MyInfoService {
 
         List<Participation> myTeamList = participationRepository.findAllByMemberIdTrue(member_id);
         for (Participation participation : myTeamList) {
-            int headCount = participationRepository.findAllByTeamId(participation.getTeam().getId()).size() + 1;
+            int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size() + 1;
 
             List<String> participationTeamWeekdays = new ArrayList<>();
             List<Weekday> participationTeamWeekdayList = weekdayRepository.findAllByTeamId(participation.getTeam().getId());
@@ -128,7 +128,7 @@ public class MyInfoService {
 
         List<Participation> myTeamList = participationRepository.findAllByMemberIdFalse(member_id);
         for (Participation participation : myTeamList) {
-            int headCount = participationRepository.findAllByTeamId(participation.getTeam().getId()).size() + 1;
+            int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size() + 1;
 
             List<String> participationTeamWeekdays = new ArrayList<>();
             List<Weekday> participationTeamWeekdayList = weekdayRepository.findAllByTeamId(participation.getTeam().getId());
