@@ -29,7 +29,10 @@ public class TeamMemberResponse {
         private String nickname;
         private int mvpPoint;
         private String position;
-        private int positionPoint;
+        private int strikerPoint;
+        private int midfielderPoint;
+        private int defenderPoint;
+        private int goalkeeperPoint;
     }
 
     @AllArgsConstructor
