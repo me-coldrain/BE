@@ -79,7 +79,6 @@ public class Team extends TimeStamped {
     }
 
     @Builder
-
     public Team(String name, String mainArea, Integer point, String teamProfileUrl, String introduce, Boolean recruit, List<Weekday> weekdays, List<Time> timeList, String preferredArea, String question, Record record, History history, Boolean match) {
         this.name = name;
         this.mainArea = mainArea;

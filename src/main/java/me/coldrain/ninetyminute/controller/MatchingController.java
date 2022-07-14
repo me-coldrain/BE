@@ -3,10 +3,12 @@ package me.coldrain.ninetyminute.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.request.ApprovedMatchRequest;
+import me.coldrain.ninetyminute.dto.request.fieldMemberRequest;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
 import me.coldrain.ninetyminute.dto.response.ApprovedMatchResponse;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import me.coldrain.ninetyminute.service.MatchingService;
+import org.apache.catalina.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -76,5 +78,16 @@ public class MatchingController {
     final @PathVariable("team_id") Long teamId,
     final @AuthenticationPrincipal UserDetailsImpl userDetails){
         return matchingService.searchApprovedMatch(teamId, userDetails.getUser());
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/teams/{team_id}/matches/{match_id}/formation")
+    public void makeTeamFormation(
+            @PathVariable("team_id") Long teamId,
+            @PathVariable("match_id") Long matchId,
+            @RequestBody List<fieldMemberRequest> fieldMemberRequestList,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+            ) {
+        matchingService.makeTeamFormation(teamId, matchId, fieldMemberRequestList, userDetails.getUser());
     }
 }
