@@ -122,5 +122,21 @@ public class MatchingController {
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         matchingService.cancelApprovedMatch(teamId, matchId, userDetails.getUser());
+        matchingService.rejectApplyMatch(apply_team_id, userDetails.getUser().getOpenTeam().getId());
+    }
+
+    /*
+     * Author: 병민
+     * 대결 종료 확인 API
+     * 대결 종료 확인 버튼 수행 API -> 대결 각 팀의 경기 종료 상태를 apply 에 저장.
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/teams/{team_id}/matches/{match_id}")
+    public void confirmEndMatch(
+            final @PathVariable("team_id") Long teamId,
+            final @PathVariable("match_id") Long matchId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        matchingService.confirmEndMatch(teamId, matchId, userDetails.getUser());
     }
 }

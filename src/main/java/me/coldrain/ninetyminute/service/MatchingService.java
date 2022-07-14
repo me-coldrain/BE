@@ -235,4 +235,21 @@ public class MatchingService {
             beforeMatchingRepository.delete(beforeMatching);
         } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
     }
+
+    @Transactional
+    public void confirmEndMatch(Long teamId, Long matchId, Member member) {
+        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                () -> new IllegalArgumentException("찾는 대결이 존재하지 않습니다.")
+                );
+
+        Apply applyMatch = applyRepository.findById(beforeMatching.getApply().getId()).orElseThrow(
+                () -> new IllegalArgumentException("성사된 대결이 아닙니다.")
+        );
+
+        if (member.getOpenTeam().getId().equals(teamId)) {
+            applyMatch.changeEndMatchStatus(true);
+        } else if(member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
+            applyMatch.changeOpposingTeamEndMatchStatus(true);
+        } else throw new IllegalArgumentException("해당 대결의 주장이 아닙니다.");
+    }
 }
