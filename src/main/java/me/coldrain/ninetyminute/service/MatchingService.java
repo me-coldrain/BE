@@ -3,7 +3,6 @@ package me.coldrain.ninetyminute.service;
 import lombok.RequiredArgsConstructor;
 import me.coldrain.ninetyminute.dto.request.ApprovedMatchRequest;
 import me.coldrain.ninetyminute.dto.request.fieldMemberRequest;
-import me.coldrain.ninetyminute.dto.response.ApprovedMatchDetailResponse;
 import me.coldrain.ninetyminute.dto.response.ApprovedMatchResponse;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
 import me.coldrain.ninetyminute.entity.*;
@@ -134,10 +133,11 @@ public class MatchingService {
 
     public ApprovedMatchResponse searchApprovedMatchDetail(Long teamId, Long matchId, Member member) {
         Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, member.getId()).orElse(null);
-        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                () -> new IllegalArgumentException("해당 대결을 찾지 못했습니다.")
-        );
-        if (participation != null) {
+
+        if (participation != null) { // 팀의 멤버인지 확인
+            BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                    () -> new IllegalArgumentException("해당 대결을 찾지 못했습니다.")
+            );
             Member captainMember = memberRepository.findByOpenTeam(beforeMatching.getApply().getApplyTeam().getId()).orElseThrow(() -> new IllegalAccessError(
                     "해당 멤버을 찾을 수 없습니다."));
             Team opposingTeam = beforeMatching.getApply().getApplyTeam();
