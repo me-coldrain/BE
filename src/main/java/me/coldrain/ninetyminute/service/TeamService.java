@@ -201,6 +201,14 @@ public class TeamService {
     }
 
     @Transactional
+    public void releaseTeamMember(final Long teamId, final Long memberId) {
+        try{
+            final Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, memberId);
+            participationRepository.delete(participation);
+        } catch (Exception e) {
+            throw new NullPointerException("해당 회원은 팀원이 아닙니다.");
+        }
+        
     public void modifyTeam(final Long teamId, final TeamModifyRequest request, final Long id) {
         final Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));

@@ -83,6 +83,7 @@ public class MyInfoService {
                         member.getOpenTeam().getModifiedDate()
                 );
                 myParticipationTeamListResponseList.add(myOpenTeamTeamResponse);
+
             }
         } catch (Exception e) {
             return new ResponseEntity<>("등록되지 않은 사용자 입니다.", HttpStatus.BAD_REQUEST);
@@ -90,7 +91,7 @@ public class MyInfoService {
 
         List<Participation> myTeamList = participationRepository.findAllByMemberIdTrue(member_id);
         for (Participation participation : myTeamList) {
-            int headCount = participationRepository.findAllByTeamId(participation.getTeam().getId()).size() + 1;
+            int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size() + 1;
 
             List<String> participationTeamWeekdays = new ArrayList<>();
             List<Weekday> participationTeamWeekdayList = weekdayRepository.findAllByTeamId(participation.getTeam().getId());
@@ -133,7 +134,7 @@ public class MyInfoService {
 
         List<Participation> myTeamList = participationRepository.findAllByMemberIdFalse(member_id);
         for (Participation participation : myTeamList) {
-            int headCount = participationRepository.findAllByTeamId(participation.getTeam().getId()).size() + 1;
+            int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size() + 1;
 
             List<String> participationTeamWeekdays = new ArrayList<>();
             List<Weekday> participationTeamWeekdayList = weekdayRepository.findAllByTeamId(participation.getTeam().getId());
