@@ -211,7 +211,9 @@ public class TeamController {
             final @PathVariable("team_id") Long teamId,
             final @PathVariable("member_id") Long memberId) {
         teamService.releaseTeamMember(teamId, memberId);
+    }
 
+     /**
      * Author: 상운
      * 팀 수정 API
      */

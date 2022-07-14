@@ -50,7 +50,7 @@ public class MyInfoService {
             Member member = memberRepository.findById(member_id).orElseThrow();
 
             if (member.getOpenTeam() != null) {
-                int headCount = participationRepository.findAllByTeamId(member.getOpenTeam().getId()).size() + 1;
+                int headCount = participationRepository.findAllByTeamIdTrue(member.getOpenTeam().getId()).size() + 1;
 
                 List<String> openTeamWeekdays = new ArrayList<>();
                 List<Weekday> openTeamWeekdayList = weekdayRepository.findAllByTeamId(member.getOpenTeam().getId());
