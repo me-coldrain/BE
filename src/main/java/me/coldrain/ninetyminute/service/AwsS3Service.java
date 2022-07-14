@@ -23,7 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AwsS3Service {
 
-    @Value("cloneprojectbucket")
+    @Value("s3-90minute")
     private String bucket;
 
     private final AmazonS3 amazonS3;
