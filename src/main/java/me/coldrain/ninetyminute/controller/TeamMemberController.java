@@ -14,9 +14,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class TeamMemberController {
     private final TeamMemberService teamMemberService;
 
+    //팀 멤버 조회
     @GetMapping("/api/home/teams/{team_id}/players")
-    public ResponseEntity<?> teamMemberGet(@PathVariable Long team_id,
+    public ResponseEntity<?> teamMemberGet(@PathVariable("team_id") Long teamId,
                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return teamMemberService.teamMemberGet(team_id, userDetails.getUser().getId());
+        return teamMemberService.teamMemberGet(teamId, userDetails.getUser().getId());
+    }
+
+    //신청한 팀원 목록
+    @GetMapping("/api/teams/{team_id}/offer")
+    public ResponseEntity<?> teamMemberOfferGet(@PathVariable("team_id") Long teamId) {
+        return teamMemberService.teamMemberOfferGet(teamId);
     }
 }
