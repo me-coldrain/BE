@@ -74,12 +74,17 @@ public class MatchingController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/teams/{team_id}/matches")
-    public List<ApprovedMatchResponse> searchApprovedMatch (
-    final @PathVariable("team_id") Long teamId,
-    final @AuthenticationPrincipal UserDetailsImpl userDetails){
+    public List<ApprovedMatchResponse> searchApprovedMatch(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return matchingService.searchApprovedMatch(teamId, userDetails.getUser());
     }
 
+    /*
+     * Author: 병민
+     * 성사 대결 팀 포매이션 등록 API
+     * 비회원의 경우 memberId를 null 처리
+     */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/teams/{team_id}/matches/{match_id}/formation")
     public void makeTeamFormation(
@@ -87,7 +92,22 @@ public class MatchingController {
             @PathVariable("match_id") Long matchId,
             @RequestBody List<fieldMemberRequest> fieldMemberRequestList,
             @AuthenticationPrincipal UserDetailsImpl userDetails
-            ) {
+    ) {
         matchingService.makeTeamFormation(teamId, matchId, fieldMemberRequestList, userDetails.getUser());
+    }
+
+    /*
+     * Author: 병민
+     * 성사 대결 전 취소 API
+     * 우천 및 기타 상황 발생 시 대결 취소
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping("/teams/{team_id}/matches/{match_id}")
+    public void cancelApprovedMatch(
+            @PathVariable("team_id") Long teamId,
+            @PathVariable("match_id") Long matchId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        matchingService.cancelApprovedMatch(teamId, matchId, userDetails.getUser());
     }
 }

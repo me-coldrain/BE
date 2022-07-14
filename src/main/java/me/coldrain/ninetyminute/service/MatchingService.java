@@ -160,4 +160,15 @@ public class MatchingService {
             }
         } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
     }
+
+    @Transactional
+    public void cancelApprovedMatch(Long teamId, Long matchId, Member member) {
+        if (member.getOpenTeam().getId().equals(teamId)) {
+            BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                    () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다.")
+            );
+            applyRepository.delete(beforeMatching.getApply());
+            beforeMatchingRepository.delete(beforeMatching);
+        } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
+    }
 }
