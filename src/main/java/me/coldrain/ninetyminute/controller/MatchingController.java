@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.request.ApprovedMatchRequest;
 import me.coldrain.ninetyminute.dto.request.fieldMemberRequest;
+import me.coldrain.ninetyminute.dto.response.ApprovedMatchDetailResponse;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
 import me.coldrain.ninetyminute.dto.response.ApprovedMatchResponse;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
@@ -78,6 +79,20 @@ public class MatchingController {
             final @PathVariable("team_id") Long teamId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return matchingService.searchApprovedMatch(teamId, userDetails.getUser());
+    }
+
+    /*
+     * 대결 성사 목록 상세 조회 API
+     * 성사 된 대결의 상세 페이지 정보
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/teams/{team_id}/matches/{match_id}")
+    public ApprovedMatchResponse searchApprovedMatchDetail(
+            @PathVariable("team_id") Long teamId,
+            @PathVariable("match_id") Long matchId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        return matchingService.searchApprovedMatchDetail(teamId, matchId, userDetails.getUser());
     }
 
     /*
