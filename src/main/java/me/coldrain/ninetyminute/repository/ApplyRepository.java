@@ -15,5 +15,5 @@ public interface ApplyRepository extends JpaRepository<Apply, Long> {
 //    @Query("select a from Apply a where a.team.id =: teamId order by a.createdDate desc ")
 //    List<Apply> findAllByTeamId(final Long teamId);
 
-    List<Apply> findAllByTeamIdOOrderByCreatedDate(final Long teamId);
+    List<Apply> findAllByTeamIdOrderByCreatedDate(final Long teamId);
 }
