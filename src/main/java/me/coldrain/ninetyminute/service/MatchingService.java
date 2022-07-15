@@ -2,6 +2,7 @@ package me.coldrain.ninetyminute.service;
 
 import lombok.RequiredArgsConstructor;
 import me.coldrain.ninetyminute.dto.request.ApprovedMatchRequest;
+import me.coldrain.ninetyminute.dto.request.MatchScoreRequest;
 import me.coldrain.ninetyminute.dto.request.fieldMemberRequest;
 import me.coldrain.ninetyminute.dto.response.ApprovedMatchResponse;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
@@ -27,6 +28,8 @@ public class MatchingService {
     private final ApplyRepository applyRepository;
     private final BeforeMatchingRepository beforeMatchingRepository;
     private final FieldMemberRepository fieldMemberRepository;
+
+    private final AfterMatchingRepository afterMatchingRepository;
 
     @Transactional
     public String approveApplyMatch(Long applyTeamId, Long applyId, ApprovedMatchRequest approvedMatchRequest, Member member) {
@@ -230,6 +233,24 @@ public class MatchingService {
             applyMatch.changeEndMatchStatus(true);
         } else if(member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
             applyMatch.changeOpposingTeamEndMatchStatus(true);
-        } else throw new IllegalArgumentException("해당 대결의 주장이 아닙니다.");
+        } else throw new IllegalArgumentException("해당 대결 진행 중인 팀의 주장이 아닙니다.");
+    }
+
+    @Transactional
+    public void writeMatchScore(Long teamId, Long matchId, MatchScoreRequest matchScoreRequest, Member member) {
+        if (member.getOpenTeam().getId().equals(teamId)) {
+            BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                    () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다.")
+            );
+            AfterMatching afterMatching = AfterMatching.builder()
+                    .beforeMatching(beforeMatching)
+                    .mvpNickname(null)
+                    .moodMaker(null)
+                    .score(matchScoreRequest.getTeamScore())
+                    .opponentScore(matchScoreRequest.getOpponentScore())
+                    .admitStatus(false)
+                    .build();
+            afterMatchingRepository.save(afterMatching);
+        } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
     }
 }

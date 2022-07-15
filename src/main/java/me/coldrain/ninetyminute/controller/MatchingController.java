@@ -3,6 +3,7 @@ package me.coldrain.ninetyminute.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.request.ApprovedMatchRequest;
+import me.coldrain.ninetyminute.dto.request.MatchScoreRequest;
 import me.coldrain.ninetyminute.dto.request.fieldMemberRequest;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
 import me.coldrain.ninetyminute.dto.response.ApprovedMatchResponse;
@@ -82,7 +83,7 @@ public class MatchingController {
      * 성사 된 대결의 상세 페이지 정보
      */
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/teams/{team_id}/matches/{match_id}")
+    @GetMapping("/teams/{team_id}/matches/{match_id}/detail")
     public ApprovedMatchResponse searchApprovedMatchDetail(
             @PathVariable("team_id") Long teamId,
             @PathVariable("match_id") Long matchId,
@@ -131,5 +132,20 @@ public class MatchingController {
             final @PathVariable("match_id") Long matchId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
         matchingService.confirmEndMatch(teamId, matchId, userDetails.getUser());
+    }
+
+    /*
+     * Author: 병민
+     * 대결 결과 점수 입력 API
+     * 대결 후 경기 결과 입력
+     */
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/teams/{team_id}/matches/{match_id}/score")
+    public void writeMatchScore(
+            final @PathVariable("team_id") Long teamId,
+            final @PathVariable("match_id") Long matchId,
+            final @RequestBody MatchScoreRequest matchScoreRequest,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        matchingService.writeMatchScore(teamId, matchId, matchScoreRequest, userDetails.getUser());
     }
 }
