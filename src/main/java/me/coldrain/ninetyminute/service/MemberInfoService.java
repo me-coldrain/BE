@@ -15,9 +15,11 @@ import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -52,52 +54,10 @@ public class MemberInfoService {
     public ResponseEntity<?> memberTeamGet(Long memberId) {
         List<MyParticipationTeamListResponse> myParticipationTeamListResponseList = new ArrayList<>();
 
-        try {
-            Member member = memberRepository.findById(memberId).orElseThrow();
-
-            if (member.getOpenTeam() != null) {
-                int headCount = participationRepository.findAllByTeamIdTrue(member.getOpenTeam().getId()).size() + 1;
-
-                List<String> openTeamWeekdays = new ArrayList<>();
-                List<Weekday> openTeamWeekdayList = weekdayRepository.findAllByTeamId(member.getOpenTeam().getId());
-                for (Weekday weekday : openTeamWeekdayList) {
-                    openTeamWeekdays.add(weekday.getWeekday());
-                }
-
-                List<String> openTeamTimes = new ArrayList<>();
-                List<Time> openTeamTimeList = timeRepository.findAllByTeamId(member.getOpenTeam().getId());
-                for (Time time : openTeamTimeList) {
-                    openTeamTimes.add(time.getTime());
-                }
-
-                MyParticipationTeamListResponse myOpenTeamTeamResponse = new MyParticipationTeamListResponse(
-                        member.getOpenTeam().getId(),
-                        member.getOpenTeam().getName(),
-                        headCount,
-                        member.getOpenTeam().getMainArea(),
-                        member.getOpenTeam().getPreferredArea(),
-                        openTeamWeekdays,
-                        openTeamTimes,
-                        member.getOpenTeam().getRecord().getWinRate(),
-                        member.getOpenTeam().getRecruit(),
-                        member.getOpenTeam().getMatches(),
-                        member.getOpenTeam().getRecord().getTotalGameCount(),
-                        member.getOpenTeam().getRecord().getWinCount(),
-                        member.getOpenTeam().getRecord().getDrawCount(),
-                        member.getOpenTeam().getRecord().getLoseCount(),
-                        member.getOpenTeam().getCreatedDate(),
-                        member.getOpenTeam().getModifiedDate()
-                );
-                myParticipationTeamListResponseList.add(myOpenTeamTeamResponse);
-
-            }
-        } catch (Exception e) {
-            return new ResponseEntity<>("등록되지 않은 사용자 입니다.", HttpStatus.BAD_REQUEST);
-        }
-
         List<Participation> myTeamList = participationRepository.findAllByMemberIdTrue(memberId);
         for (Participation participation : myTeamList) {
-            int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size() + 1;
+            boolean captain = participation.getMember().getOpenTeam() != null;
+            int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size();
 
             List<String> participationTeamWeekdays = new ArrayList<>();
             List<Weekday> participationTeamWeekdayList = weekdayRepository.findAllByTeamId(participation.getTeam().getId());
@@ -112,6 +72,7 @@ public class MemberInfoService {
             }
 
             MyParticipationTeamListResponse myParticipationTeamListResponse = new MyParticipationTeamListResponse(
+                    captain,
                     participation.getTeam().getId(),
                     participation.getTeam().getName(),
                     headCount,
@@ -140,7 +101,8 @@ public class MemberInfoService {
 
         List<Participation> myTeamList = participationRepository.findAllByMemberIdFalse(memberId);
         for (Participation participation : myTeamList) {
-            int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size() + 1;
+            boolean captain = participation.getMember().getOpenTeam() != null;
+            int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size();
 
             List<String> participationTeamWeekdays = new ArrayList<>();
             List<Weekday> participationTeamWeekdayList = weekdayRepository.findAllByTeamId(participation.getTeam().getId());
@@ -155,6 +117,7 @@ public class MemberInfoService {
             }
 
             MyParticipationTeamListResponse myParticipationTeamListResponse = new MyParticipationTeamListResponse(
+                    captain,
                     participation.getTeam().getId(),
                     participation.getTeam().getName(),
                     headCount,
@@ -178,6 +141,7 @@ public class MemberInfoService {
     }
 
     //참여 신청중인 팀 신청취소
+    @Transactional
     public ResponseEntity<?> offerCancelTeam(Long memberId, Long teamId) {
         Participation offerCancelTeam = participationRepository.findByTeamIdAndMemberIdFalse(memberId, teamId);
         participationRepository.delete(offerCancelTeam);
