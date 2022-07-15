@@ -32,6 +32,7 @@ public class MatchingService {
     private final AfterMatchingRepository afterMatchingRepository;
     private final SubstituteRepository substituteRepository;
     private final ScorerRepository scorerRepository;
+    private final HistoryRepository historyRepository;
 
     @Transactional
     public String approveApplyMatch(Long applyTeamId, Long applyId, ApprovedMatchRequest approvedMatchRequest, Member member) {
@@ -331,6 +332,11 @@ public class MatchingService {
                 moodMaker.getAbility().updateCharmingPoint();
             }
             distributePoint(afterMatching.getBeforeMatching(), afterMatching);
+            History history = History.builder()
+                    .beforeMatching(afterMatching.getBeforeMatching())
+                    .afterMatching(afterMatching)
+                    .build();
+            historyRepository.save(history);
         } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
     }
 
