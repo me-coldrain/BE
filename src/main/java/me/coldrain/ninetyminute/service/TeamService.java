@@ -134,7 +134,7 @@ public class TeamService {
             throw new IllegalArgumentException("팀 개설자가 아닙니다.");
         }
 
-        if (team.getMatch().equals(true)) {
+        if (team.getMatchs().equals(true)) {
             throw new IllegalArgumentException("이미 매칭 등록 상태입니다.");
         }
 
@@ -151,7 +151,7 @@ public class TeamService {
             throw new IllegalArgumentException("팀 개설자가 아닙니다.");
         }
 
-        if (team.getMatch().equals(false)) {
+        if (team.getMatchs().equals(false)) {
             throw new IllegalArgumentException("이미 매칭 등록 상태가 아닙니다.");
         }
 
@@ -205,6 +205,16 @@ public class TeamService {
     }
 
     @Transactional
+    public void releaseTeamMember(final Long teamId, final Long memberId) {
+        try {
+            final Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, memberId)
+                    .orElseThrow(() -> new IllegalArgumentException("참여를 찾을 수 없습니다."));
+            participationRepository.delete(participation);
+        } catch (Exception e) {
+            throw new NullPointerException("해당 회원은 팀원이 아닙니다.");
+        }
+    }
+        
     public void modifyTeam(final Long teamId, final TeamModifyRequest request, final Long id) {
         final Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));

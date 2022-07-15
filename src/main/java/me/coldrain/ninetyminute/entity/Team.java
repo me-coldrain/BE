@@ -26,7 +26,7 @@ public class Team extends TimeStamped {
     private String introduce;
 
     private Boolean recruit;
-    private Boolean match;
+    private Boolean matches;
 
     @OneToMany(mappedBy = "team")
     private List<Weekday> weekdays = new ArrayList<>(); // ['MON', 'TUE']
@@ -50,7 +50,7 @@ public class Team extends TimeStamped {
     }
 
     public void changeMatch(Boolean match) {
-        this.match = match;
+        this.matches = match;
     }
 
     public void setQuestion(String question) {
@@ -92,6 +92,6 @@ public class Team extends TimeStamped {
         this.question = question;
         this.record = record;
         this.history = history;
-        this.match = match;
+        this.matches = match;
     }
 }

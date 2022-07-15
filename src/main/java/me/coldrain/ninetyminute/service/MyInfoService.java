@@ -50,7 +50,7 @@ public class MyInfoService {
             Member member = memberRepository.findById(member_id).orElseThrow();
 
             if (member.getOpenTeam() != null) {
-                int headCount = participationRepository.findAllByTeamId(member.getOpenTeam().getId()).size() + 1;
+                int headCount = participationRepository.findAllByTeamIdTrue(member.getOpenTeam().getId()).size() + 1;
 
                 List<String> openTeamWeekdays = new ArrayList<>();
                 List<Weekday> openTeamWeekdayList = weekdayRepository.findAllByTeamId(member.getOpenTeam().getId());
@@ -74,7 +74,7 @@ public class MyInfoService {
                         openTeamTimes,
                         member.getOpenTeam().getRecord().getWinRate(),
                         member.getOpenTeam().getRecruit(),
-                        member.getOpenTeam().getMatch(),
+                        member.getOpenTeam().getMatchs(),
                         member.getOpenTeam().getRecord().getTotalGameCount(),
                         member.getOpenTeam().getRecord().getWinCount(),
                         member.getOpenTeam().getRecord().getDrawCount(),
@@ -83,6 +83,7 @@ public class MyInfoService {
                         member.getOpenTeam().getModifiedDate()
                 );
                 myParticipationTeamListResponseList.add(myOpenTeamTeamResponse);
+
             }
         } catch (Exception e) {
             return new ResponseEntity<>("등록되지 않은 사용자 입니다.", HttpStatus.BAD_REQUEST);
@@ -90,7 +91,7 @@ public class MyInfoService {
 
         List<Participation> myTeamList = participationRepository.findAllByMemberIdTrue(member_id);
         for (Participation participation : myTeamList) {
-            int headCount = participationRepository.findAllByTeamId(participation.getTeam().getId()).size() + 1;
+            int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size() + 1;
 
             List<String> participationTeamWeekdays = new ArrayList<>();
             List<Weekday> participationTeamWeekdayList = weekdayRepository.findAllByTeamId(participation.getTeam().getId());
@@ -114,7 +115,7 @@ public class MyInfoService {
                     participationTeamTimes,
                     participation.getTeam().getRecord().getWinRate(),
                     participation.getTeam().getRecruit(),
-                    participation.getTeam().getMatch(),
+                    participation.getTeam().getMatchs(),
                     participation.getTeam().getRecord().getTotalGameCount(),
                     participation.getTeam().getRecord().getWinCount(),
                     participation.getTeam().getRecord().getDrawCount(),
@@ -133,7 +134,7 @@ public class MyInfoService {
 
         List<Participation> myTeamList = participationRepository.findAllByMemberIdFalse(member_id);
         for (Participation participation : myTeamList) {
-            int headCount = participationRepository.findAllByTeamId(participation.getTeam().getId()).size() + 1;
+            int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size() + 1;
 
             List<String> participationTeamWeekdays = new ArrayList<>();
             List<Weekday> participationTeamWeekdayList = weekdayRepository.findAllByTeamId(participation.getTeam().getId());
@@ -157,7 +158,7 @@ public class MyInfoService {
                     participationTeamTimes,
                     participation.getTeam().getRecord().getWinRate(),
                     participation.getTeam().getRecruit(),
-                    participation.getTeam().getMatch(),
+                    participation.getTeam().getMatchs(),
                     participation.getTeam().getRecord().getTotalGameCount(),
                     participation.getTeam().getRecord().getWinCount(),
                     participation.getTeam().getRecord().getDrawCount(),

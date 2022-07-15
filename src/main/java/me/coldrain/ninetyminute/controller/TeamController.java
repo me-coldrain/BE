@@ -203,6 +203,17 @@ public class TeamController {
     }
 
     /**
+     * Author: 범수
+     * 팀원 추방 API
+     */
+    @DeleteMapping("/teams/{team_id}/members/{member_id}/participation")
+    public void releaseTeamMember(
+            final @PathVariable("team_id") Long teamId,
+            final @PathVariable("member_id") Long memberId) {
+        teamService.releaseTeamMember(teamId, memberId);
+    }
+
+     /**
      * Author: 상운
      * 팀 수정 API
      */
