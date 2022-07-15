@@ -9,6 +9,7 @@ import me.coldrain.ninetyminute.service.MemberService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 
@@ -39,13 +40,20 @@ public class MemberController {
     }
 
     //회원정보 수정
-    @PatchMapping(value = "/{member_id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> memberEdit(@PathVariable Long member_id,
-                                        MemberEditRequest memberEditRequest) {
+    @PatchMapping("/{member_id}")
+    public ResponseEntity<?> memberEdit(@PathVariable("member_id") Long memberId,
+                                        @RequestBody MemberEditRequest memberEditRequest) {
 
         log.info("memberEdit.memberEditRequest = {}", memberEditRequest);
 
-        return memberService.memberEdit(member_id, memberEditRequest);
+        return memberService.memberEdit(memberId, memberEditRequest);
+    }
+
+    //회원 프로필 사진 업로드
+    @PatchMapping("/{member_id}/profileimage")
+    public ResponseEntity<?> memberProFileImageEdit(@PathVariable("member_id") Long memberId,
+                                                    MultipartFile profileImageFile) {
+        return memberService.memberProFileImageEdit(memberId, profileImageFile);
     }
 
     //로그인
