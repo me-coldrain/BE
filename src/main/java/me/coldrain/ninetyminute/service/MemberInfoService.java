@@ -56,7 +56,7 @@ public class MemberInfoService {
 
         List<Participation> myTeamList = participationRepository.findAllByMemberIdTrue(memberId);
         for (Participation participation : myTeamList) {
-            boolean captain = participation.getMember().getOpenTeam() != null;
+            boolean captain = participation.getMember().getOpenTeam().getId().equals(participation.getTeam().getId());
             int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size();
 
             List<String> participationTeamWeekdays = new ArrayList<>();
@@ -101,7 +101,7 @@ public class MemberInfoService {
 
         List<Participation> myTeamList = participationRepository.findAllByMemberIdFalse(memberId);
         for (Participation participation : myTeamList) {
-            boolean captain = participation.getMember().getOpenTeam() != null;
+            boolean captain = participation.getMember().getOpenTeam().getId().equals(participation.getTeam().getId());
             int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size();
 
             List<String> participationTeamWeekdays = new ArrayList<>();
