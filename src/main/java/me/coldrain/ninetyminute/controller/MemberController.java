@@ -42,10 +42,7 @@ public class MemberController {
     //회원정보 수정
     @PatchMapping("/{member_id}")
     public ResponseEntity<?> memberEdit(@PathVariable("member_id") Long memberId,
-                                        @RequestBody MemberEditRequest memberEditRequest) {
-
-        log.info("memberEdit.memberEditRequest = {}", memberEditRequest);
-
+                                        @RequestBody @Valid MemberEditRequest memberEditRequest) {
         return memberService.memberEdit(memberId, memberEditRequest);
     }
 
