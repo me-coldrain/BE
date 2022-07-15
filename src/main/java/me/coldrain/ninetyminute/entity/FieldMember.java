@@ -40,6 +40,10 @@ public class FieldMember extends TimeStamped {
         this.afterMatching = afterMatching;
     }
 
+    public void changeMember (Member member) {
+        this.member = member;
+    }
+
     @Builder
     public FieldMember (String position,Boolean anonymous, Member member, Team team, BeforeMatching beforeMatching, AfterMatching afterMatching) {
         this.position = position;
