@@ -149,6 +149,11 @@ public class MatchingController {
         matchingService.writeMatchScore(teamId, matchId, matchScoreRequest, userDetails.getUser());
     }
 
+    /*
+     * Author: 병민
+     * 상대팀 대결 결과 점수 정정 API
+     * 대결 점수 정정 API
+     */
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/teams/{team_id}/matches/{match_id}/score")
     public void correctMatchScore(
@@ -159,6 +164,11 @@ public class MatchingController {
         matchingService.correctMatchScore(teamId, matchId, matchScoreRequest, userDetails.getUser());
     }
 
+    /*
+     * Author: 병민
+     * 대결 종료 점수 승인 API
+     * API 요청시 admitStatus 값이 true 변경
+     */
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/teams/{team_id}/matches/{match_id}/score/admit")
     public void confirmMatchScore(
