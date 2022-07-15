@@ -1,9 +1,6 @@
 package me.coldrain.ninetyminute.entity;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -29,4 +26,11 @@ public class Scorer extends TimeStamped {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "after_matching_id")
     private AfterMatching afterMatching;
+
+    @Builder
+    public Scorer (FieldMember fieldMember, SubstituteMember substituteMember, AfterMatching afterMatching) {
+        this.fieldMember = fieldMember;
+        this.substituteMember = substituteMember;
+        this.afterMatching = afterMatching;
+    }
 }

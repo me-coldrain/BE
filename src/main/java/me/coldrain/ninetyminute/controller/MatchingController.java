@@ -3,8 +3,9 @@ package me.coldrain.ninetyminute.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.request.ApprovedMatchRequest;
+import me.coldrain.ninetyminute.dto.request.MatchResultRequest;
 import me.coldrain.ninetyminute.dto.request.MatchScoreRequest;
-import me.coldrain.ninetyminute.dto.request.fieldMemberRequest;
+import me.coldrain.ninetyminute.dto.request.MatchMemberRequest;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
 import me.coldrain.ninetyminute.dto.response.ApprovedMatchResponse;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
@@ -67,6 +68,7 @@ public class MatchingController {
     }
 
     /*
+     * Author: 병민
      * 대결 성사 목록 조회 API
      * apply 의 approved 가 ture 일 때 목록을 조회 할 수 있습니다.
      */
@@ -79,6 +81,7 @@ public class MatchingController {
     }
 
     /*
+     * Author: 병민
      * 대결 성사 목록 상세 조회 API
      * 성사 된 대결의 상세 페이지 정보
      */
@@ -101,9 +104,9 @@ public class MatchingController {
     public void makeTeamFormation(
             @PathVariable("team_id") Long teamId,
             @PathVariable("match_id") Long matchId,
-            @RequestBody List<fieldMemberRequest> fieldMemberRequestList,
+            @RequestBody List<MatchMemberRequest> matchMemberRequestList,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        matchingService.makeTeamFormation(teamId, matchId, fieldMemberRequestList, userDetails.getUser());
+        matchingService.makeTeamFormation(teamId, matchId, matchMemberRequestList, userDetails.getUser());
     }
 
     /*
@@ -176,5 +179,21 @@ public class MatchingController {
             final @PathVariable("match_id") Long matchId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
         matchingService.confirmMatchScore(teamId, matchId, userDetails.getUser());
+    }
+
+    /*
+     * Author: 병민
+     * 대결 후 결과 등록 API
+     * 대결 후 결과 등록과 승리 팀 경기에 참여한 선수들에 개별 포지션 점수 및 팀 승점 부여
+     * mvp, 분위기 매이커 점수 부여
+     */
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/teams/{team_id}/matches/{match_id}/results")
+    public void writeMatchResult(
+            @PathVariable("team_id") Long teamId,
+            @PathVariable("match_id") Long matchId,
+            @RequestBody MatchResultRequest matchResultRequest,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        matchingService.writeMatchResult(teamId, matchId, matchResultRequest, userDetails.getUser());
     }
 }
