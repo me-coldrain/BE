@@ -207,7 +207,8 @@ public class TeamService {
     @Transactional
     public void releaseTeamMember(final Long teamId, final Long memberId) {
         try {
-            final Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, memberId);
+            final Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, memberId)
+                    .orElseThrow(() -> new IllegalArgumentException("참여를 찾을 수 없습니다."));
             participationRepository.delete(participation);
         } catch (Exception e) {
             throw new NullPointerException("해당 회원은 팀원이 아닙니다.");
