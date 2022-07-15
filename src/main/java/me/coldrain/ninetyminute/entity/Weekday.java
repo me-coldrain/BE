@@ -1,9 +1,6 @@
 package me.coldrain.ninetyminute.entity;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -16,7 +13,7 @@ public class Weekday extends TimeStamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "weekday_id")
-    private Integer id;
+    private Long id;
 
     private String weekday;
 
@@ -25,6 +22,12 @@ public class Weekday extends TimeStamped {
     private Team team;
 
     public void changeWeekday(Team team) {
+        this.team = team;
+    }
+
+    @Builder
+    public Weekday(String weekday, Team team) {
+        this.weekday = weekday;
         this.team = team;
     }
 }

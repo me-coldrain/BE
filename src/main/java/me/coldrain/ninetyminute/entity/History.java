@@ -25,4 +25,6 @@ public class History extends TimeStamped {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "before_matching_id")
     private BeforeMatching beforeMatching;
+
+    private Integer result; // 승리 : 1, 무승부 : 0, 패배 : -1
 }

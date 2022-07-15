@@ -1,10 +1,7 @@
 package me.coldrain.ninetyminute.entity;
 
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -17,7 +14,7 @@ public class Time extends TimeStamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "time_id")
-    private Integer id;
+    private Long id;
 
     private String time;
 
@@ -26,6 +23,12 @@ public class Time extends TimeStamped {
     private Team team;
 
     public void changeTime(Team team) {
+        this.team = team;
+    }
+
+    @Builder
+    public Time(String time, Team team) {
+        this.time = time;
         this.team = team;
     }
 }
