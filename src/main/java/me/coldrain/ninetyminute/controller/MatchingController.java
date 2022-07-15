@@ -148,4 +148,23 @@ public class MatchingController {
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
         matchingService.writeMatchScore(teamId, matchId, matchScoreRequest, userDetails.getUser());
     }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/teams/{team_id}/matches/{match_id}/score")
+    public void correctMatchScore(
+            final @PathVariable("team_id") Long teamId,
+            final @PathVariable("match_id") Long matchId,
+            final @RequestBody MatchScoreRequest matchScoreRequest,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        matchingService.correctMatchScore(teamId, matchId, matchScoreRequest, userDetails.getUser());
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/teams/{team_id}/matches/{match_id}/score/admit")
+    public void confirmMatchScore(
+            final @PathVariable("team_id") Long teamId,
+            final @PathVariable("match_id") Long matchId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        matchingService.confirmMatchScore(teamId, matchId, userDetails.getUser());
+    }
 }

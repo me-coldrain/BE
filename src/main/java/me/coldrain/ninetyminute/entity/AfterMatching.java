@@ -25,6 +25,11 @@ public class AfterMatching extends TimeStamped {
     private Integer opponentScore;
     private Boolean admitStatus;    // true : 점수 인정/ false : 점수 불인정 -> 정정 요청
 
+    public void correctScore(Integer score, Integer opponentScore) {
+        this.score = score;
+        this.opponentScore = opponentScore;
+    }
+
     public void editMVPNickname(String mvpNickname) {
         this.mvpNickname = mvpNickname;
     }
