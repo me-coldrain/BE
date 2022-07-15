@@ -107,6 +107,7 @@ public class TeamMemberService {
         return new ResponseEntity<>(teamMemberResponse, HttpStatus.OK);
     }
 
+    //신청한 팀원 목록
     public ResponseEntity<?> teamMemberOfferGet(Long teamId) {
         TeamMemberOfferResponse teamMemberOfferResponse = new TeamMemberOfferResponse();
 

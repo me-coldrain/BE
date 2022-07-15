@@ -13,6 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 public class MyParticipationTeamListResponse {
+    private boolean captain;
     private Long teamId;
     private String teamName;
     private int headCount;
