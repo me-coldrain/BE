@@ -19,6 +19,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -81,30 +82,36 @@ public class MemberService {
     }
 
     //회원정보 수정
-    public ResponseEntity<?> memberEdit(Long member_id,
+    public ResponseEntity<?> memberEdit(Long memberId,
                                         MemberEditRequest memberEditRequest) {
-        Member member = memberRepository.findById(member_id).orElseThrow(
+        Member member = memberRepository.findById(memberId).orElseThrow(
                 () -> new NullPointerException("존재하지 않는 회원입니다."));
 
-        if (memberEditRequest.getProfileImageFile().isEmpty()) {
+        member.memberUpdate(memberEditRequest);
+        return new ResponseEntity<>(jwtTokenCreate(member), HttpStatus.OK);
+    }
+
+    //회원 프로필 사진 업로드
+    public ResponseEntity<?> memberProFileImageEdit(Long memberId, MultipartFile proFileImage) {
+        Member member = memberRepository.findById(memberId).orElseThrow(
+                () -> new NullPointerException("존재하지 않는 회원입니다."));
+
+        if (proFileImage == null || proFileImage.isEmpty()) {
             Map<String, String> profileImg = new HashMap<>();
             profileImg.put("url", "/localhost:8080/basicprofileimage.png");
-            profileImg.put("transImgFileName", "basicimage");
-            member.memberUpdate(profileImg, memberEditRequest);
+            profileImg.put("transImgFileName", "basicImage");
+            member.memberproFileImageUpdate(profileImg);
         } else {
-            if(member.getProfileName() == null) {
-                Map<String, String> profileImg = awsS3Service.uploadFile(memberEditRequest.getProfileImageFile());
-                member.memberUpdate(profileImg, memberEditRequest);
-            } else if (member.getProfileName().equals("basicimage")) {
-                Map<String, String> profileImg = awsS3Service.uploadFile(memberEditRequest.getProfileImageFile());
-                member.memberUpdate(profileImg, memberEditRequest);
+            if(member.getProfileName() == null || member.getProfileName().equals("basicImage")) {
+                Map<String, String> profileImg = awsS3Service.uploadFile(proFileImage);
+                member.memberproFileImageUpdate(profileImg);
             } else {
                 awsS3Service.deleteFile(member.getProfileName());
-                Map<String, String> profileImg = awsS3Service.uploadFile(memberEditRequest.getProfileImageFile());
-                member.memberUpdate(profileImg, memberEditRequest);
+                Map<String, String> profileImg = awsS3Service.uploadFile(proFileImage);
+                member.memberproFileImageUpdate(profileImg);
             }
         }
-        return new ResponseEntity<>(jwtTokenCreate(member), HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     //로그인
