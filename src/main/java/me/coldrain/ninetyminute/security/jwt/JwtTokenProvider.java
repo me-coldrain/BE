@@ -47,6 +47,7 @@ public class JwtTokenProvider {
         Map<String, Object> payloads = new HashMap<>();
         payloads.put("Role", member.getRole());
         payloads.put("nickname", member.getNickname());
+        payloads.put("memberId", member.getId());
 
         return Jwts.builder()
                 .setHeaderParam("typ","JWT")
