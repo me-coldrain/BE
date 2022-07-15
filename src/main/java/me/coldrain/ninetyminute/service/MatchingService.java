@@ -2,6 +2,7 @@ package me.coldrain.ninetyminute.service;
 
 import lombok.RequiredArgsConstructor;
 import me.coldrain.ninetyminute.dto.request.ApprovedMatchRequest;
+import me.coldrain.ninetyminute.dto.request.MatchScoreRequest;
 import me.coldrain.ninetyminute.dto.request.fieldMemberRequest;
 import me.coldrain.ninetyminute.dto.response.ApprovedMatchResponse;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
@@ -22,10 +23,13 @@ import java.util.List;
 public class MatchingService {
 
     private final MemberRepository memberRepository;
+    private final ParticipationRepository participationRepository;
     private final TeamRepository teamRepository;
     private final ApplyRepository applyRepository;
     private final BeforeMatchingRepository beforeMatchingRepository;
     private final FieldMemberRepository fieldMemberRepository;
+
+    private final AfterMatchingRepository afterMatchingRepository;
 
     @Transactional
     public String approveApplyMatch(Long applyTeamId, Long applyId, ApprovedMatchRequest approvedMatchRequest, Member member) {
@@ -95,33 +99,77 @@ public class MatchingService {
     }
 
     public List<ApprovedMatchResponse> searchApprovedMatch(Long teamId, Member member) {
+        Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, member.getId()).orElse(null);
+        if (participation != null) {
+            List<BeforeMatching> beforeMatchingList = beforeMatchingRepository.findAllByBeforeMatching(teamId);    // apply 의 approved == true 일 때만
+            List<ApprovedMatchResponse> approvedMatchResponseList = new ArrayList<>();
 
-        List<BeforeMatching> beforeMatchingList = beforeMatchingRepository.findAllByBeforeMatching(teamId);    // apply 의 approved == true 일 때만
-        List<ApprovedMatchResponse> approvedMatchResponseList = new ArrayList<>();
+            for (BeforeMatching beforeMatching : beforeMatchingList) {
+                Member captainMember = memberRepository.findByOpenTeam(beforeMatching.getApply().getApplyTeam().getId()).orElseThrow(() -> new IllegalAccessError(
+                        "해당 멤버을 찾을 수 없습니다."));
+                Team opposingTeam = beforeMatching.getApply().getApplyTeam();
+                LocalDateTime from = LocalDateTime.now();
+                LocalDateTime to = LocalDateTime.ofInstant(beforeMatching.getMatchDate().toInstant(), ZoneId.systemDefault());
+                ApprovedMatchResponse approvedMatchResponse = ApprovedMatchResponse.builder()
+                        .matchId(beforeMatching.getId())
+                        .opposingTeamId(opposingTeam.getId())
+                        .opposingTeamName(opposingTeam.getName())
+                        .opposingTeamPoint(opposingTeam.getRecord().getWinPoint())
+                        .opposingTeamTotalGameCount(opposingTeam.getRecord().getTotalGameCount())
+                        .opposingTeamWinRate(opposingTeam.getRecord().getWinRate())
+                        .opposingTeamWinCount(opposingTeam.getRecord().getWinCount())
+                        .opposingTeamDrawCount(opposingTeam.getRecord().getDrawCount())
+                        .opposingTeamLoseCount(opposingTeam.getRecord().getLoseCount())
+                        .contact(captainMember.getContact())
+                        .phone(captainMember.getPhone())
+                        .matchDate(beforeMatching.getMatchDate())
+                        .dDay(ChronoUnit.DAYS.between(from, to))
+                        .matchLocation(beforeMatching.getLocation())
+                        .createdDate(beforeMatching.getCreatedDate())
+                        .modifiedDate(beforeMatching.getModifiedDate())
+                        .build();
+                approvedMatchResponseList.add(approvedMatchResponse);
+            }
+            return approvedMatchResponseList;
+        } else throw new IllegalArgumentException("이 팀의 멤버가 아닙니다.");
+    }
 
-        for (BeforeMatching beforeMatching : beforeMatchingList) {
+    public ApprovedMatchResponse searchApprovedMatchDetail(Long teamId, Long matchId, Member member) {
+        Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, member.getId()).orElse(null);
+
+        if (participation != null) { // 팀의 멤버인지 확인
+            BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                    () -> new IllegalArgumentException("해당 대결을 찾지 못했습니다.")
+            );
             Member captainMember = memberRepository.findByOpenTeam(beforeMatching.getApply().getApplyTeam().getId()).orElseThrow(() -> new IllegalAccessError(
-                    "해당 팀을 찾을 수 없습니다."));
-            Long applyTeamId = beforeMatching.getApply().getApplyTeam().getId();
+                    "해당 멤버을 찾을 수 없습니다."));
+            Team opposingTeam = beforeMatching.getApply().getApplyTeam();
             LocalDateTime from = LocalDateTime.now();
             LocalDateTime to = LocalDateTime.ofInstant(beforeMatching.getMatchDate().toInstant(), ZoneId.systemDefault());
             ApprovedMatchResponse approvedMatchResponse = ApprovedMatchResponse.builder()
-                    .matchId(beforeMatching.getApply().getId())
-                    .opposingTeamId(beforeMatching.getApply().getApplyTeam().getId())
-                    .opposingTeamName(beforeMatching.getOpposingTeamName())
+                    .matchId(matchId)
+                    .isCaptain(false)
+                    .opposingTeamId(opposingTeam.getId())
+                    .opposingTeamName(opposingTeam.getName())
+                    .opposingTeamPoint(opposingTeam.getRecord().getWinPoint())
+                    .opposingTeamTotalGameCount(opposingTeam.getRecord().getTotalGameCount())
+                    .opposingTeamWinRate(opposingTeam.getRecord().getWinRate())
+                    .opposingTeamWinCount(opposingTeam.getRecord().getWinCount())
+                    .opposingTeamDrawCount(opposingTeam.getRecord().getDrawCount())
+                    .opposingTeamLoseCount(opposingTeam.getRecord().getLoseCount())
                     .contact(captainMember.getContact())
                     .phone(captainMember.getPhone())
-                    .createdAtMatch(java.sql.Timestamp.valueOf(applyRepository.findByApplyTeamIdAndTeamId(applyTeamId, teamId).orElseThrow(() ->
-                            new IllegalAccessError("해당 팀을 찾을 수 없습니다.")).getCreatedDate()))
                     .matchDate(beforeMatching.getMatchDate())
                     .dDay(ChronoUnit.DAYS.between(from, to))
                     .matchLocation(beforeMatching.getLocation())
                     .createdDate(beforeMatching.getCreatedDate())
                     .modifiedDate(beforeMatching.getModifiedDate())
                     .build();
-            approvedMatchResponseList.add(approvedMatchResponse);
-        }
-        return approvedMatchResponseList;
+            if (member.getOpenTeam().getId().equals(teamId)) { // team의 주장의 경우
+               approvedMatchResponse.changeIsCaptain(true);
+            }
+            return approvedMatchResponse;
+        } else throw new IllegalArgumentException("이 팀의 멤버가 아닙니다.");
     }
 
     @Transactional
@@ -135,11 +183,10 @@ public class MatchingService {
             );
             for (fieldMemberRequest fieldMemberRequest : fieldMemberRequestList) {
                 if (fieldMemberRequest.getAnonymous()) {
-                    Member anonymous = null;
                     FieldMember fieldMember = FieldMember.builder()
                             .position(fieldMemberRequest.getPosition())
                             .anonymous(fieldMemberRequest.getAnonymous())
-                            .member(anonymous)
+                            .member(null)
                             .team(team)
                             .beforeMatching(beforeMatching)
                             .afterMatching(null)
@@ -158,6 +205,52 @@ public class MatchingService {
                     fieldMemberRepository.save(fieldMember);
                 }
             }
+        } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
+    }
+
+    @Transactional
+    public void cancelApprovedMatch(Long teamId, Long matchId, Member member) {
+        if (member.getOpenTeam().getId().equals(teamId)) {
+            BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                    () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다.")
+            );
+            applyRepository.delete(beforeMatching.getApply());
+            beforeMatchingRepository.delete(beforeMatching);
+        } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
+    }
+
+    @Transactional
+    public void confirmEndMatch(Long teamId, Long matchId, Member member) {
+        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                () -> new IllegalArgumentException("찾는 대결이 존재하지 않습니다.")
+                );
+
+        Apply applyMatch = applyRepository.findById(beforeMatching.getApply().getId()).orElseThrow(
+                () -> new IllegalArgumentException("성사된 대결이 아닙니다.")
+        );
+
+        if (member.getOpenTeam().getId().equals(teamId)) {
+            applyMatch.changeEndMatchStatus(true);
+        } else if(member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
+            applyMatch.changeOpposingTeamEndMatchStatus(true);
+        } else throw new IllegalArgumentException("해당 대결 진행 중인 팀의 주장이 아닙니다.");
+    }
+
+    @Transactional
+    public void writeMatchScore(Long teamId, Long matchId, MatchScoreRequest matchScoreRequest, Member member) {
+        if (member.getOpenTeam().getId().equals(teamId)) {
+            BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                    () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다.")
+            );
+            AfterMatching afterMatching = AfterMatching.builder()
+                    .beforeMatching(beforeMatching)
+                    .mvpNickname(null)
+                    .moodMaker(null)
+                    .score(matchScoreRequest.getTeamScore())
+                    .opponentScore(matchScoreRequest.getOpponentScore())
+                    .admitStatus(false)
+                    .build();
+            afterMatchingRepository.save(afterMatching);
         } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
     }
 }

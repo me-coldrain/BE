@@ -19,7 +19,7 @@ public class SubstituteMember extends TimeStamped {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", nullable = true)
     private Member member;
 
     @OneToOne(fetch = FetchType.LAZY)
