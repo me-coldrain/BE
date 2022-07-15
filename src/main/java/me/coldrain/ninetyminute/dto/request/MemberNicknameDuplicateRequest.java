@@ -11,7 +11,7 @@ import javax.validation.constraints.Pattern;
 @NoArgsConstructor
 @ToString
 public class MemberNicknameDuplicateRequest {
-    @Pattern(regexp = "^[가-힣a-zA-Z]+$")
+    @Pattern(regexp = "^[가-힣a-zA-Z0-9]{2,8}$")
     @NotBlank
     private String nickname;
 }

@@ -134,7 +134,7 @@ public class TeamService {
             throw new IllegalArgumentException("팀 개설자가 아닙니다.");
         }
 
-        if (team.getMatch().equals(true)) {
+        if (team.getMatches().equals(true)) {
             throw new IllegalArgumentException("이미 매칭 등록 상태입니다.");
         }
 
@@ -151,7 +151,7 @@ public class TeamService {
             throw new IllegalArgumentException("팀 개설자가 아닙니다.");
         }
 
-        if (team.getMatch().equals(false)) {
+        if (team.getMatches().equals(false)) {
             throw new IllegalArgumentException("이미 매칭 등록 상태가 아닙니다.");
         }
 
@@ -177,19 +177,23 @@ public class TeamService {
 
     @Transactional
     public void applyMatch(final Long applyTeamId, ApplyRequest applyRequest, final Long teamId) {
-        final Team applyTeam = teamRepository.findById(applyTeamId)
-                .orElseThrow(() -> new IllegalArgumentException("대결 신청 팀을 찾을 수 없습니다."));
-        final Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+        if (!applyTeamId.equals(teamId)) {
+            final Team applyTeam = teamRepository.findById(applyTeamId)
+                    .orElseThrow(() -> new IllegalArgumentException("대결 신청 팀을 찾을 수 없습니다."));
+            final Team team = teamRepository.findById(teamId)
+                    .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
-        final Apply apply = Apply.builder()
-                .applyTeam(applyTeam)
-                .team(team)
-                .greeting(applyRequest.getGreeting())
-                .approved(false)
-                .build();
+            if (applyRepository.findByApplyTeamIdAndTeamId(applyTeamId, teamId).orElse(null) == null) {
+                final Apply apply = Apply.builder()
+                        .applyTeam(applyTeam)
+                        .team(team)
+                        .greeting(applyRequest.getGreeting())
+                        .approved(false)
+                        .build();
 
-        applyRepository.save(apply);
+                applyRepository.save(apply);
+            } else throw new IllegalArgumentException("이미 대결 신청한 팀입니다.");
+        } else throw new IllegalArgumentException("같은 팀에게 대결을 신청할 수 없습니다.");
     }
 
     @Transactional
@@ -203,7 +207,8 @@ public class TeamService {
     @Transactional
     public void releaseTeamMember(final Long teamId, final Long memberId) {
         try {
-            final Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, memberId);
+            final Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, memberId)
+                    .orElseThrow(() -> new IllegalArgumentException("참여를 찾을 수 없습니다."));
             participationRepository.delete(participation);
         } catch (Exception e) {
             throw new NullPointerException("해당 회원은 팀원이 아닙니다.");
