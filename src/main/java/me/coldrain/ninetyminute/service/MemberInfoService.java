@@ -1,7 +1,7 @@
 package me.coldrain.ninetyminute.service;
 
 import lombok.RequiredArgsConstructor;
-import me.coldrain.ninetyminute.dto.response.MyInfoResponse;
+import me.coldrain.ninetyminute.dto.response.MemberInfoResponse;
 import me.coldrain.ninetyminute.dto.response.MyParticipationTeamListResponse;
 import me.coldrain.ninetyminute.entity.Member;
 import me.coldrain.ninetyminute.entity.Participation;
@@ -11,6 +11,7 @@ import me.coldrain.ninetyminute.repository.MemberRepository;
 import me.coldrain.ninetyminute.repository.ParticipationRepository;
 import me.coldrain.ninetyminute.repository.TimeRepository;
 import me.coldrain.ninetyminute.repository.WeekdayRepository;
+import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,34 +21,39 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class MyInfoService {
+public class MemberInfoService {
     private final MemberRepository memberRepository;
     private final ParticipationRepository participationRepository;
     private final WeekdayRepository weekdayRepository;
     private final TimeRepository timeRepository;
 
     //회원정보 조회
-    public ResponseEntity<?> myInfoGet(Long member_id) {
-        Member member = memberRepository.findById(member_id).orElseThrow(
-                () -> new NullPointerException("등록된 사용자가 아닙니다."));
+    public ResponseEntity<?> memberInfoGet(Long memberId, UserDetailsImpl userDetails) {
+        try{
+            Member member = memberRepository.findById(memberId).orElseThrow();
+            boolean myInfo = memberId.equals(userDetails.getUser().getId());
 
-        MyInfoResponse myInfoResponse = new MyInfoResponse(
-                member.getNickname(), member.getProfileUrl(), member.getContact(), member.getPhone(), member.getPosition(),
-                member.getAbility().getMvpPoint(), 0, 0,
-                member.getAbility().getStrikerPoint(),
-                member.getAbility().getMidfielderPoint(),
-                member.getAbility().getDefenderPoint(),
-                member.getAbility().getGoalkeeperPoint(),
-                member.getAbility().getCharmingPoint());
-        return new ResponseEntity<>(myInfoResponse, HttpStatus.OK);
+            MemberInfoResponse memberInfoResponse = new MemberInfoResponse(
+                    myInfo,
+                    member.getNickname(), member.getProfileUrl(), member.getContact(), member.getPhone(), member.getPosition(),
+                    member.getAbility().getMvpPoint(), 0, 0,
+                    member.getAbility().getStrikerPoint(),
+                    member.getAbility().getMidfielderPoint(),
+                    member.getAbility().getDefenderPoint(),
+                    member.getAbility().getGoalkeeperPoint(),
+                    member.getAbility().getCharmingPoint());
+            return new ResponseEntity<>(memberInfoResponse, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("존재하지 않는 회원입니다.", HttpStatus.BAD_REQUEST);
+        }
     }
 
     //참여한 팀 조회
-    public ResponseEntity<?> myTeamGet(Long member_id) {
+    public ResponseEntity<?> memberTeamGet(Long memberId) {
         List<MyParticipationTeamListResponse> myParticipationTeamListResponseList = new ArrayList<>();
 
         try {
-            Member member = memberRepository.findById(member_id).orElseThrow();
+            Member member = memberRepository.findById(memberId).orElseThrow();
 
             if (member.getOpenTeam() != null) {
                 int headCount = participationRepository.findAllByTeamIdTrue(member.getOpenTeam().getId()).size() + 1;
@@ -89,7 +95,7 @@ public class MyInfoService {
             return new ResponseEntity<>("등록되지 않은 사용자 입니다.", HttpStatus.BAD_REQUEST);
         }
 
-        List<Participation> myTeamList = participationRepository.findAllByMemberIdTrue(member_id);
+        List<Participation> myTeamList = participationRepository.findAllByMemberIdTrue(memberId);
         for (Participation participation : myTeamList) {
             int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size() + 1;
 
@@ -129,10 +135,10 @@ public class MyInfoService {
     }
 
     //참여 신청중인 팀 조회
-    public ResponseEntity<?> offerTeamGet(Long member_id) {
+    public ResponseEntity<?> offerTeamGet(Long memberId) {
         List<MyParticipationTeamListResponse> myParticipationTeamListResponseList = new ArrayList<>();
 
-        List<Participation> myTeamList = participationRepository.findAllByMemberIdFalse(member_id);
+        List<Participation> myTeamList = participationRepository.findAllByMemberIdFalse(memberId);
         for (Participation participation : myTeamList) {
             int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size() + 1;
 
@@ -172,14 +178,14 @@ public class MyInfoService {
     }
 
     //참여 신청중인 팀 신청취소
-    public ResponseEntity<?> offerCancelTeam(Long member_id, Long team_id) {
-        Participation offerCancelTeam = participationRepository.findByTeamIdAndMemberIdFalse(member_id, team_id);
+    public ResponseEntity<?> offerCancelTeam(Long memberId, Long teamId) {
+        Participation offerCancelTeam = participationRepository.findByTeamIdAndMemberIdFalse(memberId, teamId);
         participationRepository.delete(offerCancelTeam);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     //참여한 경기 히스토리 조회
-    public ResponseEntity<?> myGameHistory(Long member_id) {
+    public ResponseEntity<?> memberGameHistory(Long memberId) {
 
         return new ResponseEntity<>(HttpStatus.OK);
     }

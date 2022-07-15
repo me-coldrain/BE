@@ -7,7 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class MyInfoResponse {
+public class MemberInfoResponse {
+    private boolean myInfo;
     private String nickname;
     private String profileImageUrl;
     private String contact;
