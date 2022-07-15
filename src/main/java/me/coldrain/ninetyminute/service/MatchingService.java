@@ -143,47 +143,27 @@ public class MatchingService {
             Team opposingTeam = beforeMatching.getApply().getApplyTeam();
             LocalDateTime from = LocalDateTime.now();
             LocalDateTime to = LocalDateTime.ofInstant(beforeMatching.getMatchDate().toInstant(), ZoneId.systemDefault());
-            ApprovedMatchResponse approvedMatchResponse;
+            ApprovedMatchResponse approvedMatchResponse = ApprovedMatchResponse.builder()
+                    .matchId(matchId)
+                    .isCaptain(false)
+                    .opposingTeamId(opposingTeam.getId())
+                    .opposingTeamName(opposingTeam.getName())
+                    .opposingTeamPoint(opposingTeam.getRecord().getWinPoint())
+                    .opposingTeamTotalGameCount(opposingTeam.getRecord().getTotalGameCount())
+                    .opposingTeamWinRate(opposingTeam.getRecord().getWinRate())
+                    .opposingTeamWinCount(opposingTeam.getRecord().getWinCount())
+                    .opposingTeamDrawCount(opposingTeam.getRecord().getDrawCount())
+                    .opposingTeamLoseCount(opposingTeam.getRecord().getLoseCount())
+                    .contact(captainMember.getContact())
+                    .phone(captainMember.getPhone())
+                    .matchDate(beforeMatching.getMatchDate())
+                    .dDay(ChronoUnit.DAYS.between(from, to))
+                    .matchLocation(beforeMatching.getLocation())
+                    .createdDate(beforeMatching.getCreatedDate())
+                    .modifiedDate(beforeMatching.getModifiedDate())
+                    .build();
             if (member.getOpenTeam().getId().equals(teamId)) { // team의 주장의 경우
-                approvedMatchResponse = ApprovedMatchResponse.builder()
-                        .matchId(matchId)
-                        .isCaptain(true)
-                        .opposingTeamId(opposingTeam.getId())
-                        .opposingTeamName(opposingTeam.getName())
-                        .opposingTeamPoint(opposingTeam.getRecord().getWinPoint())
-                        .opposingTeamTotalGameCount(opposingTeam.getRecord().getTotalGameCount())
-                        .opposingTeamWinRate(opposingTeam.getRecord().getWinRate())
-                        .opposingTeamWinCount(opposingTeam.getRecord().getWinCount())
-                        .opposingTeamDrawCount(opposingTeam.getRecord().getDrawCount())
-                        .opposingTeamLoseCount(opposingTeam.getRecord().getLoseCount())
-                        .contact(captainMember.getContact())
-                        .phone(captainMember.getPhone())
-                        .matchDate(beforeMatching.getMatchDate())
-                        .dDay(ChronoUnit.DAYS.between(from, to))
-                        .matchLocation(beforeMatching.getLocation())
-                        .createdDate(beforeMatching.getCreatedDate())
-                        .modifiedDate(beforeMatching.getModifiedDate())
-                        .build();
-            } else {
-                approvedMatchResponse = ApprovedMatchResponse.builder()
-                        .matchId(matchId)
-                        .isCaptain(false)
-                        .opposingTeamId(opposingTeam.getId())
-                        .opposingTeamName(opposingTeam.getName())
-                        .opposingTeamPoint(opposingTeam.getRecord().getWinPoint())
-                        .opposingTeamTotalGameCount(opposingTeam.getRecord().getTotalGameCount())
-                        .opposingTeamWinRate(opposingTeam.getRecord().getWinRate())
-                        .opposingTeamWinCount(opposingTeam.getRecord().getWinCount())
-                        .opposingTeamDrawCount(opposingTeam.getRecord().getDrawCount())
-                        .opposingTeamLoseCount(opposingTeam.getRecord().getLoseCount())
-                        .contact(captainMember.getContact())
-                        .phone(captainMember.getPhone())
-                        .matchDate(beforeMatching.getMatchDate())
-                        .dDay(ChronoUnit.DAYS.between(from, to))
-                        .matchLocation(beforeMatching.getLocation())
-                        .createdDate(beforeMatching.getCreatedDate())
-                        .modifiedDate(beforeMatching.getModifiedDate())
-                        .build();
+               approvedMatchResponse.changeIsCaptain(true);
             }
             return approvedMatchResponse;
         } else throw new IllegalArgumentException("이 팀의 멤버가 아닙니다.");
