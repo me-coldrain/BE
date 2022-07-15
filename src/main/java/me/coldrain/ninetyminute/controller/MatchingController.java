@@ -148,4 +148,33 @@ public class MatchingController {
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
         matchingService.writeMatchScore(teamId, matchId, matchScoreRequest, userDetails.getUser());
     }
+
+    /*
+     * Author: 병민
+     * 상대팀 대결 결과 점수 정정 API
+     * 대결 점수 정정 API
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/teams/{team_id}/matches/{match_id}/score")
+    public void correctMatchScore(
+            final @PathVariable("team_id") Long teamId,
+            final @PathVariable("match_id") Long matchId,
+            final @RequestBody MatchScoreRequest matchScoreRequest,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        matchingService.correctMatchScore(teamId, matchId, matchScoreRequest, userDetails.getUser());
+    }
+
+    /*
+     * Author: 병민
+     * 대결 종료 점수 승인 API
+     * API 요청시 admitStatus 값이 true 변경
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/teams/{team_id}/matches/{match_id}/score/admit")
+    public void confirmMatchScore(
+            final @PathVariable("team_id") Long teamId,
+            final @PathVariable("match_id") Long matchId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        matchingService.confirmMatchScore(teamId, matchId, userDetails.getUser());
+    }
 }

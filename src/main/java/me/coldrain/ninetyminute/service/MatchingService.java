@@ -253,4 +253,24 @@ public class MatchingService {
             afterMatchingRepository.save(afterMatching);
         } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
     }
+
+    @Transactional
+    public void correctMatchScore(Long teamId, Long matchId, MatchScoreRequest matchScoreRequest, Member member) {
+        if (member.getOpenTeam().getId().equals(teamId)) {
+            AfterMatching afterMatching = afterMatchingRepository.findByBeforeMatchingIdAdmitStatusFalse(matchId).orElseThrow(
+                    () -> new IllegalArgumentException("해댱 대결을 찾을 수 없습니다.")
+            );
+            afterMatching.correctScore(matchScoreRequest.getTeamScore(), matchScoreRequest.getOpponentScore());
+        } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
+    }
+
+    @Transactional
+    public void confirmMatchScore(Long teamId, Long matchId, Member member) {
+        if (member.getOpenTeam().getId().equals(teamId)) {
+            AfterMatching afterMatching = afterMatchingRepository.findByBeforeMatchingIdAdmitStatusFalse(matchId).orElseThrow(
+                    () -> new IllegalArgumentException("해댱 대결을 찾을 수 없습니다.")
+            );
+            afterMatching.changeAdmitStatus(true);
+        } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
+    }
 }
