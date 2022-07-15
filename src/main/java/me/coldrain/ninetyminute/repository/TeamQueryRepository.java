@@ -50,7 +50,7 @@ public class TeamQueryRepository {
                                 team.preferredArea,
                                 team.record.winRate,
                                 team.recruit,
-                                team.matchs,
+                                team.matches,
                                 team.record.totalGameCount,
                                 team.record.winCount,
                                 team.record.drawCount,
@@ -113,7 +113,7 @@ public class TeamQueryRepository {
     }
 
     private BooleanExpression eqMatch(Boolean match) {
-        return match != null ? team.matchs.eq(match) : null;
+        return match != null ? team.matches.eq(match) : null;
     }
 
     private BooleanExpression eqRecruit(Boolean recruit) {
