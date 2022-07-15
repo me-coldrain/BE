@@ -33,6 +33,24 @@ public class AuthenticationEntryPointHandler implements AuthenticationEntryPoint
             errorCode = ErrorCode.EXPIRED_JWT;
             setResponse(response, errorCode);
         }
+
+        // 구조적인 문제가 있는 토큰 예외처리(유효성)
+        if(exception.equals("MalformedJwtException")) {
+            errorCode = ErrorCode.MALFORMED_JWT;
+            setResponse(response, errorCode);
+        }
+
+        // 형식이나 구성에 문제가 있는 토큰 예외처리(인증)
+        if(exception.equals("UnsupportedJwtException")) {
+            errorCode = ErrorCode.UNSUPPORTED_JWT;
+            setResponse(response, errorCode);
+        }
+
+        // 올바른 서명이 아닌 토큰 예외처리(서명)
+        if(exception.equals("SignatureJwtException")) {
+            errorCode = ErrorCode.SIGNATURE_JWT;
+            setResponse(response, errorCode);
+        }
     }
 
     private void setResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
