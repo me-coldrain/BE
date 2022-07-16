@@ -21,6 +21,7 @@ public class MyParticipationTeamListResponse {
     private String preferredArea;
     private List<String> weekdays;
     private List<String> time;
+    private int winPoint;
     private double winRate;
     private boolean recruit;
     private boolean match;

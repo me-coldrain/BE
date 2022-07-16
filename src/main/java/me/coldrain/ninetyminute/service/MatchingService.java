@@ -89,7 +89,7 @@ public class MatchingService {
                     OfferMatchResponse offerMatchResponse = OfferMatchResponse.builder()
                             .opposingTeamId(apply.getApplyTeam().getId())
                             .opposingTeamName(apply.getApplyTeam().getName())
-                            .opposingTeamPoint(apply.getApplyTeam().getPoint())
+                            .opposingTeamPoint(apply.getApplyTeam().getRecord().getWinPoint())
                             .winRate(apply.getApplyTeam().getRecord().getWinRate())
                             .greeting(apply.getGreeting())
                             .createdDate(apply.getCreatedDate())
