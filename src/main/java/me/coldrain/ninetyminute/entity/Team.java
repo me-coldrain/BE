@@ -21,7 +21,6 @@ public class Team extends TimeStamped {
 
     private String name;
     private String mainArea;
-    private Integer point;
     private String teamProfileUrl;
     private String introduce;
 
@@ -79,10 +78,9 @@ public class Team extends TimeStamped {
     }
 
     @Builder
-    public Team(String name, String mainArea, Integer point, String teamProfileUrl, String introduce, Boolean recruit, List<Weekday> weekdays, List<Time> timeList, String preferredArea, String question, Record record, History history, Boolean match) {
+    public Team(String name, String mainArea, String teamProfileUrl, String introduce, Boolean recruit, List<Weekday> weekdays, List<Time> timeList, String preferredArea, String question, Record record, History history, Boolean match) {
         this.name = name;
         this.mainArea = mainArea;
-        this.point = point;
         this.teamProfileUrl = teamProfileUrl;
         this.introduce = introduce;
         this.recruit = recruit;
