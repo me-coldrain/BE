@@ -2,6 +2,7 @@ package me.coldrain.ninetyminute.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.coldrain.ninetyminute.dto.response.HistoryDetailResponse;
 import me.coldrain.ninetyminute.dto.response.HistoryResponse;
 import me.coldrain.ninetyminute.entity.History;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
@@ -26,5 +27,14 @@ public class HistoryController {
             @PathVariable("team_id") Long teamId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return historyService.searchMatchHistory(teamId, userDetails.getUser());
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/teams/{team_id}/history/{history_id}")
+    public HistoryDetailResponse searchMatchHistoryDetail(
+            @PathVariable("team_id") Long teamId,
+            @PathVariable("history_id") Long historyId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return historyService.searchMatchHistoryDetail;
     }
 }
