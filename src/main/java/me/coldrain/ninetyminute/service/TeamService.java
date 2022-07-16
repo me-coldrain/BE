@@ -70,6 +70,14 @@ public class TeamService {
             request.getTime()
                     .forEach(time -> timeRepository.save(new Time(time, team)));
         }
+
+        final Participation participation = Participation.builder()
+                .member(member)
+                .team(team)
+                .approved(true)
+                .build();
+
+        participationRepository.save(participation);
     }
 
     public Page<TeamListSearch> searchTeamList(final TeamListSearchCondition searchCondition, final Pageable pageable) {

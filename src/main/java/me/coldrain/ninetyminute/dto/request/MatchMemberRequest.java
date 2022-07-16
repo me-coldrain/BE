@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class fieldMemberRequest {
+public class MatchMemberRequest {
     private Long memberId;
     private String position;
     private Boolean anonymous;

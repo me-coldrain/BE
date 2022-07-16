@@ -1,5 +1,6 @@
 package me.coldrain.ninetyminute.entity;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -31,6 +32,31 @@ public class Ability extends TimeStamped {
         this.charmingPoint = 0;
     }
 
+    public void updateStrikePoint() {
+        this.strikerPoint += 1;
+    }
+
+    public void updateMidfielderPoint() {
+        this.midfielderPoint += 1;
+    }
+
+    public void updateDefenderPoint() {
+        this.defenderPoint += 1;
+    }
+
+    public void updateGoalkeeperPoint() {
+        this.goalkeeperPoint += 1;
+    }
+
+    public void updateMVPPoint() {
+        this.mvpPoint += 1;
+    }
+
+    public void updateCharmingPoint() {
+        this.charmingPoint += 1;
+    }
+
+    @Builder
     public Ability(Integer strikerPoint, Integer midfielderPoint, Integer defenderPoint, Integer goalkeeperPoint, Integer mvpPoint, Integer charmingPoint) {
         this.strikerPoint = strikerPoint;
         this.midfielderPoint = midfielderPoint;
