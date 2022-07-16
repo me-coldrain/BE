@@ -102,7 +102,7 @@ public class JwtTokenProvider {
         return request.getHeader(HttpHeaders.AUTHORIZATION);
     }
 
-    // 토큰의 유효성 + 만료일자 확인 + 인증 예외 처리 + 권한 에러 처리
+    // 토큰의 유효성 + 만료일자 확인 + 인증 예외 처리 + 서명 에러 처리 + 권한 에러 처리
     public boolean validateJwtToken(ServletRequest request, String jwtToken) {
         try {
             Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
@@ -113,6 +113,8 @@ public class JwtTokenProvider {
             request.setAttribute("exception", "ExpiredJwtException");
         } catch (UnsupportedJwtException e) {
             request.setAttribute("exception", "UnsupportedJwtException");
+        } catch (SignatureException e) {
+            request.setAttribute("exception", "SignatureJwtException");
         } catch (IllegalArgumentException e) {
             request.setAttribute("exception", "IllegalArgumentException");
         }

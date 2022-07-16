@@ -86,6 +86,7 @@ public class MemberService {
     }
 
     //회원정보 수정
+    @Transactional
     public ResponseEntity<?> memberEdit(Long memberId,
                                         MemberEditRequest memberEditRequest) {
         try {
@@ -102,6 +103,7 @@ public class MemberService {
     }
 
     //회원 프로필 사진 업로드
+    @Transactional
     public ResponseEntity<?> memberProFileImageEdit(Long memberId,
                                                     MultipartFile proFileImage) {
         try {

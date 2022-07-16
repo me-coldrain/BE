@@ -1,9 +1,6 @@
 package me.coldrain.ninetyminute.entity;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -32,4 +29,21 @@ public class SubstituteMember extends TimeStamped {
 
     private String position;
     private Boolean anonymous;
+
+    public void setMember (Member member) {
+        this.member = member;
+    }
+
+    public void changeAnonymous (Boolean anonymous) {
+        this.anonymous = anonymous;
+    }
+
+    @Builder
+    public SubstituteMember (Member member, Team team, AfterMatching afterMatching, String position, Boolean anonymous) {
+        this.member = member;
+        this.team = team;
+        this.afterMatching = afterMatching;
+        this.position = position;
+        this.anonymous = anonymous;
+    }
 }

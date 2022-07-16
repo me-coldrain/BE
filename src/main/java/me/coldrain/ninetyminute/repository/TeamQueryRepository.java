@@ -42,7 +42,7 @@ public class TeamQueryRepository {
                         new QTeamListSearch(
                                 team.id,
                                 team.name,
-                                JPAExpressions.select(participation.count().add(1)) // 주장 +1
+                                JPAExpressions.select(participation.count())
                                         .from(participation)
                                         .where(participation.approved.eq(true)
                                                 , participation.team.id.eq(team.id)),
