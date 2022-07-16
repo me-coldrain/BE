@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -341,12 +342,14 @@ public class MatchingService {
     }
 
     private void distributePoint(BeforeMatching beforeMatching, AfterMatching afterMatching) {
+        List<String> results = Arrays.asList("승리", "무승부", "패배");
         Team team = beforeMatching.getApply().getTeam();
         Team opposingTeam = beforeMatching.getApply().getApplyTeam();
         team.getRecord().updateTotalGameCount();
         opposingTeam.getRecord().updateTotalGameCount();
 
         if (afterMatching.getScore() > afterMatching.getOpponentScore()) {
+            afterMatching.editResult(results.get(0), results.get(2));
             List<FieldMember> fieldMembers = fieldMemberRepository.findMatchFieldMembers(team.getId(), afterMatching.getBeforeMatching().getId());
             for (FieldMember fieldMember : fieldMembers) {
                 distributePositionPoint(fieldMember);
@@ -361,6 +364,7 @@ public class MatchingService {
             opposingTeam.getRecord().updateWinRate((double) (opposingTeam.getRecord().getWinCount() / opposingTeam.getRecord().getTotalGameCount()));
         }
         else if (afterMatching.getScore() < afterMatching.getOpponentScore()) {
+            afterMatching.editResult(results.get(2), results.get(0));
             List<FieldMember> fieldMembers = fieldMemberRepository.findMatchFieldMembers(opposingTeam.getId(), afterMatching.getBeforeMatching().getId());
             for (FieldMember fieldMember : fieldMembers) {
                 distributePositionPoint(fieldMember);
@@ -375,6 +379,7 @@ public class MatchingService {
             opposingTeam.getRecord().updateWinRate((double) (opposingTeam.getRecord().getWinCount() / opposingTeam.getRecord().getTotalGameCount()));
         }
         else {
+            afterMatching.editResult(results.get(1), results.get(1));
             team.getRecord().updateDrawCount();
             team.getRecord().updateWinRate((double) (team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()));
             opposingTeam.getRecord().updateDrawCount();

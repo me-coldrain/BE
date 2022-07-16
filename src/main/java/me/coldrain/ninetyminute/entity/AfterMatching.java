@@ -23,6 +23,8 @@ public class AfterMatching extends TimeStamped {
     private String moodMaker;
     private Integer score;
     private Integer opponentScore;
+    private String result;
+    private String opponentResult;
     private Boolean admitStatus;    // true : 점수 인정/ false : 점수 불인정 -> 정정 요청
 
     public void correctScore(Integer score, Integer opponentScore) {
@@ -38,17 +40,24 @@ public class AfterMatching extends TimeStamped {
         this.moodMaker = moodMaker;
     }
 
+    public void editResult(String result, String opponentResult) {
+        this.result = result;
+        this.opponentResult = opponentResult;
+    }
+
     public void changeAdmitStatus(Boolean admitStatus) {
         this.admitStatus = admitStatus;
     }
 
     @Builder
-    public AfterMatching(BeforeMatching beforeMatching, String mvpNickname, String moodMaker, Integer score, Integer opponentScore, Boolean admitStatus) {
+    public AfterMatching(BeforeMatching beforeMatching, String mvpNickname, String moodMaker, Integer score, Integer opponentScore, String result, String opponentResult, Boolean admitStatus) {
         this.beforeMatching = beforeMatching;
         this.mvpNickname = mvpNickname;
         this.moodMaker = moodMaker;
         this.score = score;
         this.opponentScore = opponentScore;
+        this.result = result;
+        this.opponentResult = opponentResult;
         this.admitStatus = admitStatus;
     }
 }
