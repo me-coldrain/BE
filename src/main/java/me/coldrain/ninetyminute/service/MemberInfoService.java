@@ -3,14 +3,8 @@ package me.coldrain.ninetyminute.service;
 import lombok.RequiredArgsConstructor;
 import me.coldrain.ninetyminute.dto.response.MemberInfoResponse;
 import me.coldrain.ninetyminute.dto.response.MyParticipationTeamListResponse;
-import me.coldrain.ninetyminute.entity.Member;
-import me.coldrain.ninetyminute.entity.Participation;
-import me.coldrain.ninetyminute.entity.Time;
-import me.coldrain.ninetyminute.entity.Weekday;
-import me.coldrain.ninetyminute.repository.MemberRepository;
-import me.coldrain.ninetyminute.repository.ParticipationRepository;
-import me.coldrain.ninetyminute.repository.TimeRepository;
-import me.coldrain.ninetyminute.repository.WeekdayRepository;
+import me.coldrain.ninetyminute.entity.*;
+import me.coldrain.ninetyminute.repository.*;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +19,7 @@ import java.util.Optional;
 @Service
 public class MemberInfoService {
     private final MemberRepository memberRepository;
+    private final TeamRepository teamRepository;
     private final ParticipationRepository participationRepository;
     private final WeekdayRepository weekdayRepository;
     private final TimeRepository timeRepository;
@@ -52,6 +47,11 @@ public class MemberInfoService {
 
     //참여한 팀 조회
     public ResponseEntity<?> memberTeamGet(Long memberId) {
+        Optional<Member> found = memberRepository.findById(memberId);
+        if(found.isEmpty()) {
+            return new ResponseEntity<>("존재하지 않는 회원입니다.", HttpStatus.BAD_REQUEST);
+        }
+
         List<MyParticipationTeamListResponse> myParticipationTeamListResponseList = new ArrayList<>();
 
         List<Participation> myTeamList = participationRepository.findAllByMemberIdTrue(memberId);
@@ -80,6 +80,7 @@ public class MemberInfoService {
                     participation.getTeam().getPreferredArea(),
                     participationTeamWeekdays,
                     participationTeamTimes,
+                    participation.getTeam().getRecord().getWinPoint(),
                     participation.getTeam().getRecord().getWinRate(),
                     participation.getTeam().getRecruit(),
                     participation.getTeam().getMatches(),
@@ -97,6 +98,11 @@ public class MemberInfoService {
 
     //참여 신청중인 팀 조회
     public ResponseEntity<?> offerTeamGet(Long memberId) {
+        Optional<Member> found = memberRepository.findById(memberId);
+        if(found.isEmpty()) {
+            return new ResponseEntity<>("존재하지 않는 회원입니다.", HttpStatus.BAD_REQUEST);
+        }
+
         List<MyParticipationTeamListResponse> myParticipationTeamListResponseList = new ArrayList<>();
 
         List<Participation> myTeamList = participationRepository.findAllByMemberIdFalse(memberId);
@@ -125,6 +131,7 @@ public class MemberInfoService {
                     participation.getTeam().getPreferredArea(),
                     participationTeamWeekdays,
                     participationTeamTimes,
+                    participation.getTeam().getRecord().getWinPoint(),
                     participation.getTeam().getRecord().getWinRate(),
                     participation.getTeam().getRecruit(),
                     participation.getTeam().getMatches(),
@@ -143,9 +150,17 @@ public class MemberInfoService {
     //참여 신청중인 팀 신청취소
     @Transactional
     public ResponseEntity<?> offerCancelTeam(Long memberId, Long teamId) {
-        Participation offerCancelTeam = participationRepository.findByTeamIdAndMemberIdFalse(memberId, teamId);
-        participationRepository.delete(offerCancelTeam);
-        return new ResponseEntity<>(HttpStatus.OK);
+        Optional<Member> foundMember = memberRepository.findById(memberId);
+        Optional<Team> foundTeam = teamRepository.findById(teamId);
+        if(foundMember.isEmpty()) {
+            return new ResponseEntity<>("존재하지 않는 회원입니다.", HttpStatus.BAD_REQUEST);
+        } else if (foundTeam.isEmpty()) {
+            return new ResponseEntity<>("존재하지 않는 팀입니다.", HttpStatus.BAD_REQUEST);
+        } else {
+            Participation offerCancelTeam = participationRepository.findByTeamIdAndMemberIdFalse(memberId, teamId);
+            participationRepository.delete(offerCancelTeam);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
     }
 
     //참여한 경기 히스토리 조회
