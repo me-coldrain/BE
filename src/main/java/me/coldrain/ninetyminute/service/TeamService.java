@@ -34,8 +34,11 @@ public class TeamService {
 
     @Transactional
     public void registerTeam(final TeamRegisterRequest request, final Long memberId) {
-        final Map<String, String> uploadFile = awsS3Service.uploadFile(request.getTeamImageFile());
-        final String imageFileUrl = uploadFile.get("url");
+        String imageFileUrl = null;
+        if (request.getTeamImageFile() != null && !request.getTeamImageFile().isEmpty()) {
+            Map<String, String> uploadFile = awsS3Service.uploadFile(request.getTeamImageFile());
+            imageFileUrl = uploadFile.get("url");
+        }
 
         final Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
