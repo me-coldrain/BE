@@ -132,7 +132,7 @@ public class TeamService {
 
         TeamInfoResponse.RecentMatchHistory recentMatchHistory = new TeamInfoResponse.RecentMatchHistory();
         Team teamHistoryCheck = teamRepository.findById(teamId).orElseThrow();
-        if(teamHistoryCheck.getHistory() != null) {
+        if (teamHistoryCheck.getHistory() != null) {
             BeforeMatching recentTeamBeforeMatching = beforeMatchingRepository.findByRecentBeforeMatching(teamId).orElseThrow();
             History recentHistory = historyRepository.findByRecentHistory(recentTeamBeforeMatching.getId()).orElseThrow();
 
@@ -177,7 +177,7 @@ public class TeamService {
                 otherCaptain,
                 participate,
                 recentMatchHistory
-                );
+        );
 
         return new ResponseEntity<>(teamInfoResponse, HttpStatus.OK);
     }
@@ -201,6 +201,9 @@ public class TeamService {
         final Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
+        if (member.getOpenTeam() == null) {
+            throw new IllegalArgumentException("개설된 팀이 없습니다.");
+        }
         final Long openTeamId = member.getOpenTeam().getId();
         if (!openTeamId.equals(teamId)) {
             throw new IllegalArgumentException("팀 개설자만 팀원 모집을 할 수 있습니다.");
@@ -287,23 +290,24 @@ public class TeamService {
 
     @Transactional
     public void applyMatch(final Long applyTeamId, ApplyRequest applyRequest, final Long teamId) {
-        if (!applyTeamId.equals(teamId)) {
-            final Team applyTeam = teamRepository.findById(applyTeamId)
-                    .orElseThrow(() -> new IllegalArgumentException("대결 신청 팀을 찾을 수 없습니다."));
-            final Team team = teamRepository.findById(teamId)
-                    .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+        final Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+        if (team.getMatches()) {
+            if (!applyTeamId.equals(teamId)) {
+                final Team applyTeam = teamRepository.findById(applyTeamId)
+                        .orElseThrow(() -> new IllegalArgumentException("대결 신청 팀을 찾을 수 없습니다."));
+                if (applyRepository.findByApplyTeamIdAndTeamId(applyTeamId, teamId).orElse(null) == null) {
+                    final Apply apply = Apply.builder()
+                            .applyTeam(applyTeam)
+                            .team(team)
+                            .greeting(applyRequest.getGreeting())
+                            .approved(false)
+                            .build();
 
-            if (applyRepository.findByApplyTeamIdAndTeamId(applyTeamId, teamId).orElse(null) == null) {
-                final Apply apply = Apply.builder()
-                        .applyTeam(applyTeam)
-                        .team(team)
-                        .greeting(applyRequest.getGreeting())
-                        .approved(false)
-                        .build();
-
-                applyRepository.save(apply);
-            } else throw new IllegalArgumentException("이미 대결 신청한 팀입니다.");
-        } else throw new IllegalArgumentException("같은 팀에게 대결을 신청할 수 없습니다.");
+                    applyRepository.save(apply);
+                } else throw new IllegalArgumentException("이미 대결 신청한 팀입니다.");
+            } else throw new IllegalArgumentException("같은 팀에게 대결을 신청할 수 없습니다.");
+        } else throw new IllegalArgumentException("현재 이 팀은 대결 모집 상태가 아닙니다.");
     }
 
     @Transactional
@@ -315,13 +319,28 @@ public class TeamService {
     }
 
     @Transactional
-    public void releaseTeamMember(final Long teamId, final Long memberId) {
-        try {
-            final Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, memberId)
-                    .orElseThrow(() -> new IllegalArgumentException("참여를 찾을 수 없습니다."));
+    public ResponseEntity<?> releaseTeamMember(final Long teamId,
+                                               final Long memberId,
+                                               final UserDetailsImpl userDetails) {
+        Long loginMemberOpenTeamId;
+
+        if (userDetails.getUser().getOpenTeam() != null) {
+            loginMemberOpenTeamId = userDetails.getUser().getOpenTeam().getId();
+        } else {
+            return new ResponseEntity<>("개설한 팀이 없습니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        if (userDetails.getUser().getId().equals(memberId)) {
+            return new ResponseEntity<>("자기 자신은 추방할 수 없습니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        if (loginMemberOpenTeamId.equals(teamId)) {
+            final Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(memberId, teamId)
+                    .orElseThrow(() -> new IllegalArgumentException("참여에 존재하지 않습니다."));
             participationRepository.delete(participation);
-        } catch (Exception e) {
-            throw new NullPointerException("해당 회원은 팀원이 아닙니다.");
+            return new ResponseEntity<>("추방이 완료되었습니다.", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("해당 팀의 개설자가 아닙니다.", HttpStatus.BAD_REQUEST);
         }
     }
 
