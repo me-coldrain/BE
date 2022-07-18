@@ -29,6 +29,10 @@ public class ParticipationService {
         final Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("참여하려는 팀이 존재하지 않습니다."));
 
+        if (team.getRecruit().equals(false)) {
+            throw new IllegalArgumentException("팀원을 모집 중인 상태가 아닙니다.");
+        }
+
         final boolean present = participationRepository.findByTeamIdAndMemberId(teamId, member.getId()).isPresent();
         if (present) {
             throw new IllegalArgumentException("이미 참여신청을 했습니다.");
