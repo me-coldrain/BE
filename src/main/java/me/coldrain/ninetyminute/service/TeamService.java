@@ -201,6 +201,9 @@ public class TeamService {
         final Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
+        if (member.getOpenTeam() == null) {
+            throw new IllegalArgumentException("개설된 팀이 없습니다.");
+        }
         final Long openTeamId = member.getOpenTeam().getId();
         if (!openTeamId.equals(teamId)) {
             throw new IllegalArgumentException("팀 개설자만 팀원 모집을 할 수 있습니다.");
