@@ -183,7 +183,7 @@ public class TeamController {
     }
 
     /**
-     * Author: 상운
+     * Author: 상운, 병민
      * 대결 신청 API
      */
     @PostMapping("/home/teams/{team_id}/match/apply")

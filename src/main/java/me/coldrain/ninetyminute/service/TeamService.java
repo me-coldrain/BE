@@ -290,23 +290,24 @@ public class TeamService {
 
     @Transactional
     public void applyMatch(final Long applyTeamId, ApplyRequest applyRequest, final Long teamId) {
-        if (!applyTeamId.equals(teamId)) {
-            final Team applyTeam = teamRepository.findById(applyTeamId)
-                    .orElseThrow(() -> new IllegalArgumentException("대결 신청 팀을 찾을 수 없습니다."));
-            final Team team = teamRepository.findById(teamId)
-                    .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+        final Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+        if (team.getMatches()) {
+            if (!applyTeamId.equals(teamId)) {
+                final Team applyTeam = teamRepository.findById(applyTeamId)
+                        .orElseThrow(() -> new IllegalArgumentException("대결 신청 팀을 찾을 수 없습니다."));
+                if (applyRepository.findByApplyTeamIdAndTeamId(applyTeamId, teamId).orElse(null) == null) {
+                    final Apply apply = Apply.builder()
+                            .applyTeam(applyTeam)
+                            .team(team)
+                            .greeting(applyRequest.getGreeting())
+                            .approved(false)
+                            .build();
 
-            if (applyRepository.findByApplyTeamIdAndTeamId(applyTeamId, teamId).orElse(null) == null) {
-                final Apply apply = Apply.builder()
-                        .applyTeam(applyTeam)
-                        .team(team)
-                        .greeting(applyRequest.getGreeting())
-                        .approved(false)
-                        .build();
-
-                applyRepository.save(apply);
-            } else throw new IllegalArgumentException("이미 대결 신청한 팀입니다.");
-        } else throw new IllegalArgumentException("같은 팀에게 대결을 신청할 수 없습니다.");
+                    applyRepository.save(apply);
+                } else throw new IllegalArgumentException("이미 대결 신청한 팀입니다.");
+            } else throw new IllegalArgumentException("같은 팀에게 대결을 신청할 수 없습니다.");
+        } else throw new IllegalArgumentException("현재 이 팀은 대결 모집 상태가 아닙니다.");
     }
 
     @Transactional
