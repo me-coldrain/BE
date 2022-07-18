@@ -48,6 +48,7 @@ public class JwtTokenProvider {
         payloads.put("Role", member.getRole());
         payloads.put("nickname", member.getNickname());
         payloads.put("memberId", member.getId());
+        payloads.put("OpenTeam", member.getOpenTeam().getId());
 
         return Jwts.builder()
                 .setHeaderParam("typ","JWT")
