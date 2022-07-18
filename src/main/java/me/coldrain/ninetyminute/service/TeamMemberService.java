@@ -9,6 +9,7 @@ import me.coldrain.ninetyminute.entity.Team;
 import me.coldrain.ninetyminute.repository.MemberRepository;
 import me.coldrain.ninetyminute.repository.ParticipationRepository;
 import me.coldrain.ninetyminute.repository.TeamRepository;
+import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -110,31 +111,42 @@ public class TeamMemberService {
     }
 
     //신청한 팀원 목록
-    public ResponseEntity<?> teamMemberOfferGet(Long teamId) {
-        TeamMemberOfferResponse teamMemberOfferResponse = new TeamMemberOfferResponse();
+    public ResponseEntity<?> teamMemberOfferGet(Long teamId, UserDetailsImpl userDetails) {
+        Long loginMemberOpenTeamId;
 
-        Team teamOffer = teamRepository.findById(teamId).orElseThrow();
-        teamMemberOfferResponse.setQuestion(teamOffer.getQuestion());
-
-        List<TeamMemberOfferResponse.OfferedMember> OfferedMemberList = new ArrayList<>();
-        List<Participation> teamMemberOffer = participationRepository.findAllByTeamIdFalse(teamId);
-        for (int i = 0; i < teamMemberOffer.size(); i++) {
-            TeamMemberOfferResponse.OfferedMember OfferedMember = new TeamMemberOfferResponse.OfferedMember(
-                    teamMemberOffer.get(i).getMember().getId(),
-                    teamMemberOffer.get(i).getMember().getProfileUrl(),
-                    teamMemberOffer.get(i).getMember().getNickname(),
-                    teamMemberOffer.get(i).getMember().getAbility().getMvpPoint(),
-                    teamMemberOffer.get(i).getMember().getPosition(),
-                    teamMemberOffer.get(i).getMember().getAbility().getStrikerPoint(),
-                    teamMemberOffer.get(i).getMember().getAbility().getMidfielderPoint(),
-                    teamMemberOffer.get(i).getMember().getAbility().getDefenderPoint(),
-                    teamMemberOffer.get(i).getMember().getAbility().getGoalkeeperPoint(),
-                    teamMemberOffer.get(i).getAnswer()
-            );
-            OfferedMemberList.add(OfferedMember);
+        if (userDetails.getUser().getOpenTeam() != null) {
+            loginMemberOpenTeamId = userDetails.getUser().getOpenTeam().getId();
+        } else {
+            return new ResponseEntity<>("개설한 팀이 없습니다.", HttpStatus.BAD_REQUEST);
         }
-        teamMemberOfferResponse.setOfferedMembers(OfferedMemberList);
 
-        return new ResponseEntity<>(teamMemberOfferResponse, HttpStatus.OK);
+        if (loginMemberOpenTeamId.equals(teamId)) {
+            TeamMemberOfferResponse teamMemberOfferResponse = new TeamMemberOfferResponse();
+
+            Team teamOffer = teamRepository.findById(teamId).orElseThrow();
+            teamMemberOfferResponse.setQuestion(teamOffer.getQuestion());
+
+            List<TeamMemberOfferResponse.OfferedMember> OfferedMemberList = new ArrayList<>();
+            List<Participation> teamMemberOffer = participationRepository.findAllByTeamIdFalse(teamId);
+            for (int i = 0; i < teamMemberOffer.size(); i++) {
+                TeamMemberOfferResponse.OfferedMember OfferedMember = new TeamMemberOfferResponse.OfferedMember(
+                        teamMemberOffer.get(i).getMember().getId(),
+                        teamMemberOffer.get(i).getMember().getProfileUrl(),
+                        teamMemberOffer.get(i).getMember().getNickname(),
+                        teamMemberOffer.get(i).getMember().getAbility().getMvpPoint(),
+                        teamMemberOffer.get(i).getMember().getPosition(),
+                        teamMemberOffer.get(i).getMember().getAbility().getStrikerPoint(),
+                        teamMemberOffer.get(i).getMember().getAbility().getMidfielderPoint(),
+                        teamMemberOffer.get(i).getMember().getAbility().getDefenderPoint(),
+                        teamMemberOffer.get(i).getMember().getAbility().getGoalkeeperPoint(),
+                        teamMemberOffer.get(i).getAnswer()
+                );
+                OfferedMemberList.add(OfferedMember);
+            }
+            teamMemberOfferResponse.setOfferedMembers(OfferedMemberList);
+            return new ResponseEntity<>(teamMemberOfferResponse, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("해당 팀의 개설자가 아닙니다.", HttpStatus.BAD_REQUEST);
+        }
     }
 }
