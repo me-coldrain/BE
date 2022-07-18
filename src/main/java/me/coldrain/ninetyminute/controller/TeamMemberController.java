@@ -23,7 +23,8 @@ public class TeamMemberController {
 
     //신청한 팀원 목록
     @GetMapping("/api/teams/{team_id}/offer")
-    public ResponseEntity<?> teamMemberOfferGet(@PathVariable("team_id") Long teamId) {
-        return teamMemberService.teamMemberOfferGet(teamId);
+    public ResponseEntity<?> teamMemberOfferGet(@PathVariable("team_id") Long teamId,
+                                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return teamMemberService.teamMemberOfferGet(teamId, userDetails);
     }
 }
