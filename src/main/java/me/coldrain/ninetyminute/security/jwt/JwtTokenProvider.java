@@ -45,9 +45,15 @@ public class JwtTokenProvider {
         headers.put("type", "token");
 
         Map<String, Object> payloads = new HashMap<>();
-        payloads.put("Role", member.getRole());
+        payloads.put("role", member.getRole());
         payloads.put("nickname", member.getNickname());
         payloads.put("memberId", member.getId());
+
+        if(member.getOpenTeam() != null) {
+            payloads.put("openTeamId", member.getOpenTeam().getId());
+        } else {
+            payloads.put("openTeamId", "No openTeam");
+        }
 
         return Jwts.builder()
                 .setHeaderParam("typ","JWT")
