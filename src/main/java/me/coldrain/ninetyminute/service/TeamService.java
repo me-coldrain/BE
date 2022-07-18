@@ -52,7 +52,6 @@ public class TeamService {
                 .introduce(request.getIntroduce())
                 .mainArea(request.getMainArea())
                 .preferredArea(request.getPreferredArea())
-                .point(0)
                 .recruit(false)
                 .match(false)
                 .record(emptyRecord)

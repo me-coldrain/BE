@@ -35,6 +35,6 @@ public class HistoryController {
             @PathVariable("team_id") Long teamId,
             @PathVariable("history_id") Long historyId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return historyService.searchMatchHistoryDetail;
+        return historyService.searchMatchHistoryDetail(teamId, historyId, userDetails.getUser());
     }
 }
