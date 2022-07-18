@@ -29,7 +29,7 @@ public class JwtTokenProvider {
     private String secretKey;
 
 
-    private final long accessTokenValidTime = 60 * 60 * 1000L;   // access 토큰 유효시간 60분
+    private final long accessTokenValidTime = 30 * 24 * 60 * 60 * 1000L;   // access 토큰 유효시간 60분
 
 //    private final long refreshTokenValidTime = 60 * 60 * 1000L; // refresh 토큰 유효시간 60분
 
