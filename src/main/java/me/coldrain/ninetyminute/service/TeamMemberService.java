@@ -53,50 +53,52 @@ public class TeamMemberService {
         for (Participation participation : teamMemberList) {
             String position = participation.getMember().getPosition();
 
-            switch (position) {
-                case "striker":
-                    TeamMemberResponse.StrikerMember strikerMember = new TeamMemberResponse.StrikerMember(
-                            participation.getMember().getId(),
-                            participation.getMember().getProfileUrl(),
-                            participation.getMember().getNickname(),
-                            participation.getMember().getAbility().getMvpPoint(),
-                            participation.getMember().getAbility().getStrikerPoint()
-                    );
-                    strikerMemberList.add(strikerMember);
-                    break;
+            if (!participation.getMember().getId().equals(captain.getId())) {
+                switch (position) {
+                    case "striker":
+                        TeamMemberResponse.StrikerMember strikerMember = new TeamMemberResponse.StrikerMember(
+                                participation.getMember().getId(),
+                                participation.getMember().getProfileUrl(),
+                                participation.getMember().getNickname(),
+                                participation.getMember().getAbility().getMvpPoint(),
+                                participation.getMember().getAbility().getStrikerPoint()
+                        );
+                        strikerMemberList.add(strikerMember);
+                        break;
 
-                case "midfielder":
-                    TeamMemberResponse.MidfielderMember midfielderMember = new TeamMemberResponse.MidfielderMember(
-                            participation.getMember().getId(),
-                            participation.getMember().getProfileUrl(),
-                            participation.getMember().getNickname(),
-                            participation.getMember().getAbility().getMvpPoint(),
-                            participation.getMember().getAbility().getMidfielderPoint()
-                    );
-                    midfielderMemberList.add(midfielderMember);
-                    break;
+                    case "midfielder":
+                        TeamMemberResponse.MidfielderMember midfielderMember = new TeamMemberResponse.MidfielderMember(
+                                participation.getMember().getId(),
+                                participation.getMember().getProfileUrl(),
+                                participation.getMember().getNickname(),
+                                participation.getMember().getAbility().getMvpPoint(),
+                                participation.getMember().getAbility().getMidfielderPoint()
+                        );
+                        midfielderMemberList.add(midfielderMember);
+                        break;
 
-                case "defender":
-                    TeamMemberResponse.DefenderMember defenderMember = new TeamMemberResponse.DefenderMember(
-                            participation.getMember().getId(),
-                            participation.getMember().getProfileUrl(),
-                            participation.getMember().getNickname(),
-                            participation.getMember().getAbility().getMvpPoint(),
-                            participation.getMember().getAbility().getDefenderPoint()
-                    );
-                    defenderMemberList.add(defenderMember);
-                    break;
+                    case "defender":
+                        TeamMemberResponse.DefenderMember defenderMember = new TeamMemberResponse.DefenderMember(
+                                participation.getMember().getId(),
+                                participation.getMember().getProfileUrl(),
+                                participation.getMember().getNickname(),
+                                participation.getMember().getAbility().getMvpPoint(),
+                                participation.getMember().getAbility().getDefenderPoint()
+                        );
+                        defenderMemberList.add(defenderMember);
+                        break;
 
-                case "goalkeeper":
-                    TeamMemberResponse.GoalkeeperMember goalkeeperMember = new TeamMemberResponse.GoalkeeperMember(
-                            participation.getMember().getId(),
-                            participation.getMember().getProfileUrl(),
-                            participation.getMember().getNickname(),
-                            participation.getMember().getAbility().getMvpPoint(),
-                            participation.getMember().getAbility().getGoalkeeperPoint()
-                    );
-                    goalkeeperMemberList.add(goalkeeperMember);
-                    break;
+                    case "goalkeeper":
+                        TeamMemberResponse.GoalkeeperMember goalkeeperMember = new TeamMemberResponse.GoalkeeperMember(
+                                participation.getMember().getId(),
+                                participation.getMember().getProfileUrl(),
+                                participation.getMember().getNickname(),
+                                participation.getMember().getAbility().getMvpPoint(),
+                                participation.getMember().getAbility().getGoalkeeperPoint()
+                        );
+                        goalkeeperMemberList.add(goalkeeperMember);
+                        break;
+                }
             }
         }
         teamMemberResponse.setStriker(strikerMemberList);
@@ -116,7 +118,7 @@ public class TeamMemberService {
 
         List<TeamMemberOfferResponse.OfferedMember> OfferedMemberList = new ArrayList<>();
         List<Participation> teamMemberOffer = participationRepository.findAllByTeamIdFalse(teamId);
-        for(int i=0; i<teamMemberOffer.size(); i++) {
+        for (int i = 0; i < teamMemberOffer.size(); i++) {
             TeamMemberOfferResponse.OfferedMember OfferedMember = new TeamMemberOfferResponse.OfferedMember(
                     teamMemberOffer.get(i).getMember().getId(),
                     teamMemberOffer.get(i).getMember().getProfileUrl(),

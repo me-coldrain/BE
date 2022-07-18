@@ -7,14 +7,22 @@ import me.coldrain.ninetyminute.dto.request.ApplyRequest;
 import me.coldrain.ninetyminute.dto.request.RecruitStartRequest;
 import me.coldrain.ninetyminute.dto.request.TeamModifyRequest;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
+import me.coldrain.ninetyminute.dto.response.TeamInfoResponse;
 import me.coldrain.ninetyminute.entity.*;
 import me.coldrain.ninetyminute.repository.*;
+import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,14 +36,18 @@ public class TeamService {
     private final RecordRepository recordRepository;
     private final ParticipationRepository participationRepository;
     private final ApplyRepository applyRepository;
-
+    private final HistoryRepository historyRepository;
+    private final BeforeMatchingRepository beforeMatchingRepository;
     private final MemberRepository memberRepository;
     private final AwsS3Service awsS3Service;
 
     @Transactional
     public void registerTeam(final TeamRegisterRequest request, final Long memberId) {
-        final Map<String, String> uploadFile = awsS3Service.uploadFile(request.getTeamImageFile());
-        final String imageFileUrl = uploadFile.get("url");
+        String imageFileUrl = null;
+        if (request.getTeamImageFile() != null && !request.getTeamImageFile().isEmpty()) {
+            Map<String, String> uploadFile = awsS3Service.uploadFile(request.getTeamImageFile());
+            imageFileUrl = uploadFile.get("url");
+        }
 
         final Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
@@ -79,7 +91,98 @@ public class TeamService {
         participationRepository.save(participation);
     }
 
-    public Page<TeamListSearch> searchTeamList(final TeamListSearchCondition searchCondition, final Pageable pageable) {
+    public ResponseEntity<?> infoTeam(Long teamId, UserDetailsImpl userDetails) {
+        Optional<Team> found = teamRepository.findById(teamId);
+        if (found.isEmpty()) {
+            return new ResponseEntity<>("존재하지 않는 팀입니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        Team infoTeam = teamRepository.findById(teamId).orElseThrow();
+
+        List<String> teamWeekDays = new ArrayList<>();
+        List<Weekday> teamWeekdayList = weekdayRepository.findAllByTeamId(teamId);
+        for (Weekday weekday : teamWeekdayList) {
+            teamWeekDays.add(weekday.getWeekday());
+        }
+
+        List<String> teamTimes = new ArrayList<>();
+        List<Time> teamTimeList = timeRepository.findAllByTeamId(teamId);
+        for (Time time : teamTimeList) {
+            teamTimes.add(time.getTime());
+        }
+
+        int headCount = participationRepository.findAllByTeamIdTrue(teamId).size();
+
+        boolean teamCaptain = false;
+        boolean otherCaptain = false;
+        boolean participate = false;
+
+        if (userDetails.getUser().getOpenTeam().getId() != null) {
+            if (teamId.equals(userDetails.getUser().getOpenTeam().getId())) {
+                teamCaptain = true;
+            } else {
+                otherCaptain = true;
+            }
+        }
+
+        Optional<Participation> teamMember = participationRepository.findByTeamIdAndMemberIdTrue(teamId, userDetails.getUser().getId());
+        if (teamMember.isPresent()) {
+            participate = true;
+        }
+
+        TeamInfoResponse.RecentMatchHistory recentMatchHistory = new TeamInfoResponse.RecentMatchHistory();
+        Team teamHistoryCheck = teamRepository.findById(teamId).orElseThrow();
+        if (teamHistoryCheck.getHistory() != null) {
+            BeforeMatching recentTeamBeforeMatching = beforeMatchingRepository.findByRecentBeforeMatching(teamId).orElseThrow();
+            History recentHistory = historyRepository.findByRecentHistory(recentTeamBeforeMatching.getId()).orElseThrow();
+
+            TeamInfoResponse.RecentMatchHistory.Team recentMatchHistoryTeam = new TeamInfoResponse.RecentMatchHistory.Team(
+                    recentHistory.getBeforeMatching().getTeamName(),
+                    recentHistory.getAfterMatching().getResult(),
+                    recentHistory.getAfterMatching().getScore()
+            );
+
+            TeamInfoResponse.RecentMatchHistory.OpposingTeam recentMatchHistoryOpposingTeam = new TeamInfoResponse.RecentMatchHistory.OpposingTeam(
+                    recentHistory.getBeforeMatching().getOpposingTeamName(),
+                    recentHistory.getAfterMatching().getOpponentResult(),
+                    recentHistory.getAfterMatching().getOpponentScore()
+            );
+
+            recentMatchHistory.setHistoryId(recentHistory.getId());
+            recentMatchHistory.setMatchDate(recentTeamBeforeMatching.getMatchDate());
+            recentMatchHistory.setTeam(recentMatchHistoryTeam);
+            recentMatchHistory.setOpposingTeam(recentMatchHistoryOpposingTeam);
+        } else {
+            recentMatchHistory = null;
+        }
+
+        TeamInfoResponse teamInfoResponse = new TeamInfoResponse(
+                infoTeam.getName(),
+                infoTeam.getIntroduce(),
+                infoTeam.getTeamProfileUrl(),
+                infoTeam.getRecruit(),
+                infoTeam.getMatches(),
+                infoTeam.getRecord().getWinPoint(),
+                infoTeam.getRecord().getTotalGameCount(),
+                infoTeam.getRecord().getWinCount(),
+                infoTeam.getRecord().getDrawCount(),
+                infoTeam.getRecord().getLoseCount(),
+                infoTeam.getRecord().getWinRate(),
+                infoTeam.getMainArea(),
+                infoTeam.getPreferredArea(),
+                teamWeekDays,
+                teamTimes,
+                headCount,
+                teamCaptain,
+                otherCaptain,
+                participate,
+                recentMatchHistory
+        );
+
+        return new ResponseEntity<>(teamInfoResponse, HttpStatus.OK);
+    }
+
+    public Slice<TeamListSearch> searchTeamList(final TeamListSearchCondition searchCondition, final Pageable pageable) {
         return teamQueryRepository.findAllTeamListSearch(searchCondition, pageable);
     }
 
@@ -98,6 +201,9 @@ public class TeamService {
         final Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
+        if (member.getOpenTeam() == null) {
+            throw new IllegalArgumentException("개설된 팀이 없습니다.");
+        }
         final Long openTeamId = member.getOpenTeam().getId();
         if (!openTeamId.equals(teamId)) {
             throw new IllegalArgumentException("팀 개설자만 팀원 모집을 할 수 있습니다.");
@@ -184,23 +290,24 @@ public class TeamService {
 
     @Transactional
     public void applyMatch(final Long applyTeamId, ApplyRequest applyRequest, final Long teamId) {
-        if (!applyTeamId.equals(teamId)) {
-            final Team applyTeam = teamRepository.findById(applyTeamId)
-                    .orElseThrow(() -> new IllegalArgumentException("대결 신청 팀을 찾을 수 없습니다."));
-            final Team team = teamRepository.findById(teamId)
-                    .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+        final Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
+        if (team.getMatches()) {
+            if (!applyTeamId.equals(teamId)) {
+                final Team applyTeam = teamRepository.findById(applyTeamId)
+                        .orElseThrow(() -> new IllegalArgumentException("대결 신청 팀을 찾을 수 없습니다."));
+                if (applyRepository.findByApplyTeamIdAndTeamId(applyTeamId, teamId).orElse(null) == null) {
+                    final Apply apply = Apply.builder()
+                            .applyTeam(applyTeam)
+                            .team(team)
+                            .greeting(applyRequest.getGreeting())
+                            .approved(false)
+                            .build();
 
-            if (applyRepository.findByApplyTeamIdAndTeamId(applyTeamId, teamId).orElse(null) == null) {
-                final Apply apply = Apply.builder()
-                        .applyTeam(applyTeam)
-                        .team(team)
-                        .greeting(applyRequest.getGreeting())
-                        .approved(false)
-                        .build();
-
-                applyRepository.save(apply);
-            } else throw new IllegalArgumentException("이미 대결 신청한 팀입니다.");
-        } else throw new IllegalArgumentException("같은 팀에게 대결을 신청할 수 없습니다.");
+                    applyRepository.save(apply);
+                } else throw new IllegalArgumentException("이미 대결 신청한 팀입니다.");
+            } else throw new IllegalArgumentException("같은 팀에게 대결을 신청할 수 없습니다.");
+        } else throw new IllegalArgumentException("현재 이 팀은 대결 모집 상태가 아닙니다.");
     }
 
     @Transactional
@@ -212,16 +319,27 @@ public class TeamService {
     }
 
     @Transactional
-    public void releaseTeamMember(final Long teamId, final Long memberId) {
-        try {
-            final Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, memberId)
-                    .orElseThrow(() -> new IllegalArgumentException("참여를 찾을 수 없습니다."));
-            participationRepository.delete(participation);
-        } catch (Exception e) {
-            throw new NullPointerException("해당 회원은 팀원이 아닙니다.");
+    public ResponseEntity<?> releaseTeamMember(final Long teamId,
+                                               final Long memberId,
+                                               final UserDetailsImpl userDetails) {
+        if (userDetails.getUser().getOpenTeam().getId().equals(teamId)) {
+            if (userDetails.getUser().getId().equals(memberId)) {
+                return new ResponseEntity<>("자기 자신은 추방할 수 없습니다.", HttpStatus.BAD_REQUEST);
+            } else {
+                try {
+                    final Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, memberId)
+                            .orElseThrow(() -> new IllegalArgumentException("참여를 찾을 수 없습니다."));
+                    participationRepository.delete(participation);
+                    return new ResponseEntity<>("추방이 완료되었습니다.", HttpStatus.OK);
+
+                } catch (NullPointerException e) {
+                    throw new NullPointerException("해당 회원은 팀원이 아닙니다.");
+                }
+            }
         }
+        return new ResponseEntity<>("해당 팀의 개설자가 아닙니다.", HttpStatus.BAD_REQUEST);
     }
-        
+
     public void modifyTeam(final Long teamId, final TeamModifyRequest request, final Long id) {
         final Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
@@ -234,9 +352,9 @@ public class TeamService {
 
         // 기존 weekdays, time 제거
         weekdayRepository.findAllByTeamId(teamId)
-                        .forEach(wd -> weekdayRepository.deleteById(wd.getId()));
+                .forEach(wd -> weekdayRepository.deleteById(wd.getId()));
         timeRepository.findAllByTeamId(teamId)
-                        .forEach(t -> timeRepository.deleteById(t.getId()));
+                .forEach(t -> timeRepository.deleteById(t.getId()));
 
         team.modifyTeam(
                 uploadFile.get("url"),
