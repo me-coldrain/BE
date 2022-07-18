@@ -220,10 +220,11 @@ public class TeamController {
      * 팀원 추방 API
      */
     @DeleteMapping("/teams/{team_id}/members/{member_id}/participation")
-    public void releaseTeamMember(
+    public ResponseEntity<?> releaseTeamMember(
             final @PathVariable("team_id") Long teamId,
-            final @PathVariable("member_id") Long memberId) {
-        teamService.releaseTeamMember(teamId, memberId);
+            final @PathVariable("member_id") Long memberId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return teamService.releaseTeamMember(teamId, memberId, userDetails);
     }
 
      /**

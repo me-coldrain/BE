@@ -52,7 +52,7 @@ public class JwtTokenProvider {
         if(member.getOpenTeam() != null) {
             payloads.put("openTeamId", member.getOpenTeam().getId());
         } else {
-            payloads.put("openTeamId", "No openTeam");
+            payloads.put("openTeamId", null);
         }
 
         return Jwts.builder()

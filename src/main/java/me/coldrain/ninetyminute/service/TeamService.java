@@ -132,7 +132,7 @@ public class TeamService {
 
         TeamInfoResponse.RecentMatchHistory recentMatchHistory = new TeamInfoResponse.RecentMatchHistory();
         Team teamHistoryCheck = teamRepository.findById(teamId).orElseThrow();
-        if(teamHistoryCheck.getHistory() != null) {
+        if (teamHistoryCheck.getHistory() != null) {
             BeforeMatching recentTeamBeforeMatching = beforeMatchingRepository.findByRecentBeforeMatching(teamId).orElseThrow();
             History recentHistory = historyRepository.findByRecentHistory(recentTeamBeforeMatching.getId()).orElseThrow();
 
@@ -177,7 +177,7 @@ public class TeamService {
                 otherCaptain,
                 participate,
                 recentMatchHistory
-                );
+        );
 
         return new ResponseEntity<>(teamInfoResponse, HttpStatus.OK);
     }
@@ -318,14 +318,25 @@ public class TeamService {
     }
 
     @Transactional
-    public void releaseTeamMember(final Long teamId, final Long memberId) {
-        try {
-            final Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, memberId)
-                    .orElseThrow(() -> new IllegalArgumentException("참여를 찾을 수 없습니다."));
-            participationRepository.delete(participation);
-        } catch (Exception e) {
-            throw new NullPointerException("해당 회원은 팀원이 아닙니다.");
+    public ResponseEntity<?> releaseTeamMember(final Long teamId,
+                                               final Long memberId,
+                                               final UserDetailsImpl userDetails) {
+        if (userDetails.getUser().getOpenTeam().getId().equals(teamId)) {
+            if (userDetails.getUser().getId().equals(memberId)) {
+                return new ResponseEntity<>("자기 자신은 추방할 수 없습니다.", HttpStatus.BAD_REQUEST);
+            } else {
+                try {
+                    final Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, memberId)
+                            .orElseThrow(() -> new IllegalArgumentException("참여를 찾을 수 없습니다."));
+                    participationRepository.delete(participation);
+                    return new ResponseEntity<>("추방이 완료되었습니다.", HttpStatus.OK);
+
+                } catch (NullPointerException e) {
+                    throw new NullPointerException("해당 회원은 팀원이 아닙니다.");
+                }
+            }
         }
+        return new ResponseEntity<>("해당 팀의 개설자가 아닙니다.", HttpStatus.BAD_REQUEST);
     }
 
     public void modifyTeam(final Long teamId, final TeamModifyRequest request, final Long id) {
