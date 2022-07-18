@@ -21,6 +21,11 @@ public class HistoryController {
 
     private final HistoryService historyService;
 
+    /*
+     * Author: 병민
+     * 히스토리 목록 조회 API
+     * 해당 팀의 히스토리 목록 조회
+     */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("teams/{team_id}/history")
     public List<HistoryResponse> searchMatchHistory(
@@ -29,6 +34,11 @@ public class HistoryController {
         return historyService.searchMatchHistory(teamId, userDetails.getUser());
     }
 
+    /*
+     * Author: 병민
+     * 히스토리 상세 조회 API
+     * 해당 팀의 히스토리 상세 조회
+     */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/teams/{team_id}/history/{history_id}")
     public HistoryDetailResponse searchMatchHistoryDetail(
