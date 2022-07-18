@@ -7,7 +7,6 @@ import me.coldrain.ninetyminute.dto.response.MemberDuplicateResponse;
 import me.coldrain.ninetyminute.entity.Ability;
 import me.coldrain.ninetyminute.entity.Member;
 import me.coldrain.ninetyminute.entity.MemberRoleEnum;
-import me.coldrain.ninetyminute.exception.AuthenticationException;
 import me.coldrain.ninetyminute.exception.ErrorCode;
 import me.coldrain.ninetyminute.repository.AbilityRepository;
 import me.coldrain.ninetyminute.repository.MemberRepository;
@@ -19,6 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +38,11 @@ public class MemberService {
     //회원가입
     @Transactional
     public ResponseEntity<?> memberSignup(MemberRegisterRequest memberRegisterRequest) {
+        Optional<Member> found = memberRepository.findByUsername(memberRegisterRequest.getEmail());
+        if (found.isPresent()) {
+            return new ResponseEntity<>("중복된 이메일입니다.", HttpStatus.BAD_REQUEST);
+        }
+
         if (!memberRegisterRequest.getPassword().equals(memberRegisterRequest.getConfirmpassword())) {
             return new ResponseEntity<>("재확인 비밀번호가 다릅니다.", HttpStatus.BAD_REQUEST);
         } else {
@@ -81,30 +86,56 @@ public class MemberService {
     }
 
     //회원정보 수정
-    public ResponseEntity<?> memberEdit(Long member_id,
+    @Transactional
+    public ResponseEntity<?> memberEdit(Long memberId,
                                         MemberEditRequest memberEditRequest) {
-        Member member = memberRepository.findById(member_id).orElseThrow(
-                () -> new NullPointerException("존재하지 않는 회원입니다."));
-
-        if (memberEditRequest.getProfileImageFile().isEmpty()) {
-            Map<String, String> profileImg = new HashMap<>();
-            profileImg.put("url", "/localhost:8080/basicprofileimage.png");
-            profileImg.put("transImgFileName", "basicimage");
-            member.memberUpdate(profileImg, memberEditRequest);
-        } else {
-            if(member.getProfileName() == null) {
-                Map<String, String> profileImg = awsS3Service.uploadFile(memberEditRequest.getProfileImageFile());
-                member.memberUpdate(profileImg, memberEditRequest);
-            } else if (member.getProfileName().equals("basicimage")) {
-                Map<String, String> profileImg = awsS3Service.uploadFile(memberEditRequest.getProfileImageFile());
-                member.memberUpdate(profileImg, memberEditRequest);
-            } else {
-                awsS3Service.deleteFile(member.getProfileName());
-                Map<String, String> profileImg = awsS3Service.uploadFile(memberEditRequest.getProfileImageFile());
-                member.memberUpdate(profileImg, memberEditRequest);
+        try {
+            Member member = memberRepository.findById(memberId).orElseThrow();
+            Optional<Member> found = memberRepository.findByNickname(memberEditRequest.getNickname());
+            if (found.isPresent()) {
+                return new ResponseEntity<>("중복된 닉네임입니다.", HttpStatus.BAD_REQUEST);
             }
+            member.memberUpdate(memberEditRequest);
+            return new ResponseEntity<>(jwtTokenCreate(member), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("존재하지 않는 회원입니다.", HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(jwtTokenCreate(member), HttpStatus.OK);
+    }
+
+    //회원 프로필 사진 업로드
+    @Transactional
+    public ResponseEntity<?> memberProFileImageEdit(Long memberId,
+                                                    MultipartFile proFileImage) {
+        try {
+            Member member = memberRepository.findById(memberId).orElseThrow();
+
+            if (member.getProfileName() == null && (proFileImage == null || proFileImage.isEmpty())) {
+                Map<String, String> profileImg = new HashMap<>();
+                profileImg.put("url", "/images/basicprofileimage.png");
+                profileImg.put("transImgFileName", "basicImage");
+                member.memberproFileImageUpdate(profileImg);
+
+            } else if (member.getProfileName() == null) {
+                Map<String, String> profileImg = awsS3Service.uploadFile(proFileImage);
+                member.memberproFileImageUpdate(profileImg);
+            } else {
+                if (member.getProfileName().equals("basicImage") && (proFileImage == null || proFileImage.isEmpty())) {
+                    return new ResponseEntity<>(HttpStatus.OK);
+
+                } else if (member.getProfileName().equals("basicImage")) {
+                    Map<String, String> profileImg = awsS3Service.uploadFile(proFileImage);
+                    member.memberproFileImageUpdate(profileImg);
+
+                } else if (!(proFileImage == null || proFileImage.isEmpty())) {
+                    awsS3Service.deleteFile(member.getProfileName());
+                    Map<String, String> profileImg = awsS3Service.uploadFile(proFileImage);
+                    member.memberproFileImageUpdate(profileImg);
+                }
+            }
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("존재하지 않는 회원입니다.", HttpStatus.BAD_REQUEST);
+        }
     }
 
     //로그인
@@ -113,7 +144,7 @@ public class MemberService {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(memberLoginRequest.getEmail(), memberLoginRequest.getPassword()));
         } catch (Exception e) {
-            throw new AuthenticationException(ErrorCode.USERNAME_OR_PASSWORD_NOTFOUND);
+            return new ResponseEntity<>(ErrorCode.USERNAME_OR_PASSWORD_NOTFOUND.getMessage(), ErrorCode.USERNAME_OR_PASSWORD_NOTFOUND.getStatus());
         }
         Member member = memberRepository.findByUsername(memberLoginRequest.getEmail()).orElse(null);
         return new ResponseEntity<>(jwtTokenCreate(member), HttpStatus.CREATED);

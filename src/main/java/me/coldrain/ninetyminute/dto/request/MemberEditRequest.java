@@ -1,36 +1,25 @@
 package me.coldrain.ninetyminute.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@NoArgsConstructor
 @ToString
 public class MemberEditRequest {
-
-    @JsonProperty("profileImageFile")
-    private MultipartFile profileImageFile;
-
-    @Pattern(regexp = "^[가-힣a-zA-Z]+$")
+    //영어,한글을 포함해 2~8자리이어야 합니다
+    @Pattern(regexp = "^[가-힣a-zA-Z0-9]{2,8}$")
     @NotBlank
-    @JsonProperty("nickname")
     private String nickname;
 
     @NotBlank
-    @JsonProperty("position")
     private String position;
 
     @NotBlank
-    @JsonProperty("contact")
     private String contact;
-
+    //숫자만 입력 가능합니다
     @Pattern(regexp = "^\\d+$")
-    @JsonProperty("phone")
     private String phone;
 }

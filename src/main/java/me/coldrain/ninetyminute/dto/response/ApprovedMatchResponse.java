@@ -30,6 +30,10 @@ public class ApprovedMatchResponse {
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
 
+    public void changeIsCaptain (Boolean isCaptain) {
+        this.isCaptain = isCaptain;
+    }
+
     @Builder
     public ApprovedMatchResponse(Long matchId, Boolean isCaptain, Long opposingTeamId,
                                        String opposingTeamName, Integer opposingTeamPoint, Double opposingTeamWinRate,

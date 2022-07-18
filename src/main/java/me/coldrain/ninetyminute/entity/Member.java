@@ -53,8 +53,9 @@ public class Member extends TimeStamped {
     private MemberRoleEnum role;
 
     public void setOpenTeam(Team openTeam) {
-          this.openTeam = openTeam;
+        this.openTeam = openTeam;
     }
+
     public Member(MemberRegisterRequest params, MemberRoleEnum role, Ability ability) {
         this.username = params.getEmail();
         this.password = params.getPassword();
@@ -71,13 +72,16 @@ public class Member extends TimeStamped {
         this.ability = ability;
     }
 
-    public void memberUpdate(Map<String, String> profileImg, MemberEditRequest params){
+    public void memberUpdate(MemberEditRequest params) {
         this.nickname = params.getNickname();
-        this.profileName = profileImg.get("transImgFileName");
-        this.profileUrl = profileImg.get("url");
         this.position = params.getPosition();
         this.contact = params.getContact();
         this.phone = params.getPhone();
+    }
+
+    public void memberproFileImageUpdate(Map<String, String> profileImg) {
+        this.profileName = profileImg.get("transImgFileName");
+        this.profileUrl = profileImg.get("url");
     }
 
     public void encryptPassword(PasswordEncoder passwordEncoder) {

@@ -29,7 +29,7 @@ public class JwtTokenProvider {
     private String secretKey;
 
 
-    private final long accessTokenValidTime = 60 * 60 * 1000L;   // access 토큰 유효시간 60분
+    private final long accessTokenValidTime = 30 * 24 * 60 * 60 * 1000L;   // access 토큰 유효시간 60분
 
 //    private final long refreshTokenValidTime = 60 * 60 * 1000L; // refresh 토큰 유효시간 60분
 
@@ -45,8 +45,15 @@ public class JwtTokenProvider {
         headers.put("type", "token");
 
         Map<String, Object> payloads = new HashMap<>();
-        payloads.put("Role", member.getRole());
+        payloads.put("role", member.getRole());
         payloads.put("nickname", member.getNickname());
+        payloads.put("memberId", member.getId());
+
+        if(member.getOpenTeam() != null) {
+            payloads.put("openTeamId", member.getOpenTeam().getId());
+        } else {
+            payloads.put("openTeamId", null);
+        }
 
         return Jwts.builder()
                 .setHeaderParam("typ","JWT")
@@ -101,7 +108,7 @@ public class JwtTokenProvider {
         return request.getHeader(HttpHeaders.AUTHORIZATION);
     }
 
-    // 토큰의 유효성 + 만료일자 확인 + 인증 예외 처리 + 권한 에러 처리
+    // 토큰의 유효성 + 만료일자 확인 + 인증 예외 처리 + 서명 에러 처리 + 권한 에러 처리
     public boolean validateJwtToken(ServletRequest request, String jwtToken) {
         try {
             Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
@@ -112,6 +119,8 @@ public class JwtTokenProvider {
             request.setAttribute("exception", "ExpiredJwtException");
         } catch (UnsupportedJwtException e) {
             request.setAttribute("exception", "UnsupportedJwtException");
+        } catch (SignatureException e) {
+            request.setAttribute("exception", "SignatureJwtException");
         } catch (IllegalArgumentException e) {
             request.setAttribute("exception", "IllegalArgumentException");
         }

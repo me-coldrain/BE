@@ -1,9 +1,6 @@
 package me.coldrain.ninetyminute.entity;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -25,4 +22,10 @@ public class History extends TimeStamped {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "before_matching_id")
     private BeforeMatching beforeMatching;
+
+    @Builder
+    public History(BeforeMatching beforeMatching, AfterMatching afterMatching) {
+        this.beforeMatching = beforeMatching;
+        this.afterMatching = afterMatching;
+    }
 }

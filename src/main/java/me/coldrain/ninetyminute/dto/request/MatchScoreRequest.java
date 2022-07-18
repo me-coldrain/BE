@@ -5,8 +5,8 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class fieldMemberRequest {
-    private Long memberId;
-    private String position;
-    private Boolean anonymous;
+public class MatchScoreRequest {
+
+    private Integer teamScore;
+    private Integer opponentScore;
 }

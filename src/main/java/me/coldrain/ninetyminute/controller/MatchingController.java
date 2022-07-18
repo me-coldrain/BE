@@ -3,7 +3,9 @@ package me.coldrain.ninetyminute.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.request.ApprovedMatchRequest;
-import me.coldrain.ninetyminute.dto.request.fieldMemberRequest;
+import me.coldrain.ninetyminute.dto.request.MatchResultRequest;
+import me.coldrain.ninetyminute.dto.request.MatchScoreRequest;
+import me.coldrain.ninetyminute.dto.request.MatchMemberRequest;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
 import me.coldrain.ninetyminute.dto.response.ApprovedMatchResponse;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
@@ -48,7 +50,6 @@ public class MatchingController {
             final @PathVariable("apply_id") Long applyId,
             final @RequestBody ApprovedMatchRequest approvedMatchRequest,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
         return matchingService.approveApplyMatch(applyTeamId, applyId, approvedMatchRequest, userDetails.getUser());
     }
 
@@ -63,11 +64,11 @@ public class MatchingController {
             final @PathVariable("apply_team_id") Long applyTeamId,
             final @PathVariable("apply_id") Long applyId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
         matchingService.rejectApplyMatch(applyTeamId, applyId, userDetails.getUser());
     }
 
     /*
+     * Author: 병민
      * 대결 성사 목록 조회 API
      * apply 의 approved 가 ture 일 때 목록을 조회 할 수 있습니다.
      */
@@ -80,16 +81,16 @@ public class MatchingController {
     }
 
     /*
+     * Author: 병민
      * 대결 성사 목록 상세 조회 API
      * 성사 된 대결의 상세 페이지 정보
      */
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/teams/{team_id}/matches/{match_id}")
+    @GetMapping("/teams/{team_id}/matches/{match_id}/detail")
     public ApprovedMatchResponse searchApprovedMatchDetail(
             @PathVariable("team_id") Long teamId,
             @PathVariable("match_id") Long matchId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) {
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return matchingService.searchApprovedMatchDetail(teamId, matchId, userDetails.getUser());
     }
 
@@ -103,10 +104,9 @@ public class MatchingController {
     public void makeTeamFormation(
             @PathVariable("team_id") Long teamId,
             @PathVariable("match_id") Long matchId,
-            @RequestBody List<fieldMemberRequest> fieldMemberRequestList,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) {
-        matchingService.makeTeamFormation(teamId, matchId, fieldMemberRequestList, userDetails.getUser());
+            @RequestBody List<MatchMemberRequest> matchMemberRequestList,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        matchingService.makeTeamFormation(teamId, matchId, matchMemberRequestList, userDetails.getUser());
     }
 
     /*
@@ -119,8 +119,81 @@ public class MatchingController {
     public void cancelApprovedMatch(
             @PathVariable("team_id") Long teamId,
             @PathVariable("match_id") Long matchId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) {
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
         matchingService.cancelApprovedMatch(teamId, matchId, userDetails.getUser());
+    }
+
+    /*
+     * Author: 병민
+     * 대결 종료 확인 API
+     * 대결 종료 확인 버튼 수행 API -> 대결 각 팀의 경기 종료 상태를 apply 에 저장.
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/teams/{team_id}/matches/{match_id}")
+    public void confirmEndMatch(
+            final @PathVariable("team_id") Long teamId,
+            final @PathVariable("match_id") Long matchId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        matchingService.confirmEndMatch(teamId, matchId, userDetails.getUser());
+    }
+
+    /*
+     * Author: 병민
+     * 대결 결과 점수 입력 API
+     * 대결 후 경기 결과 입력
+     */
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/teams/{team_id}/matches/{match_id}/score")
+    public void writeMatchScore(
+            final @PathVariable("team_id") Long teamId,
+            final @PathVariable("match_id") Long matchId,
+            final @RequestBody MatchScoreRequest matchScoreRequest,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        matchingService.writeMatchScore(teamId, matchId, matchScoreRequest, userDetails.getUser());
+    }
+
+    /*
+     * Author: 병민
+     * 상대팀 대결 결과 점수 정정 API
+     * 대결 점수 정정 API
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/teams/{team_id}/matches/{match_id}/score")
+    public void correctMatchScore(
+            final @PathVariable("team_id") Long teamId,
+            final @PathVariable("match_id") Long matchId,
+            final @RequestBody MatchScoreRequest matchScoreRequest,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        matchingService.correctMatchScore(teamId, matchId, matchScoreRequest, userDetails.getUser());
+    }
+
+    /*
+     * Author: 병민
+     * 대결 종료 점수 승인 API
+     * API 요청시 admitStatus 값이 true 변경
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/teams/{team_id}/matches/{match_id}/score/admit")
+    public void confirmMatchScore(
+            final @PathVariable("team_id") Long teamId,
+            final @PathVariable("match_id") Long matchId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        matchingService.confirmMatchScore(teamId, matchId, userDetails.getUser());
+    }
+
+    /*
+     * Author: 병민
+     * 대결 후 결과 등록 API
+     * 대결 후 결과 등록과 승리 팀 경기에 참여한 선수들에 개별 포지션 점수 및 팀 승점 부여
+     * mvp, 분위기 매이커 점수 부여
+     */
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/teams/{team_id}/matches/{match_id}/results")
+    public void writeMatchResult(
+            @PathVariable("team_id") Long teamId,
+            @PathVariable("match_id") Long matchId,
+            @RequestBody MatchResultRequest matchResultRequest,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        matchingService.writeMatchResult(teamId, matchId, matchResultRequest, userDetails.getUser());
     }
 }
