@@ -318,22 +318,26 @@ public class TeamService {
     public ResponseEntity<?> releaseTeamMember(final Long teamId,
                                                final Long memberId,
                                                final UserDetailsImpl userDetails) {
-        if (userDetails.getUser().getOpenTeam().getId().equals(teamId)) {
-            if (userDetails.getUser().getId().equals(memberId)) {
-                return new ResponseEntity<>("자기 자신은 추방할 수 없습니다.", HttpStatus.BAD_REQUEST);
-            } else {
-                try {
-                    final Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, memberId)
-                            .orElseThrow(() -> new IllegalArgumentException("참여를 찾을 수 없습니다."));
-                    participationRepository.delete(participation);
-                    return new ResponseEntity<>("추방이 완료되었습니다.", HttpStatus.OK);
+        Long loginMemberOpenTeamId;
 
-                } catch (NullPointerException e) {
-                    throw new NullPointerException("해당 회원은 팀원이 아닙니다.");
-                }
-            }
+        if (userDetails.getUser().getOpenTeam() != null) {
+            loginMemberOpenTeamId = userDetails.getUser().getOpenTeam().getId();
+        } else {
+            return new ResponseEntity<>("개설한 팀이 없습니다.", HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>("해당 팀의 개설자가 아닙니다.", HttpStatus.BAD_REQUEST);
+
+        if (userDetails.getUser().getId().equals(memberId)) {
+            return new ResponseEntity<>("자기 자신은 추방할 수 없습니다.", HttpStatus.BAD_REQUEST);
+        }
+
+        if (loginMemberOpenTeamId.equals(teamId)) {
+            final Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(memberId, teamId)
+                    .orElseThrow(() -> new IllegalArgumentException("참여에 존재하지 않습니다."));
+            participationRepository.delete(participation);
+            return new ResponseEntity<>("추방이 완료되었습니다.", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("해당 팀의 개설자가 아닙니다.", HttpStatus.BAD_REQUEST);
+        }
     }
 
     public void modifyTeam(final Long teamId, final TeamModifyRequest request, final Long id) {
