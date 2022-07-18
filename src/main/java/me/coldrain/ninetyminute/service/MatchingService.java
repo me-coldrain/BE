@@ -350,11 +350,11 @@ public class MatchingService {
 
         if (afterMatching.getScore() > afterMatching.getOpponentScore()) {
             afterMatching.editResult(results.get(0), results.get(2));
-            List<FieldMember> fieldMembers = fieldMemberRepository.findMatchFieldMembers(team.getId(), afterMatching.getBeforeMatching().getId());
+            List<FieldMember> fieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(team.getId(), afterMatching.getBeforeMatching().getId());
             for (FieldMember fieldMember : fieldMembers) {
                 distributePositionPoint(fieldMember);
             }
-            List<SubstituteMember> substituteMembers = substituteRepository.findMatchSubstituteMembers(team.getId(), afterMatching.getId());
+            List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembers(team.getId(), afterMatching.getId());
             for (SubstituteMember substituteMember : substituteMembers) {
                 distributePositionPoint(substituteMember);
             }
@@ -365,11 +365,11 @@ public class MatchingService {
         }
         else if (afterMatching.getScore() < afterMatching.getOpponentScore()) {
             afterMatching.editResult(results.get(2), results.get(0));
-            List<FieldMember> fieldMembers = fieldMemberRepository.findMatchFieldMembers(opposingTeam.getId(), afterMatching.getBeforeMatching().getId());
+            List<FieldMember> fieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(opposingTeam.getId(), afterMatching.getBeforeMatching().getId());
             for (FieldMember fieldMember : fieldMembers) {
                 distributePositionPoint(fieldMember);
             }
-            List<SubstituteMember> substituteMembers = substituteRepository.findMatchSubstituteMembers(opposingTeam.getId(), afterMatching.getId());
+            List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembers(opposingTeam.getId(), afterMatching.getId());
             for (SubstituteMember substituteMember : substituteMembers) {
                 distributePositionPoint(substituteMember);
             }

@@ -14,5 +14,8 @@ public interface SubstituteRepository extends JpaRepository<SubstituteMember, Lo
     Optional<SubstituteMember> findByIdAndTeamId(Long substituteMemberId, Long teamId);
 
     @Query("select sm from SubstituteMember sm where sm.team.id =: teamId and sm.afterMatching.id =: beforeMatchId and sm.anonymous = false ")
-    List<SubstituteMember> findMatchSubstituteMembers(Long teamId, Long afterMatchId);
+    List<SubstituteMember> findAllByMatchSubstituteMembers(Long teamId, Long afterMatchId);
+
+    @Query("select sm from SubstituteMember sm where sm.team.id =: teamId and sm.afterMatching.id =: beforeMatchId")
+    List<SubstituteMember> findAllByAllMatchSubstituteMembers(Long teamId, Long afterMatchId);
 }

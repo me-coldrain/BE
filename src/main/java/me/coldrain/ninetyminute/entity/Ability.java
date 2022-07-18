@@ -56,6 +56,10 @@ public class Ability extends TimeStamped {
         this.charmingPoint += 1;
     }
 
+    public Integer getTotalPositionPoint() {
+        return (this.strikerPoint + this.midfielderPoint + this.defenderPoint + this.goalkeeperPoint);
+    }
+
     @Builder
     public Ability(Integer strikerPoint, Integer midfielderPoint, Integer defenderPoint, Integer goalkeeperPoint, Integer mvpPoint, Integer charmingPoint) {
         this.strikerPoint = strikerPoint;
