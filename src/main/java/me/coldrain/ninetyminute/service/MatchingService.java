@@ -87,6 +87,7 @@ public class MatchingService {
             if (!applyList.isEmpty()) {
                 for (Apply apply : applyList) {
                     OfferMatchResponse offerMatchResponse = OfferMatchResponse.builder()
+                            .applyId(apply.getId())
                             .opposingTeamId(apply.getApplyTeam().getId())
                             .opposingTeamName(apply.getApplyTeam().getName())
                             .opposingTeamPoint(apply.getApplyTeam().getRecord().getWinPoint())
@@ -104,7 +105,7 @@ public class MatchingService {
 
     public List<ApprovedMatchResponse> searchApprovedMatch(Long teamId, Member member) {
         Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, member.getId()).orElse(null);
-        if (participation != null) {
+        if (participation != null) { // 팀의 주장일 때는
             List<BeforeMatching> beforeMatchingList = beforeMatchingRepository.findAllByBeforeMatching(teamId);    // apply 의 approved == true 일 때만
             List<ApprovedMatchResponse> approvedMatchResponseList = new ArrayList<>();
 

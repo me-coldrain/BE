@@ -26,8 +26,8 @@ public class MatchingController {
 
     /*
      * Author: 병민
-     * 대결 수락 목록 조회 API
-     * 대결이 신청된 목록을 대결 신청 받은 팀의 팀장이 조회하는 API.
+     * 대결 요청 목록 조회 API
+     * 대결 요청 페이지 대결 수락 목록 조회(대결 신청 받은 팀의 팀장만 조회 가능).
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/teams/{team_id}/matches/offer")
