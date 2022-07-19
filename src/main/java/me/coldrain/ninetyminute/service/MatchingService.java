@@ -82,7 +82,7 @@ public class MatchingService {
     public List<OfferMatchResponse> searchOfferMatches(Long teamId, Member member) {
         List<OfferMatchResponse> offerMatchResponseList = new ArrayList<>();
         if (member.getOpenTeam().getId().equals(teamId)) {
-            List<Apply> applyList = applyRepository.findAllByTeamIdTrueOrderByCreatedDate(teamId);
+            List<Apply> applyList = applyRepository.findAllByTeamIdOrderByCreatedDate(teamId);
             // 해당 팀에 신청된 경기가 없어도 null이 전달되야한다.
             if (!applyList.isEmpty()) {
                 for (Apply apply : applyList) {
