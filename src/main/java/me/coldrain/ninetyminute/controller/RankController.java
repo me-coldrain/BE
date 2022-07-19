@@ -1,8 +1,10 @@
 package me.coldrain.ninetyminute.controller;
 
 import lombok.RequiredArgsConstructor;
+import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import me.coldrain.ninetyminute.service.RankService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,14 +28,14 @@ public class RankController {
     }
 
     //로그인 사용자 개인 랭킹
-    @GetMapping("/api/home/rank/members/{member_id}")
-    public ResponseEntity<?> myRankGet(@PathVariable Long member_id) {
-        return rankService.myRankGet(member_id);
+    @GetMapping("/api/home/rank/members/myranking")
+    public ResponseEntity<?> myRankGet(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return rankService.myRankGet(userDetails);
     }
 
     //로그인 사용자가 참여하고 있는 팀의 랭킹 조회
-    @GetMapping("/api/home/rank/members/{member_id}/teams")
-    public ResponseEntity<?> myTeamRankGet(@PathVariable Long member_id) {
-        return rankService.myTeamRankGet(member_id);
+    @GetMapping("/api/home/rank/members/myranking/teams")
+    public ResponseEntity<?> myTeamRankGet(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return rankService.myTeamRankGet(userDetails);
     }
 }

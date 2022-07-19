@@ -33,18 +33,27 @@ public class Record extends TimeStamped {
     public void updateTotalGameCount() {
         this.totalGameCount += 1;
     }
+
     public void updateWinCount() {
         this.winCount += 1;
+        this.winPoint += 3;
     }
+
     public void updateLoseCount() {
         this.loseCount += 1;
+        if (this.winPoint > 0) {
+            this.winPoint -= 1;
+        }
     }
+
     public void updateDrawCount() {
         this.drawCount += 1;
     }
+
     public void updateWinRate(Double winRate) {
         this.winRate = winRate;
     }
+
     public void updateWinPoint(Integer winPoint) {
         this.winPoint = winPoint;
     }

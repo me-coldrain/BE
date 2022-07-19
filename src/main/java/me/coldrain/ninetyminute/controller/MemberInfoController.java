@@ -22,18 +22,6 @@ public class MemberInfoController {
         return memberInfoService.memberInfoGet(memberId, userDetails);
     }
 
-    //참여한 팀 조회
-    @GetMapping("/api/home/members/{member_id}/teams")
-    public ResponseEntity<?> memberTeamGet(@PathVariable("member_id") Long memberId) {
-        return memberInfoService.memberTeamGet(memberId);
-    }
-
-    //참여 신청한 팀 조회
-    @GetMapping("/api/home/members/{member_id}/teams/offer")
-    public ResponseEntity<?> offerTeamGet(@PathVariable("member_id") Long memberId) {
-        return memberInfoService.offerTeamGet(memberId);
-    }
-
     //참여 신청중인 팀 신청취소
     @DeleteMapping("/api/home/members/{member_id}/teams/{team_id}/offer")
     public ResponseEntity<?> offerCancelTeam(@PathVariable("member_id") Long memberId, @PathVariable("team_id") Long teamId) {
