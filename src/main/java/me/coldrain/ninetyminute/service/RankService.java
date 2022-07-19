@@ -1,19 +1,23 @@
 package me.coldrain.ninetyminute.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.response.MyRankResponse;
 import me.coldrain.ninetyminute.dto.response.MyTeamRankResponse;
 import me.coldrain.ninetyminute.dto.response.RankerMemberResponse;
 import me.coldrain.ninetyminute.dto.response.RankerTeamResponse;
 import me.coldrain.ninetyminute.entity.*;
 import me.coldrain.ninetyminute.repository.*;
+import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class RankService {
@@ -181,7 +185,7 @@ public class RankService {
                         rankerMemberResponseList.add(rankerMemberResponse);
                     }
 
-                    if (rankerMemberResponseList.size() ==10) {
+                    if (rankerMemberResponseList.size() == 10) {
                         break;
                     }
                 }
@@ -230,7 +234,7 @@ public class RankService {
                         rankerMemberResponseList.add(rankerMemberResponse);
                     }
 
-                    if (rankerMemberResponseList.size() ==10) {
+                    if (rankerMemberResponseList.size() == 10) {
                         break;
                     }
                 }
@@ -279,7 +283,7 @@ public class RankService {
                         rankerMemberResponseList.add(rankerMemberResponse);
                     }
 
-                    if (rankerMemberResponseList.size() ==10) {
+                    if (rankerMemberResponseList.size() == 10) {
                         break;
                     }
                 }
@@ -328,7 +332,7 @@ public class RankService {
                         rankerMemberResponseList.add(rankerMemberResponse);
                     }
 
-                    if (rankerMemberResponseList.size() ==10) {
+                    if (rankerMemberResponseList.size() == 10) {
                         break;
                     }
                 }
@@ -387,106 +391,166 @@ public class RankService {
     }
 
     //로그인 사용자 개인 랭킹
-    public ResponseEntity<?> myRankGet(Long member_id) {
-        List<MyRankResponse> myRankResponseList = new ArrayList<>();
+    @Transactional
+    public ResponseEntity<?> myRankGet(UserDetailsImpl userDetails) {
 
-        Member myRank = memberRepository.findById(member_id).orElseThrow(
-                () -> new NullPointerException("존재하지 않는 회원입니다."));
-        String position = myRank.getPosition();
+        Member member = memberRepository.findById(userDetails.getUser().getId())
+                .orElseThrow(() -> new NullPointerException("회원이 존재하지 않습니다."));
 
-        switch (position) {
+        if(member.getAbility() == null){
+            return new ResponseEntity<>("회원정보를 입력해주세요.",HttpStatus.BAD_REQUEST);
+        }
+
+        int myRank = 1;
+
+        MyRankResponse myStrikerRankResponse = new MyRankResponse();
+        myStrikerRankResponse.setMemberId(userDetails.getUser().getId());
+        myStrikerRankResponse.setProfileImagerUrl(userDetails.getUser().getProfileUrl());
+        myStrikerRankResponse.setNickname(userDetails.getUser().getNickname());
+        myStrikerRankResponse.setPosition(userDetails.getUser().getPosition());
+        myStrikerRankResponse.setMvpPoint(member.getAbility().getMvpPoint());
+
+        switch (userDetails.getUser().getPosition()) {
             case "striker":
                 List<Ability> myStrikerPointRank = abilityRepository.findAllByOrderByStrikerPointDesc();
-
-                MyRankResponse myStrikerRankResponse = new MyRankResponse(
-                        myRank.getId(),
-                        myRank.getProfileUrl(),
-                        myRank.getNickname(),
-                        myRank.getPosition(),
-                        myRank.getAbility().getMvpPoint(),
-                        myRank.getAbility().getStrikerPoint(),
-                        myStrikerPointRank.indexOf(myRank.getAbility()) + 1
-                );
-                myRankResponseList.add(myStrikerRankResponse);
+                for (int i = 0; i < myStrikerPointRank.size(); i++) {
+                    if (!myStrikerPointRank.get(i).getId().equals(member.getAbility().getId())) {
+                        if (i == myStrikerPointRank.size() - 1) {
+                            break;
+                        } else if (!myStrikerPointRank.get(i).getStrikerPoint().equals(myStrikerPointRank.get(i + 1).getStrikerPoint())) {
+                            myRank++;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                myStrikerRankResponse.setMyRank(myRank);
+                myStrikerRankResponse.setPositionPoint(member.getAbility().getStrikerPoint());
                 break;
 
             case "midfielder":
                 List<Ability> myMidfielderPointRank = abilityRepository.findAllByOrderByMidfielderPointDesc();
-
-                MyRankResponse myMidfielderRankResponse = new MyRankResponse(
-                        myRank.getId(),
-                        myRank.getProfileUrl(),
-                        myRank.getNickname(),
-                        myRank.getPosition(),
-                        myRank.getAbility().getMvpPoint(),
-                        myRank.getAbility().getMidfielderPoint(),
-                        myMidfielderPointRank.indexOf(myRank.getAbility()) + 1
-                );
-                myRankResponseList.add(myMidfielderRankResponse);
+                for (int i = 0; i < myMidfielderPointRank.size(); i++) {
+                    if (!myMidfielderPointRank.get(i).getId().equals(member.getAbility().getId())) {
+                        if (i == myMidfielderPointRank.size() - 1) {
+                            break;
+                        } else if (!myMidfielderPointRank.get(i).getMidfielderPoint().equals(myMidfielderPointRank.get(i + 1).getMidfielderPoint())) {
+                            myRank++;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                myStrikerRankResponse.setMyRank(myRank);
+                myStrikerRankResponse.setPositionPoint(member.getAbility().getMidfielderPoint());
                 break;
 
             case "defender":
                 List<Ability> myDefenderPointRank = abilityRepository.findAllByOrderByDefenderPointDesc();
-
-                MyRankResponse myDefenderRankResponse = new MyRankResponse(
-                        myRank.getId(),
-                        myRank.getProfileUrl(),
-                        myRank.getNickname(),
-                        myRank.getPosition(),
-                        myRank.getAbility().getMvpPoint(),
-                        myRank.getAbility().getDefenderPoint(),
-                        myDefenderPointRank.indexOf(myRank.getAbility()) + 1
-                );
-                myRankResponseList.add(myDefenderRankResponse);
+                for (int i = 0; i < myDefenderPointRank.size(); i++) {
+                    if (!myDefenderPointRank.get(i).getId().equals(member.getAbility().getId())) {
+                        if (i == myDefenderPointRank.size() - 1) {
+                            break;
+                        } else if (!myDefenderPointRank.get(i).getDefenderPoint().equals(myDefenderPointRank.get(i + 1).getDefenderPoint())) {
+                            myRank++;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                myStrikerRankResponse.setMyRank(myRank);
+                myStrikerRankResponse.setPositionPoint(member.getAbility().getDefenderPoint());
                 break;
 
             case "goalkeeper":
                 List<Ability> myGoalkeeperPointRank = abilityRepository.findAllByOrderByGoalkeeperPointDesc();
-
-                MyRankResponse myGoalkeeperRankResponse = new MyRankResponse(
-                        myRank.getId(),
-                        myRank.getProfileUrl(),
-                        myRank.getNickname(),
-                        myRank.getPosition(),
-                        myRank.getAbility().getMvpPoint(),
-                        myRank.getAbility().getGoalkeeperPoint(),
-                        myGoalkeeperPointRank.indexOf(myRank.getAbility()) + 1
-                );
-                myRankResponseList.add(myGoalkeeperRankResponse);
+                for (int i = 0; i < myGoalkeeperPointRank.size(); i++) {
+                    if (!myGoalkeeperPointRank.get(i).getId().equals(member.getAbility().getId())) {
+                        if (i == myGoalkeeperPointRank.size() - 1) {
+                            break;
+                        } else if (!myGoalkeeperPointRank.get(i).getGoalkeeperPoint().equals(myGoalkeeperPointRank.get(i + 1).getGoalkeeperPoint())) {
+                            myRank++;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                myStrikerRankResponse.setMyRank(myRank);
+                myStrikerRankResponse.setPositionPoint(member.getAbility().getGoalkeeperPoint());
                 break;
         }
-        return new ResponseEntity<>(myRankResponseList, HttpStatus.OK);
+        return new ResponseEntity<>(myStrikerRankResponse, HttpStatus.OK);
     }
 
     //로그인 사용자가 참여하고 있는 팀의 랭킹 조회
-    public ResponseEntity<?> myTeamRankGet(Long member_id) {
-        List<MyTeamRankResponse> myTeamRankResponseList = new ArrayList<>();
-        List<Record> myTeamWinPointRank = recordRepository.findAllByOrderByWinPointDescWinRateDesc();
+    public ResponseEntity<?> myTeamRankGet(UserDetailsImpl userDetails) {
+        MyTeamRankResponse myTeamRankResponse = new MyTeamRankResponse();
+        MyTeamRankResponse.teamCaptain teamCaptainRank = new MyTeamRankResponse.teamCaptain();
+        MyTeamRankResponse.teamMember teamMemberRank = new MyTeamRankResponse.teamMember();
 
-        Member myOpenTeam = memberRepository.findById(member_id).orElseThrow(
+        List<Record> TeamWinPointRank = recordRepository.findAllByOrderByWinPointDescWinRateDesc();
+
+        Member member = memberRepository.findById(userDetails.getUser().getId()).orElseThrow(
                 () -> new NullPointerException("존재하지 않는 사용자 입니다."));
-        if (myOpenTeam.getOpenTeam() != null) {
-            MyTeamRankResponse myTeamRankResponse = new MyTeamRankResponse(
-                    myOpenTeam.getOpenTeam().getId(),
-                    myOpenTeam.getOpenTeam().getMainArea(),
-                    myOpenTeam.getOpenTeam().getName(),
-                    myOpenTeam.getOpenTeam().getRecord().getWinPoint(),
-                    myTeamWinPointRank.indexOf(myOpenTeam.getOpenTeam().getRecord()) + 1
-            );
-            myTeamRankResponseList.add(myTeamRankResponse);
+
+        int myOpenTeamRank = 1;
+
+        if (member.getOpenTeam() != null) {
+            teamCaptainRank.setTeamId(member.getOpenTeam().getId());
+            teamCaptainRank.setMainArea(member.getOpenTeam().getMainArea());
+            teamCaptainRank.setTeamName(member.getOpenTeam().getName());
+            teamCaptainRank.setWinPoint(member.getOpenTeam().getRecord().getWinPoint());
+
+            for (int i = 0; i < TeamWinPointRank.size(); i++) {
+                if (!TeamWinPointRank.get(i).getId().equals(member.getOpenTeam().getRecord().getId())) {
+                    if (i == TeamWinPointRank.size() - 1) {
+                        break;
+                    } else if (!TeamWinPointRank.get(i).getWinPoint().equals(TeamWinPointRank.get(i + 1).getWinPoint())) {
+                        myOpenTeamRank++;
+                    } else if (TeamWinPointRank.get(i).getWinPoint().equals(TeamWinPointRank.get(i + 1).getWinPoint()) &&
+                            !TeamWinPointRank.get(i).getWinRate().equals(TeamWinPointRank.get(i + 1).getWinRate())) {
+                        myOpenTeamRank++;
+                    }
+                } else {
+                    break;
+                }
+            }
+            teamCaptainRank.setMyOpenTeamRank(myOpenTeamRank);
+        } else {
+            teamCaptainRank = null;
         }
 
-        List<Participation> myTeam = participationRepository.findAllByMemberIdTrue(member_id);
-        for (Participation participation : myTeam) {
-            MyTeamRankResponse myTeamRankResponse = new MyTeamRankResponse(
-                    participation.getTeam().getId(),
-                    participation.getTeam().getMainArea(),
-                    participation.getTeam().getName(),
-                    participation.getTeam().getRecord().getWinPoint(),
-                    myTeamWinPointRank.indexOf(participation.getTeam().getRecord()) + 1
-            );
-            myTeamRankResponseList.add(myTeamRankResponse);
+        int myTeamRank = 1;
+        List<MyTeamRankResponse.teamMember> teamMemberRankList = new ArrayList<>();
+        List<Participation> myTeam = participationRepository.findAllByMemberIdTrue(member.getId());
+        for (int i = 0; i < myTeam.size(); i++) {
+            if (!member.getOpenTeam().getId().equals(myTeam.get(i).getTeam().getId())) {
+                teamMemberRank.setTeamId(myTeam.get(i).getTeam().getId());
+                teamMemberRank.setMainArea(myTeam.get(i).getTeam().getMainArea());
+                teamMemberRank.setTeamName(myTeam.get(i).getTeam().getName());
+                teamMemberRank.setWinPoint(myTeam.get(i).getTeam().getRecord().getWinPoint());
+
+                for (int j = 0; j < TeamWinPointRank.size(); j++) {
+                    if (!TeamWinPointRank.get(j).getId().equals(myTeam.get(i).getTeam().getRecord().getId())) {
+                        if (i == TeamWinPointRank.size() - 1) {
+                            break;
+                        } else if (!TeamWinPointRank.get(j).getWinPoint().equals(TeamWinPointRank.get(j + 1).getWinPoint())) {
+                            myTeamRank++;
+                        } else if (TeamWinPointRank.get(j).getWinPoint().equals(TeamWinPointRank.get(j + 1).getWinPoint()) &&
+                                !TeamWinPointRank.get(j).getWinRate().equals(TeamWinPointRank.get(j + 1).getWinRate())) {
+                            myTeamRank++;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                teamMemberRank.setMyTeamRank(myTeamRank);
+                teamMemberRankList.add(teamMemberRank);
+            }
         }
-        return new ResponseEntity<>(myTeamRankResponseList, HttpStatus.OK);
+
+        myTeamRankResponse.setTeamCaptain(teamCaptainRank);
+        myTeamRankResponse.setTeamMember(teamMemberRankList);
+        return new ResponseEntity<>(myTeamRankResponse, HttpStatus.OK);
     }
 }
