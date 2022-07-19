@@ -41,7 +41,7 @@ public class MatchingController {
     /*
      * Author: 병민
      * 대결 수락 정보 저장 API
-     * 대결 수락 시 대결 상세 정보 저장 및 apply 상태 변경.
+     * 대결 수락 시 대결 상세 정보 저장 및 apply 상태 변경(대결 요).
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/teams/{apply_team_id}/apply/{apply_id}")
@@ -69,8 +69,8 @@ public class MatchingController {
 
     /*
      * Author: 병민
-     * 대결 성사 목록 조회 API
-     * apply 의 approved 가 ture 일 때 목록을 조회 할 수 있습니다.
+     * 소속 팀 대결 목록 조회 API
+     * 소속 팀의 대결 목록 조회
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/teams/{team_id}/matches")
@@ -86,12 +86,12 @@ public class MatchingController {
      * 성사 된 대결의 상세 페이지 정보
      */
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/teams/{team_id}/matches/{match_id}/detail")
+    @GetMapping("/teams/{team_id}/apply/{apply_id}/detail")
     public ApprovedMatchResponse searchApprovedMatchDetail(
             @PathVariable("team_id") Long teamId,
-            @PathVariable("match_id") Long matchId,
+            @PathVariable("apply_id") Long applyId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return matchingService.searchApprovedMatchDetail(teamId, matchId, userDetails.getUser());
+        return matchingService.searchApprovedMatchDetail(teamId, applyId, userDetails.getUser());
     }
 
     /*

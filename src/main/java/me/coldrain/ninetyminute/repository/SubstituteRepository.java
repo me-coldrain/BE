@@ -10,12 +10,12 @@ import java.util.Optional;
 
 public interface SubstituteRepository extends JpaRepository<SubstituteMember, Long> {
 
-    @Query("select sm from SubstituteMember sm where sm.id = :fieldMemberId and sm.team.id = :teamId")
+    @Query("select sm from SubstituteMember sm where sm.id = :substituteMemberId and sm.team.id = :teamId")
     Optional<SubstituteMember> findByIdAndTeamId(Long substituteMemberId, Long teamId);
 
-    @Query("select sm from SubstituteMember sm where sm.team.id = :teamId and sm.afterMatching.id = :beforeMatchId and sm.anonymous = false ")
+    @Query("select sm from SubstituteMember sm where sm.team.id = :teamId and sm.afterMatching.id = :afterMatchId and sm.anonymous = false ")
     List<SubstituteMember> findAllByMatchSubstituteMembers(Long teamId, Long afterMatchId);
 
-    @Query("select sm from SubstituteMember sm where sm.team.id = :teamId and sm.afterMatching.id = :beforeMatchId")
+    @Query("select sm from SubstituteMember sm where sm.team.id = :teamId and sm.afterMatching.id = :afterMatchId")
     List<SubstituteMember> findAllByAllMatchSubstituteMembers(Long teamId, Long afterMatchId);
 }

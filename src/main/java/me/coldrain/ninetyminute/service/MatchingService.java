@@ -139,11 +139,11 @@ public class MatchingService {
         } else throw new IllegalArgumentException("이 팀의 멤버가 아닙니다.");
     }
 
-    public ApprovedMatchResponse searchApprovedMatchDetail(Long teamId, Long matchId, Member member) {
+    public ApprovedMatchResponse searchApprovedMatchDetail(Long teamId, Long applyId, Member member) {
         Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, member.getId()).orElse(null);
 
-        if (participation != null) { // 팀의 멤버인지 확인
-            BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+        if (participation != null || member.getOpenTeam().getId().equals(teamId)) { // 팀의 멤버인지 확인, 주장일 때 participation 에 등록 되지 않는 것을 고려해야한다.
+            BeforeMatching beforeMatching = beforeMatchingRepository.findByApplyIdApprovedTrue(applyId).orElseThrow(
                     () -> new IllegalArgumentException("해당 대결을 찾지 못했습니다.")
             );
             Member captainMember = memberRepository.findByOpenTeam(beforeMatching.getApply().getApplyTeam().getId()).orElseThrow(() -> new IllegalAccessError(
@@ -152,7 +152,7 @@ public class MatchingService {
             LocalDateTime from = LocalDateTime.now();
             LocalDateTime to = LocalDateTime.ofInstant(beforeMatching.getMatchDate().toInstant(), ZoneId.systemDefault());
             ApprovedMatchResponse approvedMatchResponse = ApprovedMatchResponse.builder()
-                    .matchId(matchId)
+                    .matchId(beforeMatching.getId())
                     .isCaptain(false)
                     .opposingTeamId(opposingTeam.getId())
                     .opposingTeamName(opposingTeam.getName())
