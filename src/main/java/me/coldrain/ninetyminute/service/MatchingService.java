@@ -103,6 +103,57 @@ public class MatchingService {
         } else throw new IllegalArgumentException("이 팀의 주장이 아님니다.");
     }
 
+    public List<MatchResponse> searchApplyMatch(Long teamId, Member member) {
+        if (member.getOpenTeam().getId().equals(teamId)) {
+            List<Apply> applyList = applyRepository.findAllByApplyTeamIdOrderByCreatedDate(teamId);    // approved = false 일 때만
+            List<MatchResponse> matchResponseList = new ArrayList<>();
+
+            for (Apply apply : applyList) {
+                Team opposingTeam = apply.getTeam();
+                if (apply.getApproved()) {
+                    BeforeMatching beforeMatching = beforeMatchingRepository.findByApplyIdApprovedTrue(apply.getId()).orElseThrow(
+                            () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
+                    MatchResponse matchResponse = MatchResponse.builder()
+                            .matchId(beforeMatching.getId())
+                            .opposingTeamId(opposingTeam.getId())
+                            .opposingTeamName(opposingTeam.getName())
+                            .opposingTeamMemberCount(participationRepository.findAllByTeamIdTrue(opposingTeam.getId()).size())
+                            .opposingTeamPoint(opposingTeam.getRecord().getWinPoint())
+                            .opposingTeamTotalGameCount(opposingTeam.getRecord().getTotalGameCount())
+                            .opposingTeamWinRate(opposingTeam.getRecord().getWinRate())
+                            .opposingTeamWinCount(opposingTeam.getRecord().getWinCount())
+                            .opposingTeamDrawCount(opposingTeam.getRecord().getDrawCount())
+                            .opposingTeamLoseCount(opposingTeam.getRecord().getLoseCount())
+                            .matchLocation(beforeMatching.getLocation())
+                            .createdDate(beforeMatching.getCreatedDate())
+                            .modifiedDate(beforeMatching.getModifiedDate())
+                            .matchStatus(true)
+                            .build();
+                    matchResponseList.add(matchResponse);
+                } else {
+                    MatchResponse matchResponse = MatchResponse.builder()
+                            .matchId(null)
+                            .opposingTeamId(opposingTeam.getId())
+                            .opposingTeamName(opposingTeam.getName())
+                            .opposingTeamMemberCount(participationRepository.findAllByTeamIdTrue(opposingTeam.getId()).size())
+                            .opposingTeamPoint(opposingTeam.getRecord().getWinPoint())
+                            .opposingTeamTotalGameCount(opposingTeam.getRecord().getTotalGameCount())
+                            .opposingTeamWinRate(opposingTeam.getRecord().getWinRate())
+                            .opposingTeamWinCount(opposingTeam.getRecord().getWinCount())
+                            .opposingTeamDrawCount(opposingTeam.getRecord().getDrawCount())
+                            .opposingTeamLoseCount(opposingTeam.getRecord().getLoseCount())
+                            .matchLocation(opposingTeam.getMainArea())
+                            .createdDate(apply.getCreatedDate())
+                            .modifiedDate(apply.getModifiedDate())
+                            .matchStatus(false)
+                            .build();
+                    matchResponseList.add(matchResponse);
+                }
+            }
+            return matchResponseList;
+        } else throw new IllegalArgumentException("이 팀의 주장이 아닙니다.");
+    }
+
     public List<MatchResponse> searchMatches(Long teamId, Member member) {
         Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, member.getId()).orElse(null);
         if (participation != null || member.getOpenTeam().getId().equals(teamId)) { // 팀의 주장일 때는 고려
