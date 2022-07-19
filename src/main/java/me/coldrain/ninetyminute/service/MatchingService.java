@@ -326,22 +326,26 @@ public class MatchingService {
     }
 
     @Transactional
-    public void correctMatchScore(Long teamId, Long matchId, MatchScoreRequest matchScoreRequest, Member member) {
-        if (member.getOpenTeam().getId().equals(teamId)) {
-            AfterMatching afterMatching = afterMatchingRepository.findByBeforeMatchingIdAdmitStatusFalse(matchId).orElseThrow(
-                    () -> new IllegalArgumentException("해댱 대결을 찾을 수 없습니다.")
-            );
-            afterMatching.correctScore(matchScoreRequest.getTeamScore(), matchScoreRequest.getOpponentScore());
-        } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
-    }
-
-    @Transactional
     public void confirmMatchScore(Long teamId, Long matchId, Member member) {
-        if (member.getOpenTeam().getId().equals(teamId)) {
+        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
+        if (member.getOpenTeam().getId().equals(teamId) || member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
             AfterMatching afterMatching = afterMatchingRepository.findByBeforeMatchingIdAdmitStatusFalse(matchId).orElseThrow(
                     () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다.")
             );
             afterMatching.changeAdmitStatus(true);
+        } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
+    }
+
+    @Transactional
+    public void correctMatchScore(Long teamId, Long matchId, MatchScoreRequest matchScoreRequest, Member member) {
+        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
+        if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
+            AfterMatching afterMatching = afterMatchingRepository.findByBeforeMatchingIdAdmitStatusFalse(matchId).orElseThrow(
+                    () -> new IllegalArgumentException("해댱 대결을 찾을 수 없습니다.")
+            );
+            afterMatching.correctScore(matchScoreRequest.getTeamScore(), matchScoreRequest.getOpponentScore());
         } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
     }
 
