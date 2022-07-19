@@ -296,14 +296,14 @@ public class MatchingService {
                 () -> new IllegalArgumentException("찾는 대결이 존재하지 않습니다.")
         );
 
-        Apply applyMatch = applyRepository.findById(beforeMatching.getApply().getId()).orElseThrow(
-                () -> new IllegalArgumentException("성사된 대결이 아닙니다.")
-        );
+//        Apply applyMatch = applyRepository.findById(beforeMatching.getApply().getId()).orElseThrow(
+//                () -> new IllegalArgumentException("성사된 대결이 아닙니다.")
+//        );
 
         if (member.getOpenTeam().getId().equals(teamId)) {
-            applyMatch.changeEndMatchStatus(true);
+            beforeMatching.getApply().changeEndMatchStatus(true);
         } else if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
-            applyMatch.changeOpposingTeamEndMatchStatus(true);
+            beforeMatching.getApply().changeOpposingTeamEndMatchStatus(true);
         } else throw new IllegalArgumentException("해당 대결 진행 중인 팀의 주장이 아닙니다.");
     }
 
