@@ -7,7 +7,7 @@ import me.coldrain.ninetyminute.dto.request.MatchResultRequest;
 import me.coldrain.ninetyminute.dto.request.MatchScoreRequest;
 import me.coldrain.ninetyminute.dto.request.MatchMemberRequest;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
-import me.coldrain.ninetyminute.dto.response.ApprovedMatchResponse;
+import me.coldrain.ninetyminute.dto.response.MatchResponse;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import me.coldrain.ninetyminute.service.MatchingService;
 import org.springframework.http.HttpStatus;
@@ -74,7 +74,7 @@ public class MatchingController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/teams/{team_id}/matches")
-    public List<ApprovedMatchResponse> searchApprovedMatch(
+    public List<MatchResponse> searchApprovedMatch(
             final @PathVariable("team_id") Long teamId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return matchingService.searchApprovedMatch(teamId, userDetails.getUser());
@@ -87,7 +87,7 @@ public class MatchingController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/teams/{team_id}/apply/{apply_id}/detail")
-    public ApprovedMatchResponse searchApprovedMatchDetail(
+    public MatchResponse searchApprovedMatchDetail(
             @PathVariable("team_id") Long teamId,
             @PathVariable("apply_id") Long applyId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {

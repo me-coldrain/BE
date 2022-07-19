@@ -9,13 +9,14 @@ import java.util.Date;
 
 @Data
 @NoArgsConstructor
-public class ApprovedMatchResponse {
+public class MatchResponse {
 
 
     private Long matchId;
     private Boolean isCaptain;
     private Long opposingTeamId;
     private String opposingTeamName;
+    private Integer opposingTeamMemberCount;
     private Integer opposingTeamPoint;
     private Double opposingTeamWinRate;
     private Integer opposingTeamTotalGameCount;
@@ -30,21 +31,24 @@ public class ApprovedMatchResponse {
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
 
+    private Boolean matchStatus;
+
     public void changeIsCaptain (Boolean isCaptain) {
         this.isCaptain = isCaptain;
     }
 
     @Builder
-    public ApprovedMatchResponse(Long matchId, Boolean isCaptain, Long opposingTeamId,
-                                       String opposingTeamName, Integer opposingTeamPoint, Double opposingTeamWinRate,
-                                       Integer opposingTeamTotalGameCount, Integer opposingTeamWinCount,
-                                       Integer opposingTeamDrawCount, Integer opposingTeamLoseCount,
-                                       String contact, String phone, Date matchDate, Long dDay,
-                                       String matchLocation, LocalDateTime createdDate, LocalDateTime modifiedDate) {
+    public MatchResponse(Long matchId, Boolean isCaptain, Long opposingTeamId,
+                         String opposingTeamName, Integer opposingTeamMemberCount, Integer opposingTeamPoint, Double opposingTeamWinRate,
+                         Integer opposingTeamTotalGameCount, Integer opposingTeamWinCount,
+                         Integer opposingTeamDrawCount, Integer opposingTeamLoseCount,
+                         String contact, String phone, Date matchDate, Long dDay,
+                         String matchLocation, LocalDateTime createdDate, LocalDateTime modifiedDate, Boolean matchStatus) {
         this.matchId = matchId;
         this.isCaptain = isCaptain;
         this.opposingTeamId = opposingTeamId;
         this.opposingTeamName = opposingTeamName;
+        this.opposingTeamMemberCount = opposingTeamMemberCount;
         this.opposingTeamPoint = opposingTeamPoint;
         this.opposingTeamWinRate = opposingTeamWinRate;
         this.opposingTeamTotalGameCount = opposingTeamTotalGameCount;
@@ -58,5 +62,6 @@ public class ApprovedMatchResponse {
         this.matchLocation = matchLocation;
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
+        this.matchStatus = matchStatus;
     }
 }
