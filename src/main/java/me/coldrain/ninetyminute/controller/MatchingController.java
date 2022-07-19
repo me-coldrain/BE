@@ -41,7 +41,7 @@ public class MatchingController {
     /*
      * Author: 병민
      * 대결 수락 정보 저장 API
-     * 대결 수락 시 대결 상세 정보 저장 및 apply 상태 변경(대결 요).
+     * 대결 수락 시 대결 상세 정보 저장 및 apply 상태 변경(대결 요청).
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/teams/{apply_team_id}/apply/{apply_id}")
@@ -74,10 +74,10 @@ public class MatchingController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/teams/{team_id}/matches")
-    public List<MatchResponse> searchApprovedMatch(
+    public List<MatchResponse> searchMatches(
             final @PathVariable("team_id") Long teamId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return matchingService.searchApprovedMatch(teamId, userDetails.getUser());
+        return matchingService.searchMatches(teamId, userDetails.getUser());
     }
 
     /*

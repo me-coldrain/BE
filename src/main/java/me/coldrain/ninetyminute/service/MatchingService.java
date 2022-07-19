@@ -103,7 +103,7 @@ public class MatchingService {
         } else throw new IllegalArgumentException("이 팀의 주장이 아님니다.");
     }
 
-    public List<MatchResponse> searchApprovedMatch(Long teamId, Member member) {
+    public List<MatchResponse> searchMatches(Long teamId, Member member) {
         Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, member.getId()).orElse(null);
         if (participation != null || member.getOpenTeam().getId().equals(teamId)) { // 팀의 주장일 때는 고려
             List<Apply> applyList = applyRepository.findAllByTeamIdOrderByCreatedDate(teamId);    // apply 의 approved == true 일 때만
