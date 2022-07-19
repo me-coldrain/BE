@@ -11,9 +11,9 @@ public interface AfterMatchingRepository extends JpaRepository<AfterMatching, Lo
 
 //    Optional<AfterMatching> findByBeforeMatchingAndAdmitStatusTrue(BeforeMatching beforeMatching);
 
-    @Query("select am from AfterMatching am where am.beforeMatching.id =: beforeMatchingId and am.admitStatus = true")
+    @Query("select am from AfterMatching am where am.beforeMatching.id = :beforeMatchingId and am.admitStatus = true")
     Optional<AfterMatching> findByBeforeMatchingIdAdmitStatusTrue(Long beforeMatchingId);
 
-    @Query("select am from AfterMatching am where am.beforeMatching.id =: beforeMatchingId and am.admitStatus = false ")
+    @Query("select am from AfterMatching am where am.beforeMatching.id = :beforeMatchingId and am.admitStatus = false ")
     Optional<AfterMatching> findByBeforeMatchingIdAdmitStatusFalse(Long beforeMatchingId);
 }

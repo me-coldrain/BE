@@ -7,7 +7,7 @@ import me.coldrain.ninetyminute.dto.request.MatchResultRequest;
 import me.coldrain.ninetyminute.dto.request.MatchScoreRequest;
 import me.coldrain.ninetyminute.dto.request.MatchMemberRequest;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
-import me.coldrain.ninetyminute.dto.response.ApprovedMatchResponse;
+import me.coldrain.ninetyminute.dto.response.MatchResponse;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import me.coldrain.ninetyminute.service.MatchingService;
 import org.springframework.http.HttpStatus;
@@ -26,8 +26,8 @@ public class MatchingController {
 
     /*
      * Author: 병민
-     * 대결 수락 목록 조회 API
-     * 대결이 신청된 목록을 대결 신청 받은 팀의 팀장이 조회하는 API.
+     * 대결 요청 목록 조회 API
+     * 대결 요청 페이지 대결 수락 목록 조회(대결 신청 받은 팀의 팀장만 조회 가능).
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/teams/{team_id}/matches/offer")
@@ -41,7 +41,7 @@ public class MatchingController {
     /*
      * Author: 병민
      * 대결 수락 정보 저장 API
-     * 대결 수락 시 대결 상세 정보 저장 및 apply 상태 변경.
+     * 대결 수락 시 대결 상세 정보 저장 및 apply 상태 변경(대결 요청).
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/teams/{apply_team_id}/apply/{apply_id}")
@@ -69,15 +69,28 @@ public class MatchingController {
 
     /*
      * Author: 병민
-     * 대결 성사 목록 조회 API
-     * apply 의 approved 가 ture 일 때 목록을 조회 할 수 있습니다.
+     * 신청한 대결 목록 조회 API
+     * 신청한 대결 목록을 조회한다.
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/teams/{team_id}/matches/apply")
+    public List<MatchResponse> searchApplyMatches(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return matchingService.searchApplyMatch(teamId, userDetails.getUser());
+    }
+
+    /*
+     * Author: 병민
+     * 소속 팀 대결 목록 조회 API
+     * 소속 팀의 대결 목록 조회
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/teams/{team_id}/matches")
-    public List<ApprovedMatchResponse> searchApprovedMatch(
+    public List<MatchResponse> searchMatches(
             final @PathVariable("team_id") Long teamId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return matchingService.searchApprovedMatch(teamId, userDetails.getUser());
+        return matchingService.searchMatches(teamId, userDetails.getUser());
     }
 
     /*
@@ -86,12 +99,12 @@ public class MatchingController {
      * 성사 된 대결의 상세 페이지 정보
      */
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/teams/{team_id}/matches/{match_id}/detail")
-    public ApprovedMatchResponse searchApprovedMatchDetail(
+    @GetMapping("/teams/{team_id}/apply/{apply_id}/detail")
+    public MatchResponse searchApprovedMatchDetail(
             @PathVariable("team_id") Long teamId,
-            @PathVariable("match_id") Long matchId,
+            @PathVariable("apply_id") Long applyId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return matchingService.searchApprovedMatchDetail(teamId, matchId, userDetails.getUser());
+        return matchingService.searchApprovedMatchDetail(teamId, applyId, userDetails.getUser());
     }
 
     /*
