@@ -46,10 +46,9 @@ public class MemberService {
         if (!memberRegisterRequest.getPassword().equals(memberRegisterRequest.getConfirmpassword())) {
             return new ResponseEntity<>("재확인 비밀번호가 다릅니다.", HttpStatus.BAD_REQUEST);
         } else {
-            final Ability emptyAbility = abilityRepository.save(new Ability());
             MemberRoleEnum role = MemberRoleEnum.USER;
 
-            Member member = new Member(memberRegisterRequest, role, emptyAbility);
+            Member member = new Member(memberRegisterRequest, role);
             member.encryptPassword(passwordEncoder);
             memberRepository.save(member);
 
@@ -95,7 +94,14 @@ public class MemberService {
             if (found.isPresent()) {
                 return new ResponseEntity<>("중복된 닉네임입니다.", HttpStatus.BAD_REQUEST);
             }
-            member.memberUpdate(memberEditRequest);
+
+            if (member.getNickname() == null) {
+                final Ability emptyAbility = abilityRepository.save(new Ability());
+                member.newMemberUpdate(memberEditRequest, emptyAbility);
+            } else {
+                member.memberUpdate(memberEditRequest);
+            }
+
             return new ResponseEntity<>(jwtTokenCreate(member), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("존재하지 않는 회원입니다.", HttpStatus.BAD_REQUEST);

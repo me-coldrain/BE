@@ -117,14 +117,13 @@ public class KakaoMemberService {
         if (kakaomember == null) {
             // 회원가입
             // password: random UUID
-            final Ability emptyAbility = abilityRepository.save(new Ability());
             String password = UUID.randomUUID().toString();
             String encodedPassword = passwordEncoder.encode(password);
 
             // role: 소셜 로그인 사용자
             MemberRoleEnum role = MemberRoleEnum.SOCIAL;
 
-            kakaomember = new Member(encodedPassword, role, kakaoUserId, emptyAbility);
+            kakaomember = new Member(encodedPassword, role, kakaoUserId);
             return memberRepository.save(kakaomember);
         }
         return kakaomember;

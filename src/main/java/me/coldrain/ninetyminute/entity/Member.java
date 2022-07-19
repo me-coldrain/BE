@@ -56,19 +56,25 @@ public class Member extends TimeStamped {
         this.openTeam = openTeam;
     }
 
-    public Member(MemberRegisterRequest params, MemberRoleEnum role, Ability ability) {
+    public Member(MemberRegisterRequest params, MemberRoleEnum role) {
         this.username = params.getEmail();
         this.password = params.getPassword();
         this.role = role;
         this.kakaoId = null;
-        this.ability = ability;
     }
 
-    public Member(String password, MemberRoleEnum role, Long kakaoId, Ability ability) {
+    public Member(String password, MemberRoleEnum role, Long kakaoId) {
         this.username = null;
         this.password = password;
         this.role = role;
         this.kakaoId = kakaoId;
+    }
+
+    public void newMemberUpdate(MemberEditRequest params, Ability ability) {
+        this.nickname = params.getNickname();
+        this.position = params.getPosition();
+        this.contact = params.getContact();
+        this.phone = params.getPhone();
         this.ability = ability;
     }
 
