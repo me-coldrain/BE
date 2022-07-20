@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.*;
+import me.coldrain.ninetyminute.dto.response.ApplyTeamResponse;
 import me.coldrain.ninetyminute.dto.response.MatchResponse;
 import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
@@ -249,8 +250,8 @@ public class TeamController {
      * 신청한 팀 목록을 조회한다.
      */
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/matches/apply")
-    public List<MatchResponse> searchApplyTeams(
+    @GetMapping("/teams/apply")
+    public List<ApplyTeamResponse> searchApplyTeams(
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return teamService.searchApplyTeams(userDetails.getUser());
     }
