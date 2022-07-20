@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -26,8 +27,13 @@ public class MemberInfoService {
 
     //회원정보 조회
     public ResponseEntity<?> memberInfoGet(Long memberId, UserDetailsImpl userDetails) {
-        try{
+        try {
             Member member = memberRepository.findById(memberId).orElseThrow();
+
+            if (member.isSecessionState()) {
+                return new ResponseEntity<>("탈퇴한 회원 입니다.", HttpStatus.BAD_REQUEST);
+            }
+
             boolean myInfo = memberId.equals(userDetails.getUser().getId());
 
             MemberInfoResponse memberInfoResponse = new MemberInfoResponse(
@@ -50,12 +56,12 @@ public class MemberInfoService {
     public ResponseEntity<?> offerCancelTeam(Long memberId, Long teamId) {
         Optional<Member> foundMember = memberRepository.findById(memberId);
         Optional<Team> foundTeam = teamRepository.findById(teamId);
-        if(foundMember.isEmpty()) {
+        if (foundMember.isEmpty()) {
             return new ResponseEntity<>("존재하지 않는 회원입니다.", HttpStatus.BAD_REQUEST);
         } else if (foundTeam.isEmpty()) {
             return new ResponseEntity<>("존재하지 않는 팀입니다.", HttpStatus.BAD_REQUEST);
         } else {
-            Participation offerCancelTeam = participationRepository.findByTeamIdAndMemberIdFalse(memberId, teamId);
+            Participation offerCancelTeam = participationRepository.findByTeamIdAndMemberIdFalse(memberId, teamId).orElseThrow();
             participationRepository.delete(offerCancelTeam);
             return new ResponseEntity<>(HttpStatus.OK);
         }
@@ -65,5 +71,22 @@ public class MemberInfoService {
     public ResponseEntity<?> memberGameHistory(Long memberId) {
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    //회원탈퇴
+    public ResponseEntity<?> memberSecession(UserDetailsImpl userDetails) {
+        Member member = memberRepository.findById(userDetails.getUser().getId()).orElseThrow();
+        List<Participation> participation = participationRepository.findAllByMemberIdTrue(member.getId());
+
+        if (member.getOpenTeam() != null) {
+            return new ResponseEntity<>("팀을 해체하고 회원탈퇴를 진행해주세요.", HttpStatus.BAD_REQUEST);
+        } else if (participation.size() != 0) {
+            return new ResponseEntity<>("가입한 팀을 탈퇴하고 회원탈퇴를 진행해주세요.", HttpStatus.BAD_REQUEST);
+        }
+
+        String nickname = "SecessionMember " + UUID.randomUUID();
+        member.memberDelete(nickname);
+
+        return new ResponseEntity<>("회원탈퇴가 완료 되었습니다.", HttpStatus.OK);
     }
 }
