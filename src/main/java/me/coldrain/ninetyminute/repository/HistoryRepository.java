@@ -16,4 +16,10 @@ public interface HistoryRepository extends JpaRepository<History, Long> {
 
     @Query("select h from History h where h.beforeMatching.id = :RecentBeforeMatchingId")
     Optional<History> findByRecentHistory(Long RecentBeforeMatchingId);
+
+    @Query("select h from History h where h.afterMatching.id = :afterMatching")
+    Optional<History> findByMemberGameHistory(Long afterMatching);
+
+    @Query("select h from History h where h.id = :historyId")
+    List<History> findAllByHistoryId(Long historyId);
 }
