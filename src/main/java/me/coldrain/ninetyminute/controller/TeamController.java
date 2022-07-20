@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.*;
+import me.coldrain.ninetyminute.dto.response.MatchResponse;
 import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import me.coldrain.ninetyminute.service.ParticipationService;
@@ -17,6 +18,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -238,5 +241,17 @@ public class TeamController {
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         teamService.modifyTeam(teamId, request, userDetails.getUser().getId());
+    }
+
+    /*
+     * Author: 병민
+     * 팀 참여 신청한 팀 목록 조회 API
+     * 신청한 팀 목록을 조회한다.
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/matches/apply")
+    public List<MatchResponse> searchApplyTeams(
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return teamService.searchApplyTeams(userDetails.getUser());
     }
 }

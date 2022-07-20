@@ -68,18 +68,18 @@ public class MatchingController {
         matchingService.rejectApplyMatch(applyTeamId, applyId, userDetails.getUser());
     }
 
-    /*
-     * Author: 병민
-     * 신청한 대결 목록 조회 API
-     * 신청한 대결 목록을 조회한다.
-     */
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/teams/{team_id}/matches/apply")
-    public List<MatchResponse> searchApplyMatches(
-            final @PathVariable("team_id") Long teamId,
-            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return matchingService.searchApplyMatch(teamId, userDetails.getUser());
-    }
+//    /*
+//     * Author: 병민
+//     * 신청한 대결 목록 조회 API
+//     * 신청한 대결 목록을 조회한다.
+//     */
+//    @ResponseStatus(HttpStatus.OK)
+//    @GetMapping("/teams/{team_id}/matches/apply")
+//    public List<MatchResponse> searchApplyMatches(
+//            final @PathVariable("team_id") Long teamId,
+//            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+//        return matchingService.searchApplyMatch(teamId, userDetails.getUser());
+//    }
 
     /*
      * Author: 병민

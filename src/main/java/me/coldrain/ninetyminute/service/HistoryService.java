@@ -65,8 +65,8 @@ public class HistoryService {
 
         // param 인 teamId 가 HomeTeam
         List<Scorer> homeScorerList;
-        List<FieldMember> teamFieldMembers = fieldMemberRepository.findAllByAllMatchFieldMembers(teamId, history.getBeforeMatching().getId());
-        List<SubstituteMember> teamSubMembers = substituteRepository.findAllByMatchSubstituteMembers(teamId, history.getAfterMatching().getId());
+        List<FieldMember> teamFieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(teamId, history.getBeforeMatching().getId());
+        List<SubstituteMember> teamSubMembers = substituteRepository.findAllByMatchSubstituteMembersAndAnonymousFalse(teamId, history.getAfterMatching().getId());
         HistoryDetailResponse historyDetailResponse = new HistoryDetailResponse(history.getId(), history.getBeforeMatching().getMatchDate(), null, null);
         HistoryDetailResponse.TeamResponse homeTeamResponse;
         HistoryDetailResponse.TeamResponse awayTeamResponse;
@@ -90,7 +90,7 @@ public class HistoryService {
             homeTeamResponse.setSubstituteMembers(teamSubMembers, memberResponse);
 
             // away team
-            List<FieldMember> awayTeamFieldMembers = fieldMemberRepository.findAllByAllMatchFieldMembers(history.getBeforeMatching().getApply().getApplyTeam().getId(), history.getBeforeMatching().getId());
+            List<FieldMember> awayTeamFieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(history.getBeforeMatching().getApply().getApplyTeam().getId(), history.getBeforeMatching().getId());
             List<SubstituteMember> awayTeamSubMembers = substituteRepository.findAllByAllMatchSubstituteMembers(history.getBeforeMatching().getApply().getApplyTeam().getId(), history.getAfterMatching().getId());
 
             awayTeamResponse = HistoryDetailResponse.TeamResponse.builder()
@@ -127,7 +127,7 @@ public class HistoryService {
             homeTeamResponse.setSubstituteMembers(teamSubMembers, memberResponse);
 
             // away team
-            List<FieldMember> awayTeamFieldMembers = fieldMemberRepository.findAllByAllMatchFieldMembers(history.getBeforeMatching().getApply().getApplyTeam().getId(), history.getBeforeMatching().getId());
+            List<FieldMember> awayTeamFieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(history.getBeforeMatching().getApply().getApplyTeam().getId(), history.getBeforeMatching().getId());
             List<SubstituteMember> awayTeamSubMembers = substituteRepository.findAllByAllMatchSubstituteMembers(history.getBeforeMatching().getApply().getApplyTeam().getId(), history.getAfterMatching().getId());
 
             awayTeamResponse = HistoryDetailResponse.TeamResponse.builder()

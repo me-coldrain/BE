@@ -11,7 +11,6 @@ import java.util.Date;
 @NoArgsConstructor
 public class MatchResponse {
 
-
     private Long matchId;
     private Boolean isCaptain;
     private Long opposingTeamId;

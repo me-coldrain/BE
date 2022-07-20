@@ -7,6 +7,7 @@ import me.coldrain.ninetyminute.dto.request.ApplyRequest;
 import me.coldrain.ninetyminute.dto.request.RecruitStartRequest;
 import me.coldrain.ninetyminute.dto.request.TeamModifyRequest;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
+import me.coldrain.ninetyminute.dto.response.MatchResponse;
 import me.coldrain.ninetyminute.dto.response.TeamInfoResponse;
 import me.coldrain.ninetyminute.entity.*;
 import me.coldrain.ninetyminute.repository.*;
@@ -368,5 +369,10 @@ public class TeamService {
                 request.getWeekdays(),
                 request.getTime()
         );
+    }
+
+    public List<MatchResponse> searchApplyTeams(Member member) {
+        List<Participation> participationList = participationRepository.findAllByMemberIdTrue(member.getId());
+
     }
 }
