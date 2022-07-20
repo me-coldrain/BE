@@ -22,7 +22,7 @@ public class Member extends TimeStamped {
     @Column(name = "member_id")
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "team_id")
     private Team openTeam; // 개설한 팀
 
