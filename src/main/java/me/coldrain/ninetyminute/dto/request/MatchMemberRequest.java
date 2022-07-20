@@ -8,12 +8,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MatchMemberRequest {
     private Long memberId;
+    private String memberProfileUrl;
     private String position;
     private Boolean anonymous;
 
     @Builder
-    public MatchMemberRequest(Long memberId, String position, Boolean anonymous) {
+    public MatchMemberRequest(Long memberId, String memberProfileUrl, String position, Boolean anonymous) {
         this.memberId = memberId;
+        this.memberProfileUrl = memberProfileUrl;
         this.position = position;
         this.anonymous = anonymous;
     }

@@ -288,10 +288,14 @@ public class MatchingService {
         for (FieldMember fieldMember : fieldMemberList) {
             MatchMemberRequest matchMemberRequest = MatchMemberRequest.builder()
                     .memberId(null)
+                    .memberProfileUrl(null)
                     .position(fieldMember.getPosition())
                     .anonymous(fieldMember.getAnonymous())
                     .build();
-            if (!fieldMember.getAnonymous()) matchMemberRequest.setMemberId(fieldMember.getMember().getId());
+            if (!fieldMember.getAnonymous()) {
+                matchMemberRequest.setMemberId(fieldMember.getMember().getId());
+                matchMemberRequest.setMemberProfileUrl(fieldMember.getMember().getProfileUrl());
+            }
             fieldMembers.add(matchMemberRequest);
         }
         return MatchMemberResponse.builder()
