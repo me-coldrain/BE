@@ -458,42 +458,66 @@ public class MatchingService {
     @Transactional
     void distributePoint(Long teamId, Long afterMatchingId) {
         List<String> results = Arrays.asList("승리", "무승부", "패배");
+        AfterMatching afterMatching = afterMatchingRepository.findById(afterMatchingId).orElseThrow(() -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
         Team team = teamRepository.findById(teamId).orElseThrow(() -> new IllegalArgumentException("해당 팀을 찾을 수 없습니다."));
         team.getRecord().updateTotalGameCount();
-        AfterMatching afterMatching = afterMatchingRepository.findById(afterMatchingId).orElseThrow(() -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
         List<FieldMember> fieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(team.getId(), afterMatching.getBeforeMatching().getId());
-        if (afterMatching.getScore() > afterMatching.getOpponentScore()) {
-            afterMatching.editResult(results.get(0), results.get(2));
-            for (FieldMember fieldMember : fieldMembers) {
-                distributePositionPoint(fieldMember);
+
+        if (team.getName().equals(afterMatching.getBeforeMatching().getTeamName())) {
+            if (afterMatching.getScore() > afterMatching.getOpponentScore()) {
+                afterMatching.editResult(results.get(0), results.get(2));
+                for (FieldMember fieldMember : fieldMembers) {
+                    distributePositionPoint(fieldMember);
+                }
+                List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembers(team.getId(), afterMatching.getId());
+                for (SubstituteMember substituteMember : substituteMembers) {
+                    distributePositionPoint(substituteMember);
+                }
+                team.getRecord().updateWinCount();
+                team.getRecord().updateWinRate(((double) (team.getRecord().getWinCount() / team.getRecord().getTotalGameCount())) * 100.0);
+            } else if (afterMatching.getScore() < afterMatching.getOpponentScore()) {
+                afterMatching.editResult(results.get(2), results.get(0));
+                for (FieldMember fieldMember : fieldMembers) {
+                    distributePositionPoint(fieldMember);
+                }
+                List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembers(team.getId(), afterMatching.getId());
+                for (SubstituteMember substituteMember : substituteMembers) {
+                    distributePositionPoint(substituteMember);
+                }
+                team.getRecord().updateLoseCount();
+                team.getRecord().updateWinRate(((double) ((team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()))) * 100.0);
+            } else {
+                afterMatching.editResult(results.get(1), results.get(1));
+                team.getRecord().updateDrawCount();
+                team.getRecord().updateWinRate(((double) ((team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()))) * 100.0);
             }
-            List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembers(team.getId(), afterMatching.getId());
-            for (SubstituteMember substituteMember : substituteMembers) {
-                distributePositionPoint(substituteMember);
+        } else if (team.getName().equals(afterMatching.getBeforeMatching().getOpposingTeamName())) {
+            if (afterMatching.getScore() > afterMatching.getOpponentScore()) {
+                afterMatching.editResult(results.get(0), results.get(2));
+                team.getRecord().updateLoseCount();
+                team.getRecord().updateWinRate(((double) ((team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()))) * 100.0);
+            } else if (afterMatching.getScore() < afterMatching.getOpponentScore()) {
+                afterMatching.editResult(results.get(2), results.get(0));
+                for (FieldMember fieldMember : fieldMembers) {
+                    distributePositionPoint(fieldMember);
+                }
+                List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembers(team.getId(), afterMatching.getId());
+                for (SubstituteMember substituteMember : substituteMembers) {
+                    distributePositionPoint(substituteMember);
+                }
+                team.getRecord().updateWinCount();
+                team.getRecord().updateWinRate(((double) ((team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()))) * 100.0);
+            } else {
+                afterMatching.editResult(results.get(1), results.get(1));
+                team.getRecord().updateDrawCount();
+                team.getRecord().updateWinRate(((double) ((team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()))) * 100.0);
             }
-            team.getRecord().updateWinCount();
-            team.getRecord().updateWinRate((double) (team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()));
-        } else if (afterMatching.getScore() < afterMatching.getOpponentScore()) {
-            afterMatching.editResult(results.get(2), results.get(0));
-            for (FieldMember fieldMember : fieldMembers) {
-                distributePositionPoint(fieldMember);
-            }
-            List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembers(team.getId(), afterMatching.getId());
-            for (SubstituteMember substituteMember : substituteMembers) {
-                distributePositionPoint(substituteMember);
-            }
-            team.getRecord().updateLoseCount();
-            team.getRecord().updateWinRate((double) (team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()));
-        } else {
-            afterMatching.editResult(results.get(1), results.get(1));
-            team.getRecord().updateDrawCount();
-            team.getRecord().updateWinRate((double) (team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()));
         }
     }
 
     @Transactional
     void distributePositionPoint(FieldMember fieldMember) {
-        switch (fieldMember.getMember().getPosition()) {
+        switch (fieldMember.getPosition()) {
             case "striker":
                 fieldMember.getMember().getAbility().updateStrikePoint();
                 break;
@@ -510,7 +534,7 @@ public class MatchingService {
     }
     @Transactional
     void distributePositionPoint(SubstituteMember substituteMember) {
-        switch (substituteMember.getMember().getPosition()) {
+        switch (substituteMember.getPosition()) {
             case "striker":
                 substituteMember.getMember().getAbility().updateStrikePoint();
                 break;
