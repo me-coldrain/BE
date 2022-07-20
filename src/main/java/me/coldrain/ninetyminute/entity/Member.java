@@ -49,7 +49,6 @@ public class Member extends TimeStamped {
     private String phone;
     @Column
     private boolean secessionState;
-
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private MemberRoleEnum role;
@@ -63,7 +62,7 @@ public class Member extends TimeStamped {
         this.password = params.getPassword();
         this.role = role;
         this.kakaoId = null;
-        this.secessionState = false;
+//        this.secessionState = false;
     }
 
     public Member(String password, MemberRoleEnum role, Long kakaoId) {
@@ -71,7 +70,7 @@ public class Member extends TimeStamped {
         this.password = password;
         this.role = role;
         this.kakaoId = kakaoId;
-        this.secessionState = false;
+//        this.secessionState = false;
     }
 
     public void newMemberUpdate(MemberEditRequest params, Ability ability) {
@@ -94,7 +93,8 @@ public class Member extends TimeStamped {
         this.profileUrl = profileImg.get("url");
     }
 
-    public void memberDelete(String nickname) {
+    public void memberSecession(String username, String nickname) {
+        this.username = username;
         this.nickname = nickname;
         this.secessionState = true;
     }

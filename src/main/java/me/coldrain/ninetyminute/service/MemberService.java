@@ -39,14 +39,13 @@ public class MemberService {
     //회원가입
     @Transactional
     public ResponseEntity<?> memberSignup(MemberRegisterRequest memberRegisterRequest) {
-        Member memberCheck = memberRepository.findByUsername(memberRegisterRequest.getEmail()).orElse(null);
+        if (secessionMemberCheck(memberRegisterRequest.getEmail())) {
+            return new ResponseEntity<>("탈퇴 처리된 이메일은 30일 후에 사용 가능합니다.", HttpStatus.BAD_REQUEST);
+        }
 
-        if (memberCheck != null) {
-            if (memberCheck.isSecessionState()) {
-                return new ResponseEntity<>("탈퇴 처리된 아이디는 30일 후에 사용 가능합니다.", HttpStatus.BAD_REQUEST);
-            } else {
-                return new ResponseEntity<>("중복된 이메일입니다.", HttpStatus.BAD_REQUEST);
-            }
+        Optional<Member> memberEmailCheck = memberRepository.findByUsername(memberRegisterRequest.getEmail());
+        if (memberEmailCheck.isPresent()) {
+            return new ResponseEntity<>("중복된 이메일입니다.", HttpStatus.BAD_REQUEST);
         } else {
             if (!memberRegisterRequest.getPassword().equals(memberRegisterRequest.getConfirmpassword())) {
                 return new ResponseEntity<>("재확인 비밀번호가 다릅니다.", HttpStatus.BAD_REQUEST);
@@ -64,17 +63,16 @@ public class MemberService {
 
     //아이디 중복 확인
     public ResponseEntity<?> duplicateCheckEmail(MemberEmailDuplicateRequest memberEmailDuplicateRequest) {
-        MemberDuplicateResponse memberDuplicateResponse = new MemberDuplicateResponse();
-        Member memberCheck = memberRepository.findByUsername(memberEmailDuplicateRequest.getEmail()).orElse(null);
+        if (secessionMemberCheck(memberEmailDuplicateRequest.getEmail())) {
+            return new ResponseEntity<>("탈퇴 처리된 이메일은 30일 후에 사용 가능합니다.", HttpStatus.BAD_REQUEST);
+        }
 
-        if (memberCheck != null) {
-            if (memberCheck.isSecessionState()) {
-                memberDuplicateResponse.setExist(true);
-                memberDuplicateResponse.setMessage("탈퇴 처리된 아이디는 30일 후에 사용 가능합니다.");
-            } else {
-                memberDuplicateResponse.setExist(true);
-                memberDuplicateResponse.setMessage("중복된 이메일입니다.");
-            }
+        Optional<Member> memberEmailCheck = memberRepository.findByUsername(memberEmailDuplicateRequest.getEmail());
+        MemberDuplicateResponse memberDuplicateResponse = new MemberDuplicateResponse();
+
+        if (memberEmailCheck.isPresent()) {
+            memberDuplicateResponse.setExist(true);
+            memberDuplicateResponse.setMessage("중복된 이메일입니다.");
         } else {
             memberDuplicateResponse.setExist(false);
             memberDuplicateResponse.setMessage("사용 가능한 이메일입니다.");
@@ -84,9 +82,14 @@ public class MemberService {
 
     //닉네임 중복 확인
     public ResponseEntity<?> duplicateCheckNickname(MemberNicknameDuplicateRequest memberNicknameDuplicateRequest) {
+        if (secessionMemberCheck(memberNicknameDuplicateRequest.getNickname())) {
+            return new ResponseEntity<>("탈퇴 처리된 닉네임은 30일 후에 사용 가능합니다.", HttpStatus.BAD_REQUEST);
+        }
+
         MemberDuplicateResponse memberDuplicateResponse = new MemberDuplicateResponse();
-        Optional<Member> found = memberRepository.findByNickname(memberNicknameDuplicateRequest.getNickname());
-        if (found.isPresent()) {
+        Optional<Member> memberNicknameCheck = memberRepository.findByNickname(memberNicknameDuplicateRequest.getNickname());
+
+        if (memberNicknameCheck.isPresent()) {
             memberDuplicateResponse.setExist(true);
             memberDuplicateResponse.setMessage("중복된 닉네임입니다.");
         } else {
@@ -101,9 +104,8 @@ public class MemberService {
     public ResponseEntity<?> memberEdit(UserDetailsImpl userDetails,
                                         MemberEditRequest memberEditRequest) {
         try {
-            Member member = memberRepository.findById(userDetails.getUser().getId()).orElseThrow();
-            if (member.isSecessionState()) {
-                return new ResponseEntity<>("탈퇴 처리된 회원입니다.", HttpStatus.BAD_REQUEST);
+            if (secessionMemberCheck(memberEditRequest.getNickname())) {
+                return new ResponseEntity<>("탈퇴 처리된 닉네임은 30일 후에 사용 가능합니다.", HttpStatus.BAD_REQUEST);
             }
 
             Optional<Member> found = memberRepository.findByNickname(memberEditRequest.getNickname());
@@ -111,6 +113,7 @@ public class MemberService {
                 return new ResponseEntity<>("중복된 닉네임입니다.", HttpStatus.BAD_REQUEST);
             }
 
+            Member member = memberRepository.findById(userDetails.getUser().getId()).orElseThrow();
             if (member.getNickname() == null) {
                 final Ability emptyAbility = abilityRepository.save(new Ability());
                 member.newMemberUpdate(memberEditRequest, emptyAbility);
@@ -130,9 +133,6 @@ public class MemberService {
                                                     MultipartFile proFileImage) {
         try {
             Member member = memberRepository.findById(userDetails.getUser().getId()).orElseThrow();
-            if (member.isSecessionState()) {
-                return new ResponseEntity<>("탈퇴 처리된 회원입니다.", HttpStatus.BAD_REQUEST);
-            }
 
             if (member.getProfileName() == null && (proFileImage == null || proFileImage.isEmpty())) {
                 Map<String, String> profileImg = new HashMap<>();
@@ -172,11 +172,16 @@ public class MemberService {
             return new ResponseEntity<>(ErrorCode.USERNAME_OR_PASSWORD_NOTFOUND.getMessage(), ErrorCode.USERNAME_OR_PASSWORD_NOTFOUND.getStatus());
         }
         Member member = memberRepository.findByUsername(memberLoginRequest.getEmail()).orElseThrow();
-        if (member.isSecessionState()) {
-            return new ResponseEntity<>("탈퇴 처리된 회원입니다.", HttpStatus.BAD_REQUEST);
-        }
 
         return new ResponseEntity<>(jwtTokenCreate(member), HttpStatus.CREATED);
+    }
+
+    //회원탈퇴 확인
+    public boolean secessionMemberCheck(String secessionMemberCheck) {
+        String secessionCheck = "secession-" + secessionMemberCheck;
+        Optional<Member> secessionMemberEmailCheck = memberRepository.findByUsernameSecessionStateTrue(secessionCheck);
+        Optional<Member> secessionMemberNicknameCheck = memberRepository.findByNicknameSecessionStateTrue(secessionCheck);
+        return secessionMemberEmailCheck.isPresent() || secessionMemberNicknameCheck.isPresent();
     }
 
     //JWT 토큰 생성기

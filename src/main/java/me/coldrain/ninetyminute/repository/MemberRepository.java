@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
+    @Query("SELECT m FROM Member m WHERE m.username = :username AND m.secessionState = true")
+    Optional<Member> findByUsernameSecessionStateTrue(String username);
+    @Query("SELECT m FROM Member m WHERE m.nickname = :nickname AND m.secessionState = true")
+    Optional<Member> findByNicknameSecessionStateTrue(String nickname);
     Optional<Member> findByUsername(String username);
     Optional<Member> findByNickname(String nickname);
     Optional<Member> findByKakaoId(Long kakaoId);

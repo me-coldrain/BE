@@ -1,8 +1,8 @@
 package me.coldrain.ninetyminute.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.response.MemberInfoResponse;
-import me.coldrain.ninetyminute.dto.response.MyParticipationTeamListResponse;
 import me.coldrain.ninetyminute.entity.*;
 import me.coldrain.ninetyminute.repository.*;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
@@ -11,27 +11,25 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class MemberInfoService {
     private final MemberRepository memberRepository;
     private final TeamRepository teamRepository;
     private final ParticipationRepository participationRepository;
-    private final WeekdayRepository weekdayRepository;
-    private final TimeRepository timeRepository;
+    private final MemberService memberService;
 
     //회원정보 조회
     public ResponseEntity<?> memberInfoGet(Long memberId, UserDetailsImpl userDetails) {
         try {
             Member member = memberRepository.findById(memberId).orElseThrow();
 
-            if (member.isSecessionState()) {
-                return new ResponseEntity<>("탈퇴한 회원 입니다.", HttpStatus.BAD_REQUEST);
+            if (memberService.secessionMemberCheck(member.getUsername())) {
+                return new ResponseEntity<>("탈퇴 처리된 회원 입니다.", HttpStatus.BAD_REQUEST);
             }
 
             boolean myInfo = memberId.equals(userDetails.getUser().getId());
@@ -74,19 +72,30 @@ public class MemberInfoService {
     }
 
     //회원탈퇴
+    @Transactional
     public ResponseEntity<?> memberSecession(UserDetailsImpl userDetails) {
-        Member member = memberRepository.findById(userDetails.getUser().getId()).orElseThrow();
-        List<Participation> participation = participationRepository.findAllByMemberIdTrue(member.getId());
+        Member member = memberRepository.findById(userDetails.getUser().getId()).orElse(null);
 
-        if (member.getOpenTeam() != null) {
-            return new ResponseEntity<>("팀을 해체하고 회원탈퇴를 진행해주세요.", HttpStatus.BAD_REQUEST);
-        } else if (participation.size() != 0) {
-            return new ResponseEntity<>("가입한 팀을 탈퇴하고 회원탈퇴를 진행해주세요.", HttpStatus.BAD_REQUEST);
+        if (member != null) {
+            if (member.isSecessionState()) {
+                return new ResponseEntity<>("탈퇴 처리된 회원 입니다.", HttpStatus.BAD_REQUEST);
+            }
+
+            List<Participation> participation = participationRepository.findAllByMemberIdTrue(member.getId());
+
+            if (member.getOpenTeam() != null) {
+                return new ResponseEntity<>("팀을 해체하고 회원탈퇴를 진행해주세요.", HttpStatus.BAD_REQUEST);
+            } else if (participation.size() != 0) {
+                return new ResponseEntity<>("가입한 팀을 탈퇴하고 회원탈퇴를 진행해주세요.", HttpStatus.BAD_REQUEST);
+            }
+
+            String username = "secession-" + member.getUsername();
+            String nickname = "secession-" + member.getNickname();
+            member.memberSecession(username, nickname);
+
+            return new ResponseEntity<>("회원탈퇴가 완료 되었습니다.", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("회원이 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
         }
-
-        String nickname = "SecessionMember " + UUID.randomUUID();
-        member.memberDelete(nickname);
-
-        return new ResponseEntity<>("회원탈퇴가 완료 되었습니다.", HttpStatus.OK);
     }
 }
