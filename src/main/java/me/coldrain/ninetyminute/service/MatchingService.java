@@ -5,6 +5,7 @@ import me.coldrain.ninetyminute.dto.request.ApprovedMatchRequest;
 import me.coldrain.ninetyminute.dto.request.MatchMemberRequest;
 import me.coldrain.ninetyminute.dto.request.MatchResultRequest;
 import me.coldrain.ninetyminute.dto.request.MatchScoreRequest;
+import me.coldrain.ninetyminute.dto.response.MatchMemberResponse;
 import me.coldrain.ninetyminute.dto.response.MatchResponse;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
 import me.coldrain.ninetyminute.entity.*;
@@ -245,7 +246,7 @@ public class MatchingService {
     }
 
     @Transactional
-    public void makeTeamFormation(Long matchId, List<MatchMemberRequest> matchMemberRequestList, Member member) {
+    public void makeTeamFormation(Long teamId, Long matchId, List<MatchMemberRequest> matchMemberRequestList, Member member) {
         BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
                 () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다.")
         );
@@ -279,6 +280,24 @@ public class MatchingService {
                 }
             }
         } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
+    }
+
+    public MatchMemberResponse showFormation(Long teamId, Long matchId, Member member) {
+        List<FieldMember> fieldMemberList = fieldMemberRepository.findAllByMatchFieldMembers(teamId, matchId);
+        List<MatchMemberRequest> fieldMembers = new ArrayList<>();
+        for (FieldMember fieldMember : fieldMemberList) {
+            MatchMemberRequest matchMemberRequest = MatchMemberRequest.builder()
+                    .memberId(null)
+                    .position(fieldMember.getPosition())
+                    .anonymous(fieldMember.getAnonymous())
+                    .build();
+            if (!fieldMember.getAnonymous()) matchMemberRequest.setMemberId(fieldMember.getMember().getId());
+            fieldMembers.add(matchMemberRequest);
+        }
+        return MatchMemberResponse.builder()
+                .matchId(matchId)
+                .fieldMembers(fieldMembers)
+                .build();
     }
 
     @Transactional
@@ -352,6 +371,8 @@ public class MatchingService {
                 () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
         AfterMatching afterMatching = afterMatchingRepository.findByBeforeMatchingIdAdmitStatusTrue(matchId).orElseThrow(
                 () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다."));
+        List<FieldMember> fieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(member.getOpenTeam().getId(), beforeMatching.getId());
+        fieldMembers.forEach(fieldMember -> fieldMember.setAfterMatching(afterMatching));
         List<SubstituteMember> substituteMembers = new ArrayList<>();
 
         if (afterMatching.getAdmitStatus()) {
@@ -454,7 +475,7 @@ public class MatchingService {
         AfterMatching afterMatching = afterMatchingRepository.findById(afterMatchingId).orElseThrow(() -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
         Team team = teamRepository.findById(teamId).orElseThrow(() -> new IllegalArgumentException("해당 팀을 찾을 수 없습니다."));
         team.getRecord().updateTotalGameCount();
-        List<FieldMember> fieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(team.getId(), afterMatching.getBeforeMatching().getId());
+        List<FieldMember> fieldMembers = fieldMemberRepository.findAllByMatchFieldMembersAndAnonymousFalse(team.getId(), afterMatching.getBeforeMatching().getId());
 
         if (team.getName().equals(afterMatching.getBeforeMatching().getTeamName())) {
             if (afterMatching.getScore() > afterMatching.getOpponentScore()) {
@@ -462,7 +483,7 @@ public class MatchingService {
                 for (FieldMember fieldMember : fieldMembers) {
                     distributePositionPoint(fieldMember);
                 }
-                List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembers(team.getId(), afterMatching.getId());
+                List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembersAndAnonymousFalse(team.getId(), afterMatching.getId());
                 for (SubstituteMember substituteMember : substituteMembers) {
                     distributePositionPoint(substituteMember);
                 }
@@ -473,7 +494,7 @@ public class MatchingService {
                 for (FieldMember fieldMember : fieldMembers) {
                     distributePositionPoint(fieldMember);
                 }
-                List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembers(team.getId(), afterMatching.getId());
+                List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembersAndAnonymousFalse(team.getId(), afterMatching.getId());
                 for (SubstituteMember substituteMember : substituteMembers) {
                     distributePositionPoint(substituteMember);
                 }
@@ -494,7 +515,7 @@ public class MatchingService {
                 for (FieldMember fieldMember : fieldMembers) {
                     distributePositionPoint(fieldMember);
                 }
-                List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembers(team.getId(), afterMatching.getId());
+                List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembersAndAnonymousFalse(team.getId(), afterMatching.getId());
                 for (SubstituteMember substituteMember : substituteMembers) {
                     distributePositionPoint(substituteMember);
                 }

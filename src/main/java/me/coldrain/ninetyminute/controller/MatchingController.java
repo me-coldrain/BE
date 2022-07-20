@@ -6,6 +6,7 @@ import me.coldrain.ninetyminute.dto.request.ApprovedMatchRequest;
 import me.coldrain.ninetyminute.dto.request.MatchResultRequest;
 import me.coldrain.ninetyminute.dto.request.MatchScoreRequest;
 import me.coldrain.ninetyminute.dto.request.MatchMemberRequest;
+import me.coldrain.ninetyminute.dto.response.MatchMemberResponse;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
 import me.coldrain.ninetyminute.dto.response.MatchResponse;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
@@ -113,12 +114,27 @@ public class MatchingController {
      * 비회원의 경우 memberId를 null 처리
      */
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/matches/{match_id}/formation")
+    @PostMapping("/teams/{team_id}/matches/{match_id}/formation")
     public void makeTeamFormation(
+            @PathVariable("team_id") Long teamId,
             @PathVariable("match_id") Long matchId,
             @RequestBody List<MatchMemberRequest> matchMemberRequestList,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        matchingService.makeTeamFormation(matchId, matchMemberRequestList, userDetails.getUser());
+        matchingService.makeTeamFormation(teamId, matchId, matchMemberRequestList, userDetails.getUser());
+    }
+
+    /*
+     * Author: 병민
+     * 등록된 포매이션 조회 API
+     * 등록된 포매이션 필드 맴버들을 응답
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/teams/{team_id}/matches/{match_id}/formation")
+    public MatchMemberResponse showFormation(
+            @PathVariable("team_id") Long teamId,
+            @PathVariable("match_id") Long matchId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return matchingService.showFormation(teamId, matchId, userDetails.getUser());
     }
 
     /*
