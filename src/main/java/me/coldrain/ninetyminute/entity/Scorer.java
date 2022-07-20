@@ -27,10 +27,13 @@ public class Scorer extends TimeStamped {
     @JoinColumn(name = "after_matching_id")
     private AfterMatching afterMatching;
 
+    private Long teamId;
+
     @Builder
-    public Scorer (FieldMember fieldMember, SubstituteMember substituteMember, AfterMatching afterMatching) {
+    public Scorer (FieldMember fieldMember, SubstituteMember substituteMember, AfterMatching afterMatching, Long teamId) {
         this.fieldMember = fieldMember;
         this.substituteMember = substituteMember;
         this.afterMatching = afterMatching;
+        this.teamId = teamId;
     }
 }

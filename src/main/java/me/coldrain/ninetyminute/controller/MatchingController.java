@@ -207,6 +207,7 @@ public class MatchingController {
             @PathVariable("match_id") Long matchId,
             @RequestBody MatchResultRequest matchResultRequest,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
+//        log.info(matchResultRequest.toString());
         matchingService.writeMatchResult(teamId, matchId, matchResultRequest, userDetails.getUser());
     }
 }
