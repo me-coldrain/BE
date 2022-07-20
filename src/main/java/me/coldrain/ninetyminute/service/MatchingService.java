@@ -12,12 +12,14 @@ import me.coldrain.ninetyminute.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -155,7 +157,7 @@ public class MatchingService {
     }
 
     public List<MatchResponse> searchMatches(Long teamId, Member member) {
-        Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, member.getId()).orElse(null);
+        Participation participation = participationRepository.findByMemberIdAndTeamIdTrue(member.getId(), teamId).orElse(null);
         if (participation != null || member.getOpenTeam().getId().equals(teamId)) { // 팀의 주장일 때는 고려
             List<Apply> applyList = applyRepository.findAllByTeamIdOrderByCreatedDate(teamId);    // apply 의 approved == true 일 때만
             List<MatchResponse> matchResponseList = new ArrayList<>();
@@ -207,7 +209,7 @@ public class MatchingService {
     }
 
     public MatchResponse searchApprovedMatchDetail(Long teamId, Long applyId, Member member) {
-        Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(teamId, member.getId()).orElse(null);
+        Participation participation = participationRepository.findByMemberIdAndTeamIdTrue(member.getId(), teamId).orElse(null);
 
         if (participation != null || member.getOpenTeam().getId().equals(teamId)) { // 팀의 멤버인지 확인, 주장일 때 participation 에 등록 되지 않는 것을 고려해야한다.
             BeforeMatching beforeMatching = beforeMatchingRepository.findByApplyIdApprovedTrue(applyId).orElseThrow(
@@ -245,11 +247,11 @@ public class MatchingService {
 
     @Transactional
     public void makeTeamFormation(Long teamId, Long matchId, List<MatchMemberRequest> matchMemberRequestList, Member member) {
-        if (member.getOpenTeam().getId().equals(teamId)) {
-            BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                    () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다.")
-            );
-            Team team = teamRepository.findById(teamId).orElseThrow(
+        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다.")
+        );
+        if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getTeam().getId()) || member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
+            Team team = teamRepository.findById(member.getOpenTeam().getId()).orElseThrow(
                     () -> new IllegalArgumentException("해당 팀을 찾을 수 없습니다.")
             );
             for (MatchMemberRequest matchMemberRequest : matchMemberRequestList) {
@@ -264,7 +266,8 @@ public class MatchingService {
                             .build();
                     fieldMemberRepository.save(fieldMember);
                 } else {
-                    Member registerMember = memberRepository.findById(matchMemberRequest.getMemberId()).orElse(null);
+                    Member registerMember = memberRepository.findById(matchMemberRequest.getMemberId()).orElseThrow(
+                            () -> new IllegalArgumentException("해당 맴버를 찾을 수 없습니다."));
                     FieldMember fieldMember = FieldMember.builder()
                             .position(matchMemberRequest.getPosition())
                             .anonymous(matchMemberRequest.getAnonymous())
@@ -281,10 +284,10 @@ public class MatchingService {
 
     @Transactional
     public void cancelApprovedMatch(Long teamId, Long matchId, Member member) {
-        if (member.getOpenTeam().getId().equals(teamId)) {
-            BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                    () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다.")
-            );
+        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다.")
+        );
+        if (member.getOpenTeam().getId().equals(teamId) || member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
             applyRepository.delete(beforeMatching.getApply());
             beforeMatchingRepository.delete(beforeMatching);
         } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
@@ -351,77 +354,116 @@ public class MatchingService {
 
     @Transactional
     public void writeMatchResult(Long teamId, Long matchId, MatchResultRequest matchResultRequest, Member member) {
-        if (member.getOpenTeam().getId().equals(teamId)) {
-            AfterMatching afterMatching = afterMatchingRepository.findByBeforeMatchingIdAdmitStatusTrue(matchId).orElseThrow(
-                    () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다.")
-            );
-            for (MatchMemberRequest substitute : matchResultRequest.getSubstitutes()) {
-                SubstituteMember substituteMember = SubstituteMember.builder()
-                        .member(null)
-                        .team(afterMatching.getBeforeMatching().getApply().getTeam())
-                        .afterMatching(afterMatching)
-                        .position(substitute.getPosition())
-                        .anonymous(true)
-                        .build();
-                if (!substitute.getAnonymous()) {
-                    substituteMember.setMember(memberRepository.findById(substitute.getMemberId()).orElseThrow(
-                            () -> new IllegalArgumentException("이 팀에 소속되어 있지 않습니다.")
-                    ));
-                    substituteMember.changeAnonymous(substitute.getAnonymous());
-                }
-                substituteRepository.save(substituteMember);
-            }
+        Participation participation = participationRepository.findByTeamIdAndMemberId(member.getOpenTeam().getId(), member.getId()).orElse(null);
+        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
+        AfterMatching afterMatching = afterMatchingRepository.findByBeforeMatchingIdAdmitStatusTrue(matchId).orElseThrow(
+                () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다."));
+        List<SubstituteMember> substituteMembers = new ArrayList<>();
 
-            for (MatchMemberRequest scorer : matchResultRequest.getScorers()) {
-                if (!scorer.getAnonymous()) {
-                    FieldMember fieldMember = fieldMemberRepository.findByIdAndTeamId(scorer.getMemberId(), teamId).orElse(null);
-                    SubstituteMember substituteMember = substituteRepository.findByIdAndTeamId(scorer.getMemberId(), teamId).orElse(null);
-                    if (fieldMember == null && substituteMember == null)
-                        throw new IllegalArgumentException("해당 선수는 팀에 소속되어 있지 않습니다.");
-                    Scorer scorerMember = Scorer.builder()
-                            .fieldMember(fieldMember)
-                            .substituteMember(substituteMember)
+        if (afterMatching.getAdmitStatus()) {
+            if (participation != null) {
+                for (MatchMemberRequest substitute : matchResultRequest.getSubstitutes()) {
+                    SubstituteMember substituteMember = SubstituteMember.builder()
+                            .member(null)
+                            .team(member.getOpenTeam())
                             .afterMatching(afterMatching)
+                            .position(substitute.getPosition())
+                            .anonymous(true)
                             .build();
-                    scorerRepository.save(scorerMember);
-                } else {
-                    Scorer scorerMember = Scorer.builder()
-                            .fieldMember(null)
-                            .substituteMember(null)
-                            .afterMatching(afterMatching)
-                            .build();
-                    scorerRepository.save(scorerMember);
+                    if (!substitute.getAnonymous()) {
+                        substituteMember.setMember(memberRepository.findById(substitute.getMemberId()).orElseThrow(
+                                () -> new IllegalArgumentException("해당 멤버를 찾을 수 없습니다.")));
+                        substituteMember.changeAnonymous(substitute.getAnonymous());
+                    }
+                    substituteRepository.save(substituteMember);
+                    substituteMembers.add(substituteMember);
                 }
-                Member mvpPlayer = participationRepository.findByTeamIdAndMemberIdTrue(teamId, matchResultRequest.getMvpPlayer()).orElseThrow(
-                        () -> new IllegalArgumentException("해당 팀에 속해 있는 선수가 아닙니다.")
-                ).getMember();
-                Member moodMaker = participationRepository.findByTeamIdAndMemberIdTrue(teamId, matchResultRequest.getMoodMaker()).orElseThrow(
-                        () -> new IllegalArgumentException("해당 팀에 속해 있는 선수가 아닙니다.")
-                ).getMember();
-                afterMatching.editMVPNickname(mvpPlayer.getNickname());
-                afterMatching.editMoodMaker(moodMaker.getNickname());
-                mvpPlayer.getAbility().updateMVPPoint();
-                moodMaker.getAbility().updateCharmingPoint();
-            }
-            distributePoint(afterMatching.getBeforeMatching(), afterMatching);
-            History history = History.builder()
-                    .beforeMatching(afterMatching.getBeforeMatching())
-                    .afterMatching(afterMatching)
-                    .build();
-            historyRepository.save(history);
-        } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
+                if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getTeam().getId())) {
+                    if (afterMatching.getScore() == matchResultRequest.getScorers().size()) { // home team
+                        for (MatchMemberRequest scorer : matchResultRequest.getScorers()) {
+                            if (!scorer.getAnonymous()) {
+                                FieldMember fieldMember = fieldMemberRepository.findByMemberIdAndTeamId(scorer.getMemberId(), member.getOpenTeam().getId()).orElse(null);
+                                SubstituteMember substituteMember = searchSubMember(substituteMembers, scorer.getMemberId());
+                                if (fieldMember == null && substituteMember == null) throw new IllegalArgumentException("해당 선수는 팀에 소속되어 있지 않습니다.");
+                                Scorer scorerMember = Scorer.builder()
+                                        .fieldMember(fieldMember)
+                                        .substituteMember(substituteMember)
+                                        .afterMatching(afterMatching)
+                                        .teamId(member.getOpenTeam().getId())
+                                        .build();
+                                scorerRepository.save(scorerMember);
+                            } else {
+                                Scorer scorerMember = Scorer.builder()
+                                        .fieldMember(null)
+                                        .substituteMember(null)
+                                        .afterMatching(afterMatching)
+                                        .teamId(beforeMatching.getApply().getTeam().getId())
+                                        .build();
+                                scorerRepository.save(scorerMember);
+                            }
+                        }
+                    } else throw new IllegalArgumentException("득점과 득점자 수가 일치하지 않습니다.");
+                } else if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
+                    if (afterMatching.getOpponentScore() == matchResultRequest.getScorers().size()) {
+                        for (MatchMemberRequest scorer : matchResultRequest.getScorers()) {
+                            if (!scorer.getAnonymous()) {
+                                FieldMember fieldMember = fieldMemberRepository.findByMemberIdAndTeamId(scorer.getMemberId(), member.getOpenTeam().getId()).orElse(null);
+                                SubstituteMember substituteMember = searchSubMember(substituteMembers, scorer.getMemberId());
+                                if (fieldMember == null && substituteMember == null) throw new IllegalArgumentException("해당 선수는 팀에 소속되어 있지 않습니다.");
+                                Scorer scorerMember = Scorer.builder()
+                                        .fieldMember(fieldMember)
+                                        .substituteMember(substituteMember)
+                                        .afterMatching(afterMatching)
+                                        .teamId(member.getId())
+                                        .build();
+                                scorerRepository.save(scorerMember);
+                            } else {
+                                Scorer scorerMember = Scorer.builder()
+                                        .fieldMember(null)
+                                        .substituteMember(null)
+                                        .afterMatching(afterMatching)
+                                        .teamId(beforeMatching.getApply().getApplyTeam().getId())
+                                        .build();
+                                scorerRepository.save(scorerMember);
+                            }
+                        }
+                    } else throw new IllegalArgumentException("득점과 득점자 수가 일치하지 않습니다.");
+                }
+                if (matchResultRequest.getMvpPlayer() != null) {
+                    Member mvpPlayer = participationRepository.findByMemberIdAndTeamIdTrue(matchResultRequest.getMvpPlayer(), member.getOpenTeam().getId()).orElseThrow(
+                            () -> new IllegalArgumentException("해당 팀에 속해 있는 선수가 아닙니다.")).getMember();
+                    afterMatching.editMVPNickname(mvpPlayer.getNickname());
+                    mvpPlayer.getAbility().updateMVPPoint();
+                }
+                if (matchResultRequest.getMoodMaker() != null) {
+                    Member moodMaker = participationRepository.findByMemberIdAndTeamIdTrue(matchResultRequest.getMoodMaker(), member.getOpenTeam().getId()).orElseThrow(
+                            () -> new IllegalArgumentException("해당 팀에 속해 있는 선수가 아닙니다.")).getMember();
+                    afterMatching.editMoodMaker(moodMaker.getNickname());
+                    moodMaker.getAbility().updateCharmingPoint();
+                }
+                distributePoint(member.getOpenTeam().getId(), afterMatching.getId());
+                History history = historyRepository.findByBeforeMatchingIdAndAfterMatchingId(beforeMatching.getId(), afterMatching.getId()).orElse(null);
+                if (history == null) {
+                    History saveHistory = History.builder()
+                            .beforeMatching(afterMatching.getBeforeMatching())
+                            .afterMatching(afterMatching)
+                            .build();
+                    historyRepository.save(saveHistory);
+                }
+            } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
+        } else throw new IllegalArgumentException("상대 팀이 결과를 인정하지 않았습니다.");
     }
 
-    private void distributePoint(BeforeMatching beforeMatching, AfterMatching afterMatching) {
+    @Transactional
+    void distributePoint(Long teamId, Long afterMatchingId) {
         List<String> results = Arrays.asList("승리", "무승부", "패배");
-        Team team = beforeMatching.getApply().getTeam();
-        Team opposingTeam = beforeMatching.getApply().getApplyTeam();
+        Team team = teamRepository.findById(teamId).orElseThrow(() -> new IllegalArgumentException("해당 팀을 찾을 수 없습니다."));
         team.getRecord().updateTotalGameCount();
-        opposingTeam.getRecord().updateTotalGameCount();
-
+        AfterMatching afterMatching = afterMatchingRepository.findById(afterMatchingId).orElseThrow(() -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
+        List<FieldMember> fieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(team.getId(), afterMatching.getBeforeMatching().getId());
         if (afterMatching.getScore() > afterMatching.getOpponentScore()) {
             afterMatching.editResult(results.get(0), results.get(2));
-            List<FieldMember> fieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(team.getId(), afterMatching.getBeforeMatching().getId());
             for (FieldMember fieldMember : fieldMembers) {
                 distributePositionPoint(fieldMember);
             }
@@ -431,32 +473,26 @@ public class MatchingService {
             }
             team.getRecord().updateWinCount();
             team.getRecord().updateWinRate((double) (team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()));
-            opposingTeam.getRecord().updateLoseCount();
-            opposingTeam.getRecord().updateWinRate((double) (opposingTeam.getRecord().getWinCount() / opposingTeam.getRecord().getTotalGameCount()));
         } else if (afterMatching.getScore() < afterMatching.getOpponentScore()) {
             afterMatching.editResult(results.get(2), results.get(0));
-            List<FieldMember> fieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(opposingTeam.getId(), afterMatching.getBeforeMatching().getId());
             for (FieldMember fieldMember : fieldMembers) {
                 distributePositionPoint(fieldMember);
             }
-            List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembers(opposingTeam.getId(), afterMatching.getId());
+            List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembers(team.getId(), afterMatching.getId());
             for (SubstituteMember substituteMember : substituteMembers) {
                 distributePositionPoint(substituteMember);
             }
             team.getRecord().updateLoseCount();
             team.getRecord().updateWinRate((double) (team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()));
-            opposingTeam.getRecord().updateWinCount();
-            opposingTeam.getRecord().updateWinRate((double) (opposingTeam.getRecord().getWinCount() / opposingTeam.getRecord().getTotalGameCount()));
         } else {
             afterMatching.editResult(results.get(1), results.get(1));
             team.getRecord().updateDrawCount();
             team.getRecord().updateWinRate((double) (team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()));
-            opposingTeam.getRecord().updateDrawCount();
-            opposingTeam.getRecord().updateWinRate((double) (opposingTeam.getRecord().getWinCount() / opposingTeam.getRecord().getTotalGameCount()));
         }
     }
 
-    private static void distributePositionPoint(FieldMember fieldMember) {
+    @Transactional
+    void distributePositionPoint(FieldMember fieldMember) {
         switch (fieldMember.getMember().getPosition()) {
             case "striker":
                 fieldMember.getMember().getAbility().updateStrikePoint();
@@ -472,8 +508,8 @@ public class MatchingService {
                 break;
         }
     }
-
-    private static void distributePositionPoint(SubstituteMember substituteMember) {
+    @Transactional
+    void distributePositionPoint(SubstituteMember substituteMember) {
         switch (substituteMember.getMember().getPosition()) {
             case "striker":
                 substituteMember.getMember().getAbility().updateStrikePoint();
@@ -488,5 +524,16 @@ public class MatchingService {
                 substituteMember.getMember().getAbility().updateGoalkeeperPoint();
                 break;
         }
+    }
+
+    private SubstituteMember searchSubMember(List<SubstituteMember> substituteMembers, Long memberId) {
+        for (SubstituteMember substituteMember : substituteMembers) {
+            if (!substituteMember.getAnonymous()) {
+                if (substituteMember.getMember().getId().equals(memberId)) {
+                    return substituteMember;
+                } break;
+            }
+        }
+        return null;
     }
 }

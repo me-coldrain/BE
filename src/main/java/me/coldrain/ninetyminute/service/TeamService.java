@@ -125,7 +125,7 @@ public class TeamService {
             }
         }
 
-        Optional<Participation> teamMember = participationRepository.findByTeamIdAndMemberIdTrue(teamId, userDetails.getUser().getId());
+        Optional<Participation> teamMember = participationRepository.findByMemberIdAndTeamIdTrue(userDetails.getUser().getId(), teamId);
         if (teamMember.isPresent()) {
             participate = true;
         }
@@ -335,7 +335,7 @@ public class TeamService {
         }
 
         if (loginMemberOpenTeamId.equals(teamId)) {
-            final Participation participation = participationRepository.findByTeamIdAndMemberIdTrue(memberId, teamId)
+            final Participation participation = participationRepository.findByMemberIdAndTeamIdTrue(memberId, teamId)
                     .orElseThrow(() -> new IllegalArgumentException("참여에 존재하지 않습니다."));
             participationRepository.delete(participation);
             return new ResponseEntity<>("추방이 완료되었습니다.", HttpStatus.OK);
