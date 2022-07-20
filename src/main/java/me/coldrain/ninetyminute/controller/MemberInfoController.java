@@ -5,7 +5,10 @@ import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import me.coldrain.ninetyminute.service.MemberInfoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
@@ -29,11 +32,5 @@ public class MemberInfoController {
     @GetMapping("/api/home/members/{member_id}/history")
     public ResponseEntity<?> memberGameHistory(@PathVariable("member_id") Long memberId) {
         return memberInfoService.memberGameHistory(memberId);
-    }
-
-    //회원탈퇴
-    @PatchMapping("api/home/members/secession")
-    public ResponseEntity<?> memberSecession(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return memberInfoService.memberSecession(userDetails);
     }
 }

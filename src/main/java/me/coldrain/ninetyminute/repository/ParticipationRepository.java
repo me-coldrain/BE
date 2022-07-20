@@ -19,7 +19,7 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
     List<Participation> findAllByMemberIdFalse(final Long memberId);
 
     @Query("SELECT p FROM Participation p WHERE p.member.id = :memberId AND p.team.id = :teamId AND p.approved = false")
-    Optional <Participation> findByTeamIdAndMemberIdFalse(final Long memberId, final Long teamId);
+    Participation findByTeamIdAndMemberIdFalse(final Long memberId, final Long teamId);
 
     @Query("SELECT p FROM Participation p WHERE p.member.id = :memberId AND p.team.id = :teamId AND p.approved = true")
     Optional<Participation> findByTeamIdAndMemberIdTrue(final Long memberId, final Long teamId);
