@@ -52,7 +52,6 @@ public class MatchingService {
 
             if (!applyMatch.getApproved()) {
                 applyMatch.changeApproved(true);
-//            applyRepository.save(applyMatch);
 
                 BeforeMatching beforeMatching = BeforeMatching.builder()
                         .apply(applyMatch)
@@ -246,7 +245,7 @@ public class MatchingService {
     }
 
     @Transactional
-    public void makeTeamFormation(Long teamId, Long matchId, List<MatchMemberRequest> matchMemberRequestList, Member member) {
+    public void makeTeamFormation(Long matchId, List<MatchMemberRequest> matchMemberRequestList, Member member) {
         BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
                 () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다.")
         );
@@ -283,27 +282,22 @@ public class MatchingService {
     }
 
     @Transactional
-    public void cancelApprovedMatch(Long teamId, Long matchId, Member member) {
+    public void cancelApprovedMatch(Long matchId, Member member) {
         BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다.")
-        );
-        if (member.getOpenTeam().getId().equals(teamId) || member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
+                () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다."));
+        if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getTeam().getId()) || member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
             applyRepository.delete(beforeMatching.getApply());
             beforeMatchingRepository.delete(beforeMatching);
         } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
     }
 
     @Transactional
-    public void confirmEndMatch(Long teamId, Long matchId, Member member) {
+    public void confirmEndMatch(Long matchId, Member member) {
         BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
                 () -> new IllegalArgumentException("찾는 대결이 존재하지 않습니다.")
         );
 
-//        Apply applyMatch = applyRepository.findById(beforeMatching.getApply().getId()).orElseThrow(
-//                () -> new IllegalArgumentException("성사된 대결이 아닙니다.")
-//        );
-
-        if (member.getOpenTeam().getId().equals(teamId)) {
+        if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getTeam().getId())) {
             beforeMatching.getApply().changeEndMatchStatus(true);
         } else if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
             beforeMatching.getApply().changeOpposingTeamEndMatchStatus(true);
@@ -311,11 +305,10 @@ public class MatchingService {
     }
 
     @Transactional
-    public void writeMatchScore(Long teamId, Long matchId, MatchScoreRequest matchScoreRequest, Member member) {
-        if (member.getOpenTeam().getId().equals(teamId)) {
-            BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                    () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다.")
-            );
+    public void writeMatchScore(Long matchId, MatchScoreRequest matchScoreRequest, Member member) {
+        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다."));
+        if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getTeam().getId())) {
             AfterMatching afterMatching = AfterMatching.builder()
                     .beforeMatching(beforeMatching)
                     .mvpNickname(null)
@@ -329,10 +322,10 @@ public class MatchingService {
     }
 
     @Transactional
-    public void confirmMatchScore(Long teamId, Long matchId, Member member) {
+    public void confirmMatchScore(Long matchId, Member member) {
         BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
                 () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
-        if (member.getOpenTeam().getId().equals(teamId) || member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
+        if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getTeam().getId()) || member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
             AfterMatching afterMatching = afterMatchingRepository.findByBeforeMatchingIdAdmitStatusFalse(matchId).orElseThrow(
                     () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다.")
             );
@@ -341,7 +334,7 @@ public class MatchingService {
     }
 
     @Transactional
-    public void correctMatchScore(Long teamId, Long matchId, MatchScoreRequest matchScoreRequest, Member member) {
+    public void correctMatchScore(Long matchId, MatchScoreRequest matchScoreRequest, Member member) {
         BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
                 () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
         if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
@@ -353,7 +346,7 @@ public class MatchingService {
     }
 
     @Transactional
-    public void writeMatchResult(Long teamId, Long matchId, MatchResultRequest matchResultRequest, Member member) {
+    public void writeMatchResult(Long matchId, MatchResultRequest matchResultRequest, Member member) {
         Participation participation = participationRepository.findByTeamIdAndMemberId(member.getOpenTeam().getId(), member.getId()).orElse(null);
         BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
                 () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));

@@ -86,7 +86,7 @@ public class MatchingController {
      * 소속 팀의 대결 목록 조회
      */
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/teams/{team_id}/matches")
+    @GetMapping("/teams/{team_id}/matches")         // teamId 가 아니라 memberId
     public List<MatchResponse> searchMatches(
             final @PathVariable("team_id") Long teamId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -113,13 +113,12 @@ public class MatchingController {
      * 비회원의 경우 memberId를 null 처리
      */
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/teams/{team_id}/matches/{match_id}/formation")
+    @PostMapping("/matches/{match_id}/formation")
     public void makeTeamFormation(
-            @PathVariable("team_id") Long teamId,
             @PathVariable("match_id") Long matchId,
             @RequestBody List<MatchMemberRequest> matchMemberRequestList,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        matchingService.makeTeamFormation(teamId, matchId, matchMemberRequestList, userDetails.getUser());
+        matchingService.makeTeamFormation(matchId, matchMemberRequestList, userDetails.getUser());
     }
 
     /*
@@ -128,12 +127,11 @@ public class MatchingController {
      * 우천 및 기타 상황 발생 시 대결 취소
      */
     @ResponseStatus(HttpStatus.OK)
-    @DeleteMapping("/teams/{team_id}/matches/{match_id}")
+    @DeleteMapping("/matches/{match_id}")
     public void cancelApprovedMatch(
-            @PathVariable("team_id") Long teamId,
             @PathVariable("match_id") Long matchId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        matchingService.cancelApprovedMatch(teamId, matchId, userDetails.getUser());
+        matchingService.cancelApprovedMatch(matchId, userDetails.getUser());
     }
 
     /*
@@ -142,12 +140,11 @@ public class MatchingController {
      * 대결 종료 확인 버튼 수행 API -> 대결 각 팀의 경기 종료 상태를 apply 에 저장.
      */
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/teams/{team_id}/matches/{match_id}")
+    @PostMapping("/matches/{match_id}")
     public void confirmEndMatch(
-            final @PathVariable("team_id") Long teamId,
             final @PathVariable("match_id") Long matchId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        matchingService.confirmEndMatch(teamId, matchId, userDetails.getUser());
+        matchingService.confirmEndMatch(matchId, userDetails.getUser());
     }
 
     /*
@@ -156,13 +153,12 @@ public class MatchingController {
      * 대결 후 경기 결과 입력
      */
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/teams/{team_id}/matches/{match_id}/score")
+    @PostMapping("/matches/{match_id}/score")
     public void writeMatchScore(
-            final @PathVariable("team_id") Long teamId,
             final @PathVariable("match_id") Long matchId,
             final @RequestBody MatchScoreRequest matchScoreRequest,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        matchingService.writeMatchScore(teamId, matchId, matchScoreRequest, userDetails.getUser());
+        matchingService.writeMatchScore(matchId, matchScoreRequest, userDetails.getUser());
     }
 
     /*
@@ -171,13 +167,12 @@ public class MatchingController {
      * 대결 점수 정정 API
      */
     @ResponseStatus(HttpStatus.OK)
-    @PatchMapping("/teams/{team_id}/matches/{match_id}/score")
+    @PatchMapping("/matches/{match_id}/score")
     public void correctMatchScore(
-            final @PathVariable("team_id") Long teamId,
             final @PathVariable("match_id") Long matchId,
             final @RequestBody MatchScoreRequest matchScoreRequest,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        matchingService.correctMatchScore(teamId, matchId, matchScoreRequest, userDetails.getUser());
+        matchingService.correctMatchScore(matchId, matchScoreRequest, userDetails.getUser());
     }
 
     /*
@@ -186,12 +181,11 @@ public class MatchingController {
      * API 요청시 admitStatus 값이 true 변경
      */
     @ResponseStatus(HttpStatus.OK)
-    @PatchMapping("/teams/{team_id}/matches/{match_id}/score/admit")
+    @PatchMapping("/matches/{match_id}/score/admit")
     public void confirmMatchScore(
-            final @PathVariable("team_id") Long teamId,
             final @PathVariable("match_id") Long matchId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        matchingService.confirmMatchScore(teamId, matchId, userDetails.getUser());
+        matchingService.confirmMatchScore(matchId, userDetails.getUser());
     }
 
     /*
@@ -201,13 +195,12 @@ public class MatchingController {
      * mvp, 분위기 매이커 점수 부여
      */
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/teams/{team_id}/matches/{match_id}/results")
+    @PostMapping("/matches/{match_id}/results")
     public void writeMatchResult(
-            @PathVariable("team_id") Long teamId,
             @PathVariable("match_id") Long matchId,
             @RequestBody MatchResultRequest matchResultRequest,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 //        log.info(matchResultRequest.toString());
-        matchingService.writeMatchResult(teamId, matchId, matchResultRequest, userDetails.getUser());
+        matchingService.writeMatchResult(matchId, matchResultRequest, userDetails.getUser());
     }
 }
