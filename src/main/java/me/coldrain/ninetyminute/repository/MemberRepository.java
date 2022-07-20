@@ -19,16 +19,16 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByOpenTeam(Long teamId);
 
     //포지션 랭킹 조회
-    @Query("SELECT m FROM Member m ORDER BY m.ability.mvpPoint desc")
+    @Query("SELECT m FROM Member m WHERE m.secessionState = false ORDER BY m.ability.mvpPoint desc")
     List<Member> findAllByMvpPoint();
-    @Query("SELECT m FROM Member m ORDER BY m.ability.charmingPoint desc")
+    @Query("SELECT m FROM Member m WHERE m.secessionState = false ORDER BY m.ability.charmingPoint desc")
     List<Member> findAllByCharmingPoint();
-    @Query("SELECT m FROM Member m WHERE m.position = :striker ORDER BY m.ability.strikerPoint desc")
+    @Query("SELECT m FROM Member m WHERE m.position = :striker AND m.secessionState = false ORDER BY m.ability.strikerPoint desc")
     List<Member> findAllByStrikerPoint(String striker);
-    @Query("SELECT m FROM Member m WHERE m.position = :midfielder ORDER BY m.ability.midfielderPoint desc")
+    @Query("SELECT m FROM Member m WHERE m.position = :midfielder AND m.secessionState = false ORDER BY m.ability.midfielderPoint desc")
     List<Member> findAllByMidfielderPoint(String midfielder);
-    @Query("SELECT m FROM Member m WHERE m.position = :defender ORDER BY m.ability.defenderPoint desc")
+    @Query("SELECT m FROM Member m WHERE m.position = :defender AND m.secessionState = false ORDER BY m.ability.defenderPoint desc")
     List<Member> findAllByDefenderPoint(String defender);
-    @Query("SELECT m FROM Member m WHERE m.position = :goalkeeper ORDER BY m.ability.goalkeeperPoint desc")
+    @Query("SELECT m FROM Member m WHERE m.position = :goalkeeper AND m.secessionState = false ORDER BY m.ability.goalkeeperPoint desc")
     List<Member> findAllByGoalkeeperPoint(String goalkeeper);
 }
