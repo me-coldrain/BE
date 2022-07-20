@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import java.util.List;
 @Setter
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class TeamInfoResponse {
+    private Long teamId;
     private String teamName;
     private String introduce;
     private String teamImageFileUrl;
@@ -32,6 +34,8 @@ public class TeamInfoResponse {
     private boolean otherCaptain;
     private boolean participate;
     private RecentMatchHistory recentMatchHistory;
+    private LocalDateTime createdDate;
+    private LocalDateTime modifiedDate;
 
     @NoArgsConstructor
     @Setter
