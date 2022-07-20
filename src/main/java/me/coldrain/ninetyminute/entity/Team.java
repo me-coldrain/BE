@@ -1,6 +1,8 @@
 package me.coldrain.ninetyminute.entity;
 
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
@@ -12,6 +14,8 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString(exclude = {"weekdays", "timeList"})
 @Getter
+@Where(clause = "deleted is null")
+@SQLDelete(sql = "UPDATE Team SET deleted = true where id = ?")
 public class Team extends TimeStamped {
 
     @Id
@@ -44,6 +48,8 @@ public class Team extends TimeStamped {
     @JoinColumn(name = "history_id")
     private History history;
 
+    private Boolean deleted;
+
     public void changeRecruit(Boolean recruit) {
         this.recruit = recruit;
     }
@@ -55,6 +61,8 @@ public class Team extends TimeStamped {
     public void setQuestion(String question) {
         this.question = question;
     }
+
+//    public void delete() { this.deleted = true; }
 
     public void modifyTeam(String teamImageFileUrl, String introduce, String mainArea, String preferredArea, List<String> weekdays, List<String> time) {
         this.teamProfileUrl = teamImageFileUrl;

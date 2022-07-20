@@ -255,4 +255,12 @@ public class TeamController {
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return teamService.searchApplyTeams(userDetails.getUser());
     }
+
+    @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping("/home/teams/{team_id}/disband")
+    public void disbandTeam(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails ) {
+        teamService.disbandTeam(teamId, userDetails.getUser());
+    }
 }
