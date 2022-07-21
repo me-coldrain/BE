@@ -403,4 +403,14 @@ public class TeamService {
         }
         return applyTeamResponseList;
     }
+
+    @Transactional
+    public void disbandTeam(Long teamId, Member member) {
+        if (member.getOpenTeam().getId().equals(teamId)) {
+            teamRepository.deleteById(teamId);
+            Member my = memberRepository.findById(member.getId()).orElseThrow(
+                    () -> new IllegalArgumentException("해당 맴버를 찾을 수 없습니다."));
+            my.setOpenTeam(null);
+        } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
+    }
 }
