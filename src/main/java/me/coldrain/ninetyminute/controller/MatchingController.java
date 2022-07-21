@@ -9,6 +9,7 @@ import me.coldrain.ninetyminute.dto.request.MatchMemberRequest;
 import me.coldrain.ninetyminute.dto.response.MatchMemberResponse;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
 import me.coldrain.ninetyminute.dto.response.MatchResponse;
+import me.coldrain.ninetyminute.dto.response.ParticipationTeamMatchResponse;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import me.coldrain.ninetyminute.service.MatchingService;
 import org.springframework.http.HttpStatus;
@@ -68,30 +69,17 @@ public class MatchingController {
         matchingService.rejectApplyMatch(applyTeamId, applyId, userDetails.getUser());
     }
 
-//    /*
-//     * Author: 병민
-//     * 신청한 대결 목록 조회 API
-//     * 신청한 대결 목록을 조회한다.
-//     */
-//    @ResponseStatus(HttpStatus.OK)
-//    @GetMapping("/teams/{team_id}/matches/apply")
-//    public List<MatchResponse> searchApplyMatches(
-//            final @PathVariable("team_id") Long teamId,
-//            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-//        return matchingService.searchApplyMatch(teamId, userDetails.getUser());
-//    }
-
     /*
      * Author: 병민
      * 소속 팀 대결 목록 조회 API
      * 소속 팀의 대결 목록 조회
      */
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/teams/{team_id}/matches")         // teamId 가 아니라 memberId
-    public List<MatchResponse> searchMatches(
-            final @PathVariable("team_id") Long teamId,
+    @GetMapping("/members/{member_id}/matches")         // teamId 가 아니라 memberId
+    public List<ParticipationTeamMatchResponse> searchMatches(
+            final @PathVariable("member_id") Long memberId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return matchingService.searchMatches(teamId, userDetails.getUser());
+        return matchingService.searchMatches(memberId, userDetails.getUser());
     }
 
     /*

@@ -8,6 +8,7 @@ import me.coldrain.ninetyminute.dto.request.MatchScoreRequest;
 import me.coldrain.ninetyminute.dto.response.MatchMemberResponse;
 import me.coldrain.ninetyminute.dto.response.MatchResponse;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
+import me.coldrain.ninetyminute.dto.response.ParticipationTeamMatchResponse;
 import me.coldrain.ninetyminute.entity.*;
 import me.coldrain.ninetyminute.repository.*;
 import org.springframework.stereotype.Service;
@@ -156,56 +157,42 @@ public class MatchingService {
         } else throw new IllegalArgumentException("이 팀의 주장이 아닙니다.");
     }
 
-    public List<MatchResponse> searchMatches(Long teamId, Member member) {
-        Participation participation = participationRepository.findByMemberIdAndTeamIdTrue(member.getId(), teamId).orElse(null);
-        if (participation != null || member.getOpenTeam().getId().equals(teamId)) { // 팀의 주장일 때는 고려
-            List<Apply> applyList = applyRepository.findAllByTeamIdOrderByCreatedDate(teamId);    // apply 의 approved == true 일 때만
-            List<MatchResponse> matchResponseList = new ArrayList<>();
+    public List<ParticipationTeamMatchResponse> searchMatches(Long memberId, Member member) {
+        List<Participation> ParticipationList = participationRepository.findAllByMemberIdTrue(memberId);
+        List<ParticipationTeamMatchResponse> participationTeamMatchResponseList = new ArrayList<>();
 
-            for (Apply apply : applyList) {
-                Team opposingTeam = apply.getApplyTeam();
-                if (apply.getApproved()) {
-                    BeforeMatching beforeMatching = beforeMatchingRepository.findByApplyIdApprovedTrue(apply.getId()).orElseThrow(
-                            () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
-                    MatchResponse matchResponse = MatchResponse.builder()
-                            .matchId(beforeMatching.getId())
-                            .opposingTeamId(opposingTeam.getId())
-                            .opposingTeamName(opposingTeam.getName())
-                            .opposingTeamMemberCount(participationRepository.findAllByTeamIdTrue(opposingTeam.getId()).size())
-                            .opposingTeamPoint(opposingTeam.getRecord().getWinPoint())
-                            .opposingTeamTotalGameCount(opposingTeam.getRecord().getTotalGameCount())
-                            .opposingTeamWinRate(opposingTeam.getRecord().getWinRate())
-                            .opposingTeamWinCount(opposingTeam.getRecord().getWinCount())
-                            .opposingTeamDrawCount(opposingTeam.getRecord().getDrawCount())
-                            .opposingTeamLoseCount(opposingTeam.getRecord().getLoseCount())
-                            .matchLocation(beforeMatching.getLocation())
-                            .createdDate(beforeMatching.getCreatedDate())
-                            .modifiedDate(beforeMatching.getModifiedDate())
-                            .matchStatus(true)
-                            .build();
-                    matchResponseList.add(matchResponse);
-                } else {
-                    MatchResponse matchResponse = MatchResponse.builder()
-                            .matchId(null)
-                            .opposingTeamId(opposingTeam.getId())
-                            .opposingTeamName(opposingTeam.getName())
-                            .opposingTeamMemberCount(participationRepository.findAllByTeamIdTrue(opposingTeam.getId()).size())
-                            .opposingTeamPoint(opposingTeam.getRecord().getWinPoint())
-                            .opposingTeamTotalGameCount(opposingTeam.getRecord().getTotalGameCount())
-                            .opposingTeamWinRate(opposingTeam.getRecord().getWinRate())
-                            .opposingTeamWinCount(opposingTeam.getRecord().getWinCount())
-                            .opposingTeamDrawCount(opposingTeam.getRecord().getDrawCount())
-                            .opposingTeamLoseCount(opposingTeam.getRecord().getLoseCount())
-                            .matchLocation(opposingTeam.getMainArea())
-                            .createdDate(apply.getCreatedDate())
-                            .modifiedDate(apply.getModifiedDate())
-                            .matchStatus(false)
-                            .build();
-                    matchResponseList.add(matchResponse);
+        for (Participation participation : ParticipationList) {
+            List<BeforeMatching> beforeMatchingList = beforeMatchingRepository.forMatchingList(participation.getTeam().getName());
+            Boolean isCaptain = memberRepository.findById(memberId).orElseThrow(
+                    () -> new IllegalArgumentException("이 회원은 존재하지 않습니다.")).getOpenTeam().getId().equals(participation.getTeam().getId());
+            Integer teamMemberCnt = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size();
+            ParticipationTeamMatchResponse participationTeamMatchResponse = ParticipationTeamMatchResponse.builder()
+                    .matchId(null)
+                    .isCaptain(isCaptain)
+                    .teamName(participation.getTeam().getName())
+                    .teamMemberCount(teamMemberCnt)
+                    .teamPoint(participation.getTeam().getRecord().getWinPoint())
+                    .teamWinRate(participation.getTeam().getRecord().getWinRate())
+                    .teamTotalGameCount(participation.getTeam().getRecord().getTotalGameCount())
+                    .teamWinCount(participation.getTeam().getRecord().getWinCount())
+                    .teamDrawCount(participation.getTeam().getRecord().getDrawCount())
+                    .teamLoseCount(participation.getTeam().getRecord().getLoseCount())
+                    .matchLocation(participation.getTeam().getMainArea())
+                    .createdDate(participation.getCreatedDate())
+                    .modifiedDate(participation.getModifiedDate())
+                    .matchStatus(false)
+                    .build();
+            if (!beforeMatchingList.isEmpty()) {
+                for (BeforeMatching beforeMatching : beforeMatchingList) {
+                    participationTeamMatchResponse.changeMatchId(beforeMatching.getId());
+                    participationTeamMatchResponse.changeMatchLocation(beforeMatching.getLocation());
+                    participationTeamMatchResponse.changeMatchStatus(true);
+                    participationTeamMatchResponseList.add(participationTeamMatchResponse);
                 }
             }
-            return matchResponseList;
-        } else throw new IllegalArgumentException("이 팀의 멤버가 아닙니다.");
+            participationTeamMatchResponseList.add(participationTeamMatchResponse);
+        }
+        return participationTeamMatchResponseList;
     }
 
     public MatchResponse searchApprovedMatchDetail(Long teamId, Long applyId, Member member) {
