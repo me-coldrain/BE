@@ -18,6 +18,11 @@ public interface AfterMatchingRepository extends JpaRepository<AfterMatching, Lo
     @Query("select am from AfterMatching am where am.beforeMatching.id = :beforeMatchingId and am.admitStatus = false ")
     Optional<AfterMatching> findByBeforeMatchingIdAdmitStatusFalse(Long beforeMatchingId);
 
+
+    @Query("select am from AfterMatching am where am.id = :afterMatchId and am.admitStatus = true")
+    Optional<AfterMatching> findByIdAndAdmitTrue(Long afterMatchId);
+
     @Query("select am from AfterMatching am where am.beforeMatching.teamName = :teamName and am.result = '승리' ")
     List<AfterMatching> findAllByWinHistory(String teamName);
+
 }

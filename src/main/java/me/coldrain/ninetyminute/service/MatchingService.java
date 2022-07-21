@@ -5,6 +5,7 @@ import me.coldrain.ninetyminute.dto.request.ApprovedMatchRequest;
 import me.coldrain.ninetyminute.dto.request.MatchMemberRequest;
 import me.coldrain.ninetyminute.dto.request.MatchResultRequest;
 import me.coldrain.ninetyminute.dto.request.MatchScoreRequest;
+import me.coldrain.ninetyminute.dto.response.MatchMemberResponse;
 import me.coldrain.ninetyminute.dto.response.MatchResponse;
 import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
 import me.coldrain.ninetyminute.entity.*;
@@ -52,7 +53,6 @@ public class MatchingService {
 
             if (!applyMatch.getApproved()) {
                 applyMatch.changeApproved(true);
-//            applyRepository.save(applyMatch);
 
                 BeforeMatching beforeMatching = BeforeMatching.builder()
                         .apply(applyMatch)
@@ -282,28 +282,45 @@ public class MatchingService {
         } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
     }
 
+    public MatchMemberResponse showFormation(Long teamId, Long matchId, Member member) {
+        List<FieldMember> fieldMemberList = fieldMemberRepository.findAllByMatchFieldMembers(teamId, matchId);
+        List<MatchMemberRequest> fieldMembers = new ArrayList<>();
+        for (FieldMember fieldMember : fieldMemberList) {
+            MatchMemberRequest matchMemberRequest = MatchMemberRequest.builder()
+                    .memberId(null)
+                    .memberProfileUrl(null)
+                    .position(fieldMember.getPosition())
+                    .anonymous(fieldMember.getAnonymous())
+                    .build();
+            if (!fieldMember.getAnonymous()) {
+                matchMemberRequest.setMemberId(fieldMember.getMember().getId());
+                matchMemberRequest.setMemberProfileUrl(fieldMember.getMember().getProfileUrl());
+            }
+            fieldMembers.add(matchMemberRequest);
+        }
+        return MatchMemberResponse.builder()
+                .matchId(matchId)
+                .fieldMembers(fieldMembers)
+                .build();
+    }
+
     @Transactional
-    public void cancelApprovedMatch(Long teamId, Long matchId, Member member) {
+    public void cancelApprovedMatch(Long matchId, Member member) {
         BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다.")
-        );
-        if (member.getOpenTeam().getId().equals(teamId) || member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
+                () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다."));
+        if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getTeam().getId()) || member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
             applyRepository.delete(beforeMatching.getApply());
             beforeMatchingRepository.delete(beforeMatching);
         } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
     }
 
     @Transactional
-    public void confirmEndMatch(Long teamId, Long matchId, Member member) {
+    public void confirmEndMatch(Long matchId, Member member) {
         BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
                 () -> new IllegalArgumentException("찾는 대결이 존재하지 않습니다.")
         );
 
-//        Apply applyMatch = applyRepository.findById(beforeMatching.getApply().getId()).orElseThrow(
-//                () -> new IllegalArgumentException("성사된 대결이 아닙니다.")
-//        );
-
-        if (member.getOpenTeam().getId().equals(teamId)) {
+        if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getTeam().getId())) {
             beforeMatching.getApply().changeEndMatchStatus(true);
         } else if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
             beforeMatching.getApply().changeOpposingTeamEndMatchStatus(true);
@@ -311,11 +328,10 @@ public class MatchingService {
     }
 
     @Transactional
-    public void writeMatchScore(Long teamId, Long matchId, MatchScoreRequest matchScoreRequest, Member member) {
-        if (member.getOpenTeam().getId().equals(teamId)) {
-            BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                    () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다.")
-            );
+    public void writeMatchScore(Long matchId, MatchScoreRequest matchScoreRequest, Member member) {
+        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다."));
+        if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getTeam().getId())) {
             AfterMatching afterMatching = AfterMatching.builder()
                     .beforeMatching(beforeMatching)
                     .mvpNickname(null)
@@ -329,10 +345,10 @@ public class MatchingService {
     }
 
     @Transactional
-    public void confirmMatchScore(Long teamId, Long matchId, Member member) {
+    public void confirmMatchScore(Long matchId, Member member) {
         BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
                 () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
-        if (member.getOpenTeam().getId().equals(teamId) || member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
+        if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getTeam().getId()) || member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
             AfterMatching afterMatching = afterMatchingRepository.findByBeforeMatchingIdAdmitStatusFalse(matchId).orElseThrow(
                     () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다.")
             );
@@ -341,7 +357,7 @@ public class MatchingService {
     }
 
     @Transactional
-    public void correctMatchScore(Long teamId, Long matchId, MatchScoreRequest matchScoreRequest, Member member) {
+    public void correctMatchScore(Long matchId, MatchScoreRequest matchScoreRequest, Member member) {
         BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
                 () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
         if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
@@ -353,12 +369,14 @@ public class MatchingService {
     }
 
     @Transactional
-    public void writeMatchResult(Long teamId, Long matchId, MatchResultRequest matchResultRequest, Member member) {
+    public void writeMatchResult(Long matchId, MatchResultRequest matchResultRequest, Member member) {
         Participation participation = participationRepository.findByTeamIdAndMemberId(member.getOpenTeam().getId(), member.getId()).orElse(null);
         BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
                 () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
         AfterMatching afterMatching = afterMatchingRepository.findByBeforeMatchingIdAdmitStatusTrue(matchId).orElseThrow(
                 () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다."));
+        List<FieldMember> fieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(member.getOpenTeam().getId(), beforeMatching.getId());
+        fieldMembers.forEach(fieldMember -> fieldMember.setAfterMatching(afterMatching));
         List<SubstituteMember> substituteMembers = new ArrayList<>();
 
         if (afterMatching.getAdmitStatus()) {
@@ -458,42 +476,66 @@ public class MatchingService {
     @Transactional
     void distributePoint(Long teamId, Long afterMatchingId) {
         List<String> results = Arrays.asList("승리", "무승부", "패배");
+        AfterMatching afterMatching = afterMatchingRepository.findById(afterMatchingId).orElseThrow(() -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
         Team team = teamRepository.findById(teamId).orElseThrow(() -> new IllegalArgumentException("해당 팀을 찾을 수 없습니다."));
         team.getRecord().updateTotalGameCount();
-        AfterMatching afterMatching = afterMatchingRepository.findById(afterMatchingId).orElseThrow(() -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
-        List<FieldMember> fieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(team.getId(), afterMatching.getBeforeMatching().getId());
-        if (afterMatching.getScore() > afterMatching.getOpponentScore()) {
-            afterMatching.editResult(results.get(0), results.get(2));
-            for (FieldMember fieldMember : fieldMembers) {
-                distributePositionPoint(fieldMember);
+        List<FieldMember> fieldMembers = fieldMemberRepository.findAllByMatchFieldMembersAndAnonymousFalse(team.getId(), afterMatching.getBeforeMatching().getId());
+
+        if (team.getName().equals(afterMatching.getBeforeMatching().getTeamName())) {
+            if (afterMatching.getScore() > afterMatching.getOpponentScore()) {
+                afterMatching.editResult(results.get(0), results.get(2));
+                for (FieldMember fieldMember : fieldMembers) {
+                    distributePositionPoint(fieldMember);
+                }
+                List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembersAndAnonymousFalse(team.getId(), afterMatching.getId());
+                for (SubstituteMember substituteMember : substituteMembers) {
+                    distributePositionPoint(substituteMember);
+                }
+                team.getRecord().updateWinCount();
+                team.getRecord().updateWinRate(((double) (team.getRecord().getWinCount() / team.getRecord().getTotalGameCount())) * 100.0);
+            } else if (afterMatching.getScore() < afterMatching.getOpponentScore()) {
+                afterMatching.editResult(results.get(2), results.get(0));
+                for (FieldMember fieldMember : fieldMembers) {
+                    distributePositionPoint(fieldMember);
+                }
+                List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembersAndAnonymousFalse(team.getId(), afterMatching.getId());
+                for (SubstituteMember substituteMember : substituteMembers) {
+                    distributePositionPoint(substituteMember);
+                }
+                team.getRecord().updateLoseCount();
+                team.getRecord().updateWinRate(((double) ((team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()))) * 100.0);
+            } else {
+                afterMatching.editResult(results.get(1), results.get(1));
+                team.getRecord().updateDrawCount();
+                team.getRecord().updateWinRate(((double) ((team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()))) * 100.0);
             }
-            List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembers(team.getId(), afterMatching.getId());
-            for (SubstituteMember substituteMember : substituteMembers) {
-                distributePositionPoint(substituteMember);
+        } else if (team.getName().equals(afterMatching.getBeforeMatching().getOpposingTeamName())) {
+            if (afterMatching.getScore() > afterMatching.getOpponentScore()) {
+                afterMatching.editResult(results.get(0), results.get(2));
+                team.getRecord().updateLoseCount();
+                team.getRecord().updateWinRate(((double) ((team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()))) * 100.0);
+            } else if (afterMatching.getScore() < afterMatching.getOpponentScore()) {
+                afterMatching.editResult(results.get(2), results.get(0));
+                for (FieldMember fieldMember : fieldMembers) {
+                    distributePositionPoint(fieldMember);
+                }
+                List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembersAndAnonymousFalse(team.getId(), afterMatching.getId());
+                for (SubstituteMember substituteMember : substituteMembers) {
+                    distributePositionPoint(substituteMember);
+                }
+                team.getRecord().updateWinCount();
+                team.getRecord().updateWinRate(((double) ((team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()))) * 100.0);
+            } else {
+                afterMatching.editResult(results.get(1), results.get(1));
+                team.getRecord().updateDrawCount();
+                team.getRecord().updateWinRate(((double) ((team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()))) * 100.0);
             }
-            team.getRecord().updateWinCount();
-            team.getRecord().updateWinRate((double) (team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()));
-        } else if (afterMatching.getScore() < afterMatching.getOpponentScore()) {
-            afterMatching.editResult(results.get(2), results.get(0));
-            for (FieldMember fieldMember : fieldMembers) {
-                distributePositionPoint(fieldMember);
-            }
-            List<SubstituteMember> substituteMembers = substituteRepository.findAllByMatchSubstituteMembers(team.getId(), afterMatching.getId());
-            for (SubstituteMember substituteMember : substituteMembers) {
-                distributePositionPoint(substituteMember);
-            }
-            team.getRecord().updateLoseCount();
-            team.getRecord().updateWinRate((double) (team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()));
-        } else {
-            afterMatching.editResult(results.get(1), results.get(1));
-            team.getRecord().updateDrawCount();
-            team.getRecord().updateWinRate((double) (team.getRecord().getWinCount() / team.getRecord().getTotalGameCount()));
         }
     }
 
     @Transactional
     void distributePositionPoint(FieldMember fieldMember) {
-        switch (fieldMember.getMember().getPosition()) {
+        switch (fieldMember.getPosition()) {
             case "striker":
                 fieldMember.getMember().getAbility().updateStrikePoint();
                 break;
@@ -510,7 +552,7 @@ public class MatchingService {
     }
     @Transactional
     void distributePositionPoint(SubstituteMember substituteMember) {
-        switch (substituteMember.getMember().getPosition()) {
+        switch (substituteMember.getPosition()) {
             case "striker":
                 substituteMember.getMember().getAbility().updateStrikePoint();
                 break;
