@@ -159,6 +159,7 @@ public class TeamService {
         }
 
         TeamInfoResponse teamInfoResponse = new TeamInfoResponse(
+                infoTeam.getId(),
                 infoTeam.getName(),
                 infoTeam.getIntroduce(),
                 infoTeam.getTeamProfileUrl(),
@@ -178,7 +179,9 @@ public class TeamService {
                 teamCaptain,
                 otherCaptain,
                 participate,
-                recentMatchHistory
+                recentMatchHistory,
+                infoTeam.getCreatedDate(),
+                infoTeam.getModifiedDate()
         );
 
         return new ResponseEntity<>(teamInfoResponse, HttpStatus.OK);

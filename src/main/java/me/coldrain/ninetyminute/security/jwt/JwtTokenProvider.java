@@ -3,6 +3,7 @@ package me.coldrain.ninetyminute.security.jwt;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import me.coldrain.ninetyminute.entity.Member;
+import me.coldrain.ninetyminute.repository.MemberRepository;
 import me.coldrain.ninetyminute.security.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -14,15 +15,13 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Component
 public class JwtTokenProvider {
     private final UserDetailsServiceImpl userDetailsService;
+    private final MemberRepository memberRepository;
 
     // jwt 시크릿 키
     @Value("${jwt.secretKey}")
@@ -49,14 +48,14 @@ public class JwtTokenProvider {
         payloads.put("nickname", member.getNickname());
         payloads.put("memberId", member.getId());
 
-        if(member.getOpenTeam() != null) {
+        if (member.getOpenTeam() != null) {
             payloads.put("openTeamId", member.getOpenTeam().getId());
         } else {
             payloads.put("openTeamId", null);
         }
 
         return Jwts.builder()
-                .setHeaderParam("typ","JWT")
+                .setHeaderParam("typ", "JWT")
                 .setHeader(headers)
                 .setClaims(payloads)
                 .setSubject(member.getUsername())
@@ -110,19 +109,26 @@ public class JwtTokenProvider {
 
     // 토큰의 유효성 + 만료일자 확인 + 인증 예외 처리 + 서명 에러 처리 + 권한 에러 처리
     public boolean validateJwtToken(ServletRequest request, String jwtToken) {
-        try {
-            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
-            return true;
-        } catch (MalformedJwtException e) {
-            request.setAttribute("exception", "MalformedJwtException");
-        } catch (ExpiredJwtException e) {
-            request.setAttribute("exception", "ExpiredJwtException");
-        } catch (UnsupportedJwtException e) {
-            request.setAttribute("exception", "UnsupportedJwtException");
-        } catch (SignatureException e) {
-            request.setAttribute("exception", "SignatureJwtException");
-        } catch (IllegalArgumentException e) {
-            request.setAttribute("exception", "IllegalArgumentException");
+        String secessionUsername = "secession-" + Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken).getBody().getSubject();
+
+        Optional<Member> userCheck = memberRepository.findByUsernameSecessionStateTrue(Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken).getBody().getSubject());
+        Optional<Member> secessionUserCheck = memberRepository.findByUsernameSecessionStateTrue(secessionUsername);
+
+        if (userCheck.isEmpty() && secessionUserCheck.isEmpty()) {
+            try {
+                Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
+                return true;
+            } catch (MalformedJwtException e) {
+                request.setAttribute("exception", "MalformedJwtException");
+            } catch (ExpiredJwtException e) {
+                request.setAttribute("exception", "ExpiredJwtException");
+            } catch (UnsupportedJwtException e) {
+                request.setAttribute("exception", "UnsupportedJwtException");
+            } catch (SignatureException e) {
+                request.setAttribute("exception", "SignatureJwtException");
+            } catch (IllegalArgumentException e) {
+                request.setAttribute("exception", "IllegalArgumentException");
+            }
         }
         return false;
     }

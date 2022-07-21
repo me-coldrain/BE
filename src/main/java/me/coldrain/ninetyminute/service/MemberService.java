@@ -173,15 +173,21 @@ public class MemberService {
         }
         Member member = memberRepository.findByUsername(memberLoginRequest.getEmail()).orElseThrow();
 
+        if (member.isSecessionState()) {
+            return new ResponseEntity<>("탈퇴 처리된 회원입니다.",HttpStatus.BAD_REQUEST);
+        }
+
         return new ResponseEntity<>(jwtTokenCreate(member), HttpStatus.CREATED);
     }
 
     //회원탈퇴 확인
     public boolean secessionMemberCheck(String secessionMemberCheck) {
         String secessionCheck = "secession-" + secessionMemberCheck;
+        Optional<Member> MemberEmailCheck = memberRepository.findByUsernameSecessionStateTrue(secessionMemberCheck);
+        Optional<Member> MemberNicknameCheck = memberRepository.findByNicknameSecessionStateTrue(secessionMemberCheck);
         Optional<Member> secessionMemberEmailCheck = memberRepository.findByUsernameSecessionStateTrue(secessionCheck);
         Optional<Member> secessionMemberNicknameCheck = memberRepository.findByNicknameSecessionStateTrue(secessionCheck);
-        return secessionMemberEmailCheck.isPresent() || secessionMemberNicknameCheck.isPresent();
+        return MemberEmailCheck.isPresent() || MemberNicknameCheck.isPresent() || secessionMemberEmailCheck.isPresent() || secessionMemberNicknameCheck.isPresent();
     }
 
     //JWT 토큰 생성기

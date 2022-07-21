@@ -22,4 +22,6 @@ public interface FieldMemberRepository extends JpaRepository<FieldMember, Long> 
     @Query("select fm from FieldMember fm where fm.afterMatching.id = :afterMatchingId")
     List<FieldMember> findAllByAfterMatchingId(Long afterMatchingId);
 
+    @Query("select fm from FieldMember fm where fm.member.id = :MemberId")
+    List<FieldMember> findAllByGameFieldMembers(Long MemberId);
 }
