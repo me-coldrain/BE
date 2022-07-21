@@ -9,6 +9,7 @@ import me.coldrain.ninetyminute.entity.Team;
 import me.coldrain.ninetyminute.repository.MemberRepository;
 import me.coldrain.ninetyminute.repository.ParticipationRepository;
 import me.coldrain.ninetyminute.repository.TeamRepository;
+import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -53,50 +54,52 @@ public class TeamMemberService {
         for (Participation participation : teamMemberList) {
             String position = participation.getMember().getPosition();
 
-            switch (position) {
-                case "striker":
-                    TeamMemberResponse.StrikerMember strikerMember = new TeamMemberResponse.StrikerMember(
-                            participation.getMember().getId(),
-                            participation.getMember().getProfileUrl(),
-                            participation.getMember().getNickname(),
-                            participation.getMember().getAbility().getMvpPoint(),
-                            participation.getMember().getAbility().getStrikerPoint()
-                    );
-                    strikerMemberList.add(strikerMember);
-                    break;
+            if (!participation.getMember().getId().equals(captain.getId())) {
+                switch (position) {
+                    case "striker":
+                        TeamMemberResponse.StrikerMember strikerMember = new TeamMemberResponse.StrikerMember(
+                                participation.getMember().getId(),
+                                participation.getMember().getProfileUrl(),
+                                participation.getMember().getNickname(),
+                                participation.getMember().getAbility().getMvpPoint(),
+                                participation.getMember().getAbility().getStrikerPoint()
+                        );
+                        strikerMemberList.add(strikerMember);
+                        break;
 
-                case "midfielder":
-                    TeamMemberResponse.MidfielderMember midfielderMember = new TeamMemberResponse.MidfielderMember(
-                            participation.getMember().getId(),
-                            participation.getMember().getProfileUrl(),
-                            participation.getMember().getNickname(),
-                            participation.getMember().getAbility().getMvpPoint(),
-                            participation.getMember().getAbility().getMidfielderPoint()
-                    );
-                    midfielderMemberList.add(midfielderMember);
-                    break;
+                    case "midfielder":
+                        TeamMemberResponse.MidfielderMember midfielderMember = new TeamMemberResponse.MidfielderMember(
+                                participation.getMember().getId(),
+                                participation.getMember().getProfileUrl(),
+                                participation.getMember().getNickname(),
+                                participation.getMember().getAbility().getMvpPoint(),
+                                participation.getMember().getAbility().getMidfielderPoint()
+                        );
+                        midfielderMemberList.add(midfielderMember);
+                        break;
 
-                case "defender":
-                    TeamMemberResponse.DefenderMember defenderMember = new TeamMemberResponse.DefenderMember(
-                            participation.getMember().getId(),
-                            participation.getMember().getProfileUrl(),
-                            participation.getMember().getNickname(),
-                            participation.getMember().getAbility().getMvpPoint(),
-                            participation.getMember().getAbility().getDefenderPoint()
-                    );
-                    defenderMemberList.add(defenderMember);
-                    break;
+                    case "defender":
+                        TeamMemberResponse.DefenderMember defenderMember = new TeamMemberResponse.DefenderMember(
+                                participation.getMember().getId(),
+                                participation.getMember().getProfileUrl(),
+                                participation.getMember().getNickname(),
+                                participation.getMember().getAbility().getMvpPoint(),
+                                participation.getMember().getAbility().getDefenderPoint()
+                        );
+                        defenderMemberList.add(defenderMember);
+                        break;
 
-                case "goalkeeper":
-                    TeamMemberResponse.GoalkeeperMember goalkeeperMember = new TeamMemberResponse.GoalkeeperMember(
-                            participation.getMember().getId(),
-                            participation.getMember().getProfileUrl(),
-                            participation.getMember().getNickname(),
-                            participation.getMember().getAbility().getMvpPoint(),
-                            participation.getMember().getAbility().getGoalkeeperPoint()
-                    );
-                    goalkeeperMemberList.add(goalkeeperMember);
-                    break;
+                    case "goalkeeper":
+                        TeamMemberResponse.GoalkeeperMember goalkeeperMember = new TeamMemberResponse.GoalkeeperMember(
+                                participation.getMember().getId(),
+                                participation.getMember().getProfileUrl(),
+                                participation.getMember().getNickname(),
+                                participation.getMember().getAbility().getMvpPoint(),
+                                participation.getMember().getAbility().getGoalkeeperPoint()
+                        );
+                        goalkeeperMemberList.add(goalkeeperMember);
+                        break;
+                }
             }
         }
         teamMemberResponse.setStriker(strikerMemberList);
@@ -108,31 +111,42 @@ public class TeamMemberService {
     }
 
     //신청한 팀원 목록
-    public ResponseEntity<?> teamMemberOfferGet(Long teamId) {
-        TeamMemberOfferResponse teamMemberOfferResponse = new TeamMemberOfferResponse();
+    public ResponseEntity<?> teamMemberOfferGet(Long teamId, UserDetailsImpl userDetails) {
+        Long loginMemberOpenTeamId;
 
-        Team teamOffer = teamRepository.findById(teamId).orElseThrow();
-        teamMemberOfferResponse.setQuestion(teamOffer.getQuestion());
-
-        List<TeamMemberOfferResponse.OfferedMember> OfferedMemberList = new ArrayList<>();
-        List<Participation> teamMemberOffer = participationRepository.findAllByTeamIdFalse(teamId);
-        for(int i=0; i<teamMemberOffer.size(); i++) {
-            TeamMemberOfferResponse.OfferedMember OfferedMember = new TeamMemberOfferResponse.OfferedMember(
-                    teamMemberOffer.get(i).getMember().getId(),
-                    teamMemberOffer.get(i).getMember().getProfileUrl(),
-                    teamMemberOffer.get(i).getMember().getNickname(),
-                    teamMemberOffer.get(i).getMember().getAbility().getMvpPoint(),
-                    teamMemberOffer.get(i).getMember().getPosition(),
-                    teamMemberOffer.get(i).getMember().getAbility().getStrikerPoint(),
-                    teamMemberOffer.get(i).getMember().getAbility().getMidfielderPoint(),
-                    teamMemberOffer.get(i).getMember().getAbility().getDefenderPoint(),
-                    teamMemberOffer.get(i).getMember().getAbility().getGoalkeeperPoint(),
-                    teamMemberOffer.get(i).getAnswer()
-            );
-            OfferedMemberList.add(OfferedMember);
+        if (userDetails.getUser().getOpenTeam() != null) {
+            loginMemberOpenTeamId = userDetails.getUser().getOpenTeam().getId();
+        } else {
+            return new ResponseEntity<>("개설한 팀이 없습니다.", HttpStatus.BAD_REQUEST);
         }
-        teamMemberOfferResponse.setOfferedMembers(OfferedMemberList);
 
-        return new ResponseEntity<>(teamMemberOfferResponse, HttpStatus.OK);
+        if (loginMemberOpenTeamId.equals(teamId)) {
+            TeamMemberOfferResponse teamMemberOfferResponse = new TeamMemberOfferResponse();
+
+            Team teamOffer = teamRepository.findById(teamId).orElseThrow();
+            teamMemberOfferResponse.setQuestion(teamOffer.getQuestion());
+
+            List<TeamMemberOfferResponse.OfferedMember> OfferedMemberList = new ArrayList<>();
+            List<Participation> teamMemberOffer = participationRepository.findAllByTeamIdFalse(teamId);
+            for (int i = 0; i < teamMemberOffer.size(); i++) {
+                TeamMemberOfferResponse.OfferedMember OfferedMember = new TeamMemberOfferResponse.OfferedMember(
+                        teamMemberOffer.get(i).getMember().getId(),
+                        teamMemberOffer.get(i).getMember().getProfileUrl(),
+                        teamMemberOffer.get(i).getMember().getNickname(),
+                        teamMemberOffer.get(i).getMember().getAbility().getMvpPoint(),
+                        teamMemberOffer.get(i).getMember().getPosition(),
+                        teamMemberOffer.get(i).getMember().getAbility().getStrikerPoint(),
+                        teamMemberOffer.get(i).getMember().getAbility().getMidfielderPoint(),
+                        teamMemberOffer.get(i).getMember().getAbility().getDefenderPoint(),
+                        teamMemberOffer.get(i).getMember().getAbility().getGoalkeeperPoint(),
+                        teamMemberOffer.get(i).getAnswer()
+                );
+                OfferedMemberList.add(OfferedMember);
+            }
+            teamMemberOfferResponse.setOfferedMembers(OfferedMemberList);
+            return new ResponseEntity<>(teamMemberOfferResponse, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("해당 팀의 개설자가 아닙니다.", HttpStatus.BAD_REQUEST);
+        }
     }
 }

@@ -66,7 +66,7 @@ dependencies {
     // QueryDSL 추가
     implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
     implementation "com.querydsl:querydsl-apt:${queryDslVersion}"
-
+    implementation "com.querydsl:querydsl-sql:${queryDslVersion}"
 }
 
 tasks.named('test') {
