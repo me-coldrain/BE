@@ -1,9 +1,10 @@
 package me.coldrain.ninetyminute.entity;
 
 import lombok.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -14,8 +15,9 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString(exclude = {"weekdays", "timeList"})
 @Getter
-@Where(clause = "deleted = false")
-@SQLDelete(sql = "UPDATE Team SET deleted = true where id = ?")
+@SQLDelete(sql = "UPDATE Team SET deleted = true where team_id = ?")
+@FilterDef(name = "deletedTeamFilter", parameters = @ParamDef(name = "isDeleted", type = "boolean"))
+@Filter(name = "deletedTeamFilter", condition = "deleted = :isDeleted")
 public class Team extends TimeStamped {
 
     @Id
