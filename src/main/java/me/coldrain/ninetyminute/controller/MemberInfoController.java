@@ -27,8 +27,9 @@ public class MemberInfoController {
 
    //참여한 경기 히스토리 조회
     @GetMapping("/api/home/members/{member_id}/history")
-    public ResponseEntity<?> memberGameHistory(@PathVariable("member_id") Long memberId) {
-        return memberInfoService.memberGameHistory(memberId);
+    public ResponseEntity<?> memberGameHistory(@PathVariable("member_id") Long memberId,
+                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return memberInfoService.memberGameHistory(memberId, userDetails);
     }
 
     //회원탈퇴
