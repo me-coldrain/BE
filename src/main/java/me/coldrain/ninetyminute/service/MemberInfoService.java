@@ -44,20 +44,28 @@ public class MemberInfoService {
 
             int totalMyTeamWinCount = 0;
             for (int i = 0; i < myTeam.size(); i++) {
-                List<AfterMatching> winMyTeamHistory = afterMatchingRepository.findAllByWinHistory(myTeam.get(i).getTeam().getName());
+                List<AfterMatching> winMyTeamHistory
+                        = afterMatchingRepository.findAllByWinHistory(myTeam.get(i).getTeam().getName());
                 totalMyTeamWinCount = totalMyTeamWinCount + winMyTeamHistory.size();
             }
 
             int totalMyTeamGameCount = 0;
             for (int i = 0; i < myTeam.size(); i++) {
-                List<History> myTeamHistory = historyRepository.findAllByHistoryId(myTeam.get(i).getTeam().getHistory().getId());
+                List<History> myTeamHistory
+                        = historyRepository.findAllByHistoryId(myTeam.get(i).getTeam().getHistory().getId());
                 totalMyTeamGameCount = myTeamHistory.size();
             }
 
             MemberInfoResponse memberInfoResponse = new MemberInfoResponse(
                     myInfo,
-                    member.getNickname(), member.getProfileUrl(), member.getContact(), member.getPhone(), member.getPosition(),
-                    member.getAbility().getMvpPoint(), totalMyTeamWinCount, totalMyTeamGameCount,
+                    member.getNickname(),
+                    member.getProfileUrl(),
+                    member.getContact(),
+                    member.getPhone(),
+                    member.getPosition(),
+                    member.getAbility().getMvpPoint(),
+                    totalMyTeamWinCount,
+                    totalMyTeamGameCount,
                     member.getAbility().getStrikerPoint(),
                     member.getAbility().getMidfielderPoint(),
                     member.getAbility().getDefenderPoint(),
@@ -100,22 +108,30 @@ public class MemberInfoService {
             }
 
             boolean myHistory = memberId.equals(userDetails.getUser().getId());
-            
+
             List<FieldMember> gameFieldMemberList = fieldMemberRepository.findAllByGameFieldMembers(memberId);
             for (int i = 0; i < gameFieldMemberList.size(); i++) {
-                History FieldMemberHistory = historyRepository.findByMemberGameHistory(gameFieldMemberList.get(i).getAfterMatching().getId()).orElseThrow();
+                History FieldMemberHistory = historyRepository.findByMemberGameHistory
+                        (gameFieldMemberList.get(i).getAfterMatching().getId()).orElseThrow();
                 memberGameHistoryResponse.setMyHistory(myHistory);
                 memberGameHistoryResponse.setHistoryId(FieldMemberHistory.getId());
-                memberGameHistoryResponse.setMatchDate(gameFieldMemberList.get(i).getBeforeMatching().getMatchDate());
+                memberGameHistoryResponse.setMatchDate
+                        (gameFieldMemberList.get(i).getBeforeMatching().getMatchDate());
 
-                memberTeamGameHistoryResponse.setName(gameFieldMemberList.get(i).getBeforeMatching().getTeamName());
-                memberTeamGameHistoryResponse.setRecord(gameFieldMemberList.get(i).getAfterMatching().getResult());
-                memberTeamGameHistoryResponse.setScore(gameFieldMemberList.get(i).getAfterMatching().getScore());
+                memberTeamGameHistoryResponse.setName
+                        (gameFieldMemberList.get(i).getBeforeMatching().getTeamName());
+                memberTeamGameHistoryResponse.setRecord
+                        (gameFieldMemberList.get(i).getAfterMatching().getResult());
+                memberTeamGameHistoryResponse.setScore
+                        (gameFieldMemberList.get(i).getAfterMatching().getScore());
                 memberGameHistoryResponse.setTeam(memberTeamGameHistoryResponse);
 
-                memberOpposingTeamGameHistoryResponse.setName(gameFieldMemberList.get(i).getBeforeMatching().getOpposingTeamName());
-                memberOpposingTeamGameHistoryResponse.setRecord(gameFieldMemberList.get(i).getAfterMatching().getOpponentResult());
-                memberOpposingTeamGameHistoryResponse.setScore(gameFieldMemberList.get(i).getAfterMatching().getOpponentScore());
+                memberOpposingTeamGameHistoryResponse.setName
+                        (gameFieldMemberList.get(i).getBeforeMatching().getOpposingTeamName());
+                memberOpposingTeamGameHistoryResponse.setRecord
+                        (gameFieldMemberList.get(i).getAfterMatching().getOpponentResult());
+                memberOpposingTeamGameHistoryResponse.setScore
+                        (gameFieldMemberList.get(i).getAfterMatching().getOpponentScore());
                 memberGameHistoryResponse.setOpposingTeam(memberOpposingTeamGameHistoryResponse);
 
                 memberGameHistoryResponseList.add(memberGameHistoryResponse);
@@ -123,19 +139,27 @@ public class MemberInfoService {
 
             List<SubstituteMember> gameSubstituteMemberList = substituteRepository.findAllByGameSubstituteMembers(memberId);
             for (int i = 0; i < gameSubstituteMemberList.size(); i++) {
-                History SubstituteMemberHistory = historyRepository.findByMemberGameHistory(gameSubstituteMemberList.get(i).getAfterMatching().getId()).orElseThrow();
+                History SubstituteMemberHistory = historyRepository.findByMemberGameHistory
+                        (gameSubstituteMemberList.get(i).getAfterMatching().getId()).orElseThrow();
                 memberGameHistoryResponse.setMyHistory(myHistory);
                 memberGameHistoryResponse.setHistoryId(SubstituteMemberHistory.getId());
-                memberGameHistoryResponse.setMatchDate(gameSubstituteMemberList.get(i).getAfterMatching().getBeforeMatching().getMatchDate());
+                memberGameHistoryResponse.setMatchDate
+                        (gameSubstituteMemberList.get(i).getAfterMatching().getBeforeMatching().getMatchDate());
 
-                memberTeamGameHistoryResponse.setName(gameSubstituteMemberList.get(i).getAfterMatching().getBeforeMatching().getTeamName());
-                memberTeamGameHistoryResponse.setRecord(gameSubstituteMemberList.get(i).getAfterMatching().getResult());
-                memberTeamGameHistoryResponse.setScore(gameSubstituteMemberList.get(i).getAfterMatching().getScore());
+                memberTeamGameHistoryResponse.setName
+                        (gameSubstituteMemberList.get(i).getAfterMatching().getBeforeMatching().getTeamName());
+                memberTeamGameHistoryResponse.setRecord
+                        (gameSubstituteMemberList.get(i).getAfterMatching().getResult());
+                memberTeamGameHistoryResponse.setScore
+                        (gameSubstituteMemberList.get(i).getAfterMatching().getScore());
                 memberGameHistoryResponse.setTeam(memberTeamGameHistoryResponse);
 
-                memberOpposingTeamGameHistoryResponse.setName(gameSubstituteMemberList.get(i).getAfterMatching().getBeforeMatching().getOpposingTeamName());
-                memberOpposingTeamGameHistoryResponse.setRecord(gameSubstituteMemberList.get(i).getAfterMatching().getOpponentResult());
-                memberOpposingTeamGameHistoryResponse.setScore(gameSubstituteMemberList.get(i).getAfterMatching().getOpponentScore());
+                memberOpposingTeamGameHistoryResponse.setName
+                        (gameSubstituteMemberList.get(i).getAfterMatching().getBeforeMatching().getOpposingTeamName());
+                memberOpposingTeamGameHistoryResponse.setRecord
+                        (gameSubstituteMemberList.get(i).getAfterMatching().getOpponentResult());
+                memberOpposingTeamGameHistoryResponse.setScore
+                        (gameSubstituteMemberList.get(i).getAfterMatching().getOpponentScore());
                 memberGameHistoryResponse.setOpposingTeam(memberOpposingTeamGameHistoryResponse);
 
                 memberGameHistoryResponseList.add(memberGameHistoryResponse);
