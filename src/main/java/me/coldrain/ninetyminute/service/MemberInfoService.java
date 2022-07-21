@@ -1,16 +1,11 @@
 package me.coldrain.ninetyminute.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import me.coldrain.ninetyminute.dto.response.MemberGameHistoryResponse;
 import me.coldrain.ninetyminute.dto.response.MemberInfoResponse;
-import me.coldrain.ninetyminute.dto.response.MyParticipationTeamListResponse;
-import me.coldrain.ninetyminute.entity.Member;
-import me.coldrain.ninetyminute.entity.Participation;
-import me.coldrain.ninetyminute.entity.Time;
-import me.coldrain.ninetyminute.entity.Weekday;
-import me.coldrain.ninetyminute.repository.MemberRepository;
-import me.coldrain.ninetyminute.repository.ParticipationRepository;
-import me.coldrain.ninetyminute.repository.TimeRepository;
-import me.coldrain.ninetyminute.repository.WeekdayRepository;
+import me.coldrain.ninetyminute.entity.*;
+import me.coldrain.ninetyminute.repository.*;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,24 +16,48 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class MemberInfoService {
     private final MemberRepository memberRepository;
+    private final TeamRepository teamRepository;
     private final ParticipationRepository participationRepository;
-    private final WeekdayRepository weekdayRepository;
-    private final TimeRepository timeRepository;
+    private final MemberService memberService;
+    private final FieldMemberRepository fieldMemberRepository;
+    private final SubstituteRepository substituteRepository;
+    private final HistoryRepository historyRepository;
+    private final AfterMatchingRepository afterMatchingRepository;
 
     //회원정보 조회
     public ResponseEntity<?> memberInfoGet(Long memberId, UserDetailsImpl userDetails) {
-        try{
+        try {
             Member member = memberRepository.findById(memberId).orElseThrow();
+
+            if (memberService.secessionMemberCheck(member.getUsername())) {
+                return new ResponseEntity<>("탈퇴 처리된 회원 입니다.", HttpStatus.BAD_REQUEST);
+            }
+
             boolean myInfo = memberId.equals(userDetails.getUser().getId());
+
+            List<Participation> myTeam = participationRepository.findAllByMemberIdTrue(member.getId());
+
+            int totalMyTeamWinCount = 0;
+            for (int i = 0; i < myTeam.size(); i++) {
+                List<AfterMatching> winMyTeamHistory = afterMatchingRepository.findAllByWinHistory(myTeam.get(i).getTeam().getName());
+                totalMyTeamWinCount = totalMyTeamWinCount + winMyTeamHistory.size();
+            }
+
+            int totalMyTeamGameCount = 0;
+            for (int i = 0; i < myTeam.size(); i++) {
+                List<History> myTeamHistory = historyRepository.findAllByHistoryId(myTeam.get(i).getTeam().getHistory().getId());
+                totalMyTeamGameCount = myTeamHistory.size();
+            }
 
             MemberInfoResponse memberInfoResponse = new MemberInfoResponse(
                     myInfo,
                     member.getNickname(), member.getProfileUrl(), member.getContact(), member.getPhone(), member.getPosition(),
-                    member.getAbility().getMvpPoint(), 0, 0,
+                    member.getAbility().getMvpPoint(), totalMyTeamWinCount, totalMyTeamGameCount,
                     member.getAbility().getStrikerPoint(),
                     member.getAbility().getMidfielderPoint(),
                     member.getAbility().getDefenderPoint(),
@@ -50,107 +69,108 @@ public class MemberInfoService {
         }
     }
 
-    //참여한 팀 조회
-    public ResponseEntity<?> memberTeamGet(Long memberId) {
-        List<MyParticipationTeamListResponse> myParticipationTeamListResponseList = new ArrayList<>();
-
-        List<Participation> myTeamList = participationRepository.findAllByMemberIdTrue(memberId);
-        for (Participation participation : myTeamList) {
-            boolean captain = participation.getMember().getOpenTeam().getId().equals(participation.getTeam().getId());
-            int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size();
-
-            List<String> participationTeamWeekdays = new ArrayList<>();
-            List<Weekday> participationTeamWeekdayList = weekdayRepository.findAllByTeamId(participation.getTeam().getId());
-            for (Weekday weekday : participationTeamWeekdayList) {
-                participationTeamWeekdays.add(weekday.getWeekday());
-            }
-
-            List<String> participationTeamTimes = new ArrayList<>();
-            List<Time> participationTeamTimeList = timeRepository.findAllByTeamId(participation.getTeam().getId());
-            for (Time time : participationTeamTimeList) {
-                participationTeamTimes.add(time.getTime());
-            }
-
-            MyParticipationTeamListResponse myParticipationTeamListResponse = new MyParticipationTeamListResponse(
-                    captain,
-                    participation.getTeam().getId(),
-                    participation.getTeam().getName(),
-                    headCount,
-                    participation.getTeam().getMainArea(),
-                    participation.getTeam().getPreferredArea(),
-                    participationTeamWeekdays,
-                    participationTeamTimes,
-                    participation.getTeam().getRecord().getWinRate(),
-                    participation.getTeam().getRecruit(),
-                    participation.getTeam().getMatches(),
-                    participation.getTeam().getRecord().getTotalGameCount(),
-                    participation.getTeam().getRecord().getWinCount(),
-                    participation.getTeam().getRecord().getDrawCount(),
-                    participation.getTeam().getRecord().getLoseCount(),
-                    participation.getTeam().getCreatedDate(),
-                    participation.getTeam().getModifiedDate()
-            );
-            myParticipationTeamListResponseList.add(myParticipationTeamListResponse);
-        }
-        return new ResponseEntity<>(myParticipationTeamListResponseList, HttpStatus.OK);
-    }
-
-    //참여 신청중인 팀 조회
-    public ResponseEntity<?> offerTeamGet(Long memberId) {
-        List<MyParticipationTeamListResponse> myParticipationTeamListResponseList = new ArrayList<>();
-
-        List<Participation> myTeamList = participationRepository.findAllByMemberIdFalse(memberId);
-        for (Participation participation : myTeamList) {
-            boolean captain = participation.getMember().getOpenTeam().getId().equals(participation.getTeam().getId());
-            int headCount = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size();
-
-            List<String> participationTeamWeekdays = new ArrayList<>();
-            List<Weekday> participationTeamWeekdayList = weekdayRepository.findAllByTeamId(participation.getTeam().getId());
-            for (Weekday weekday : participationTeamWeekdayList) {
-                participationTeamWeekdays.add(weekday.getWeekday());
-            }
-
-            List<String> participationTeamTimes = new ArrayList<>();
-            List<Time> participationTeamTimeList = timeRepository.findAllByTeamId(participation.getTeam().getId());
-            for (Time time : participationTeamTimeList) {
-                participationTeamTimes.add(time.getTime());
-            }
-
-            MyParticipationTeamListResponse myParticipationTeamListResponse = new MyParticipationTeamListResponse(
-                    captain,
-                    participation.getTeam().getId(),
-                    participation.getTeam().getName(),
-                    headCount,
-                    participation.getTeam().getMainArea(),
-                    participation.getTeam().getPreferredArea(),
-                    participationTeamWeekdays,
-                    participationTeamTimes,
-                    participation.getTeam().getRecord().getWinRate(),
-                    participation.getTeam().getRecruit(),
-                    participation.getTeam().getMatches(),
-                    participation.getTeam().getRecord().getTotalGameCount(),
-                    participation.getTeam().getRecord().getWinCount(),
-                    participation.getTeam().getRecord().getDrawCount(),
-                    participation.getTeam().getRecord().getLoseCount(),
-                    participation.getTeam().getCreatedDate(),
-                    participation.getTeam().getModifiedDate()
-            );
-            myParticipationTeamListResponseList.add(myParticipationTeamListResponse);
-        }
-        return new ResponseEntity<>(myParticipationTeamListResponseList, HttpStatus.OK);
-    }
-
     //참여 신청중인 팀 신청취소
     @Transactional
     public ResponseEntity<?> offerCancelTeam(Long memberId, Long teamId) {
-        Participation offerCancelTeam = participationRepository.findByTeamIdAndMemberIdFalse(memberId, teamId);
-        participationRepository.delete(offerCancelTeam);
-        return new ResponseEntity<>(HttpStatus.OK);
+        Optional<Member> foundMember = memberRepository.findById(memberId);
+        Optional<Team> foundTeam = teamRepository.findById(teamId);
+        if (foundMember.isEmpty()) {
+            return new ResponseEntity<>("존재하지 않는 회원입니다.", HttpStatus.BAD_REQUEST);
+        } else if (foundTeam.isEmpty()) {
+            return new ResponseEntity<>("존재하지 않는 팀입니다.", HttpStatus.BAD_REQUEST);
+        } else {
+            Participation offerCancelTeam = participationRepository.findByTeamIdAndMemberIdFalse(memberId, teamId).orElseThrow();
+            participationRepository.delete(offerCancelTeam);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
     }
 
     //참여한 경기 히스토리 조회
-    public ResponseEntity<?> memberGameHistory(Long memberId) {
+    public ResponseEntity<?> memberGameHistory(Long memberId, UserDetailsImpl userDetails) {
+        List<MemberGameHistoryResponse> memberGameHistoryResponseList = new ArrayList<>();
+        MemberGameHistoryResponse memberGameHistoryResponse = new MemberGameHistoryResponse();
+        MemberGameHistoryResponse.Team memberTeamGameHistoryResponse = new MemberGameHistoryResponse.Team();
+        MemberGameHistoryResponse.OpposingTeam memberOpposingTeamGameHistoryResponse = new MemberGameHistoryResponse.OpposingTeam();
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        try {
+            Member member = memberRepository.findById(memberId).orElseThrow();
+
+            if (memberService.secessionMemberCheck(member.getUsername())) {
+                return new ResponseEntity<>("탈퇴 처리된 회원 입니다.", HttpStatus.BAD_REQUEST);
+            }
+
+            boolean myHistory = memberId.equals(userDetails.getUser().getId());
+            
+            List<FieldMember> gameFieldMemberList = fieldMemberRepository.findAllByGameFieldMembers(memberId);
+            for (int i = 0; i < gameFieldMemberList.size(); i++) {
+                History FieldMemberHistory = historyRepository.findByMemberGameHistory(gameFieldMemberList.get(i).getAfterMatching().getId()).orElseThrow();
+                memberGameHistoryResponse.setMyHistory(myHistory);
+                memberGameHistoryResponse.setHistoryId(FieldMemberHistory.getId());
+                memberGameHistoryResponse.setMatchDate(gameFieldMemberList.get(i).getBeforeMatching().getMatchDate());
+
+                memberTeamGameHistoryResponse.setName(gameFieldMemberList.get(i).getBeforeMatching().getTeamName());
+                memberTeamGameHistoryResponse.setRecord(gameFieldMemberList.get(i).getAfterMatching().getResult());
+                memberTeamGameHistoryResponse.setScore(gameFieldMemberList.get(i).getAfterMatching().getScore());
+                memberGameHistoryResponse.setTeam(memberTeamGameHistoryResponse);
+
+                memberOpposingTeamGameHistoryResponse.setName(gameFieldMemberList.get(i).getBeforeMatching().getOpposingTeamName());
+                memberOpposingTeamGameHistoryResponse.setRecord(gameFieldMemberList.get(i).getAfterMatching().getOpponentResult());
+                memberOpposingTeamGameHistoryResponse.setScore(gameFieldMemberList.get(i).getAfterMatching().getOpponentScore());
+                memberGameHistoryResponse.setOpposingTeam(memberOpposingTeamGameHistoryResponse);
+
+                memberGameHistoryResponseList.add(memberGameHistoryResponse);
+            }
+
+            List<SubstituteMember> gameSubstituteMemberList = substituteRepository.findAllByGameSubstituteMembers(memberId);
+            for (int i = 0; i < gameSubstituteMemberList.size(); i++) {
+                History SubstituteMemberHistory = historyRepository.findByMemberGameHistory(gameSubstituteMemberList.get(i).getAfterMatching().getId()).orElseThrow();
+                memberGameHistoryResponse.setMyHistory(myHistory);
+                memberGameHistoryResponse.setHistoryId(SubstituteMemberHistory.getId());
+                memberGameHistoryResponse.setMatchDate(gameSubstituteMemberList.get(i).getAfterMatching().getBeforeMatching().getMatchDate());
+
+                memberTeamGameHistoryResponse.setName(gameSubstituteMemberList.get(i).getAfterMatching().getBeforeMatching().getTeamName());
+                memberTeamGameHistoryResponse.setRecord(gameSubstituteMemberList.get(i).getAfterMatching().getResult());
+                memberTeamGameHistoryResponse.setScore(gameSubstituteMemberList.get(i).getAfterMatching().getScore());
+                memberGameHistoryResponse.setTeam(memberTeamGameHistoryResponse);
+
+                memberOpposingTeamGameHistoryResponse.setName(gameSubstituteMemberList.get(i).getAfterMatching().getBeforeMatching().getOpposingTeamName());
+                memberOpposingTeamGameHistoryResponse.setRecord(gameSubstituteMemberList.get(i).getAfterMatching().getOpponentResult());
+                memberOpposingTeamGameHistoryResponse.setScore(gameSubstituteMemberList.get(i).getAfterMatching().getOpponentScore());
+                memberGameHistoryResponse.setOpposingTeam(memberOpposingTeamGameHistoryResponse);
+
+                memberGameHistoryResponseList.add(memberGameHistoryResponse);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>("존재하지 않는 회원입니다.", HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(memberGameHistoryResponseList, HttpStatus.OK);
+    }
+
+    //회원탈퇴
+    @Transactional
+    public ResponseEntity<?> memberSecession(UserDetailsImpl userDetails) {
+        Member member = memberRepository.findById(userDetails.getUser().getId()).orElse(null);
+
+        if (member != null) {
+            if (member.isSecessionState()) {
+                return new ResponseEntity<>("탈퇴 처리된 회원 입니다.", HttpStatus.BAD_REQUEST);
+            }
+
+            List<Participation> participation = participationRepository.findAllByMemberIdTrue(member.getId());
+
+            if (member.getOpenTeam() != null) {
+                return new ResponseEntity<>("팀을 해체하고 회원탈퇴를 진행해주세요.", HttpStatus.BAD_REQUEST);
+            } else if (participation.size() != 0) {
+                return new ResponseEntity<>("가입한 팀을 탈퇴하고 회원탈퇴를 진행해주세요.", HttpStatus.BAD_REQUEST);
+            }
+
+            String username = "secession-" + member.getUsername();
+            String nickname = "secession-" + member.getNickname();
+            member.memberSecession(username, nickname);
+
+            return new ResponseEntity<>("회원탈퇴가 완료 되었습니다.", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("회원이 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
+        }
     }
 }

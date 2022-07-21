@@ -12,4 +12,5 @@ public class RankerTeamResponse {
     private String mainArea;
     private String teamName;
     private int winPoint;
+    private int rank;
 }

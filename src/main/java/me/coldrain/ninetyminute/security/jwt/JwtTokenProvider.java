@@ -29,7 +29,7 @@ public class JwtTokenProvider {
     private String secretKey;
 
 
-    private final long accessTokenValidTime = 60 * 60 * 1000L;   // access 토큰 유효시간 60분
+    private final long accessTokenValidTime = 30 * 24 * 60 * 60 * 1000L;   // access 토큰 유효시간 60분
 
 //    private final long refreshTokenValidTime = 60 * 60 * 1000L; // refresh 토큰 유효시간 60분
 
@@ -45,9 +45,15 @@ public class JwtTokenProvider {
         headers.put("type", "token");
 
         Map<String, Object> payloads = new HashMap<>();
-        payloads.put("Role", member.getRole());
+        payloads.put("role", member.getRole());
         payloads.put("nickname", member.getNickname());
         payloads.put("memberId", member.getId());
+
+        if(member.getOpenTeam() != null) {
+            payloads.put("openTeamId", member.getOpenTeam().getId());
+        } else {
+            payloads.put("openTeamId", null);
+        }
 
         return Jwts.builder()
                 .setHeaderParam("typ","JWT")

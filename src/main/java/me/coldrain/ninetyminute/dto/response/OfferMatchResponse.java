@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class OfferMatchResponse {
 
+    private Long applyId;
     private Long opposingTeamId;
     private String opposingTeamName;
     private Integer opposingTeamPoint;
@@ -19,9 +20,10 @@ public class OfferMatchResponse {
     private LocalDateTime modifiedDate;
 
     @Builder
-    public OfferMatchResponse(Long opposingTeamId, String opposingTeamName,
+    public OfferMatchResponse(Long applyId, Long opposingTeamId, String opposingTeamName,
                               Integer opposingTeamPoint, Double winRate,
                               String greeting, LocalDateTime createdDate, LocalDateTime modifiedDate) {
+        this.applyId = applyId;
         this.opposingTeamId = opposingTeamId;
         this.opposingTeamName = opposingTeamName;
         this.opposingTeamPoint = opposingTeamPoint;

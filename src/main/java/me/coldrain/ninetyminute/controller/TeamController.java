@@ -5,16 +5,22 @@ import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.*;
+import me.coldrain.ninetyminute.dto.response.ApplyTeamResponse;
+import me.coldrain.ninetyminute.dto.response.MatchResponse;
 import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import me.coldrain.ninetyminute.service.ParticipationService;
 import me.coldrain.ninetyminute.service.TeamService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -42,11 +48,22 @@ public class TeamController {
     }
 
     /**
+     * Author: 범수
+     * 팀 정보 조회 API
+     */
+    @GetMapping("/home/teams/{team_id}")
+    public ResponseEntity<?> infoTeam(
+            @PathVariable("team_id") Long teamId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return teamService.infoTeam(teamId, userDetails);
+    }
+
+    /**
      * Author: 상운
      * 팀 목록 조회 API
      */
     @GetMapping("/home/teams")
-    public Page<TeamListSearch> selectTeams(
+    public Slice<TeamListSearch> selectTeams(
             final TeamListSearchCondition searchCondition,
             final Pageable pageable) {
 
@@ -170,7 +187,7 @@ public class TeamController {
     }
 
     /**
-     * Author: 상운
+     * Author: 상운, 병민
      * 대결 신청 API
      */
     @PostMapping("/home/teams/{team_id}/match/apply")
@@ -207,10 +224,11 @@ public class TeamController {
      * 팀원 추방 API
      */
     @DeleteMapping("/teams/{team_id}/members/{member_id}/participation")
-    public void releaseTeamMember(
+    public ResponseEntity<?> releaseTeamMember(
             final @PathVariable("team_id") Long teamId,
-            final @PathVariable("member_id") Long memberId) {
-        teamService.releaseTeamMember(teamId, memberId);
+            final @PathVariable("member_id") Long memberId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return teamService.releaseTeamMember(teamId, memberId, userDetails);
     }
 
      /**
@@ -224,5 +242,17 @@ public class TeamController {
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         teamService.modifyTeam(teamId, request, userDetails.getUser().getId());
+    }
+
+    /*
+     * Author: 병민
+     * 팀 참여 신청한 팀 목록 조회 API
+     * 신청한 팀 목록을 조회한다.
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/teams/apply")
+    public List<ApplyTeamResponse> searchApplyTeams(
+            final @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return teamService.searchApplyTeams(userDetails.getUser());
     }
 }

@@ -13,5 +13,6 @@ public class RankerMemberResponse {
     private String nickname;
     private String position;
     private int mvpPoint;
-    private int positionPoint;
+    private int abilityPoint;
+    private int rank;
 }

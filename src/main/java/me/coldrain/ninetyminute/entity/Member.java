@@ -22,7 +22,7 @@ public class Member extends TimeStamped {
     @Column(name = "member_id")
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "team_id")
     private Team openTeam; // 개설한 팀
 
@@ -47,7 +47,8 @@ public class Member extends TimeStamped {
     private String contact;
     @Column
     private String phone;
-
+    @Column
+    private boolean secessionState;
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private MemberRoleEnum role;
@@ -56,19 +57,27 @@ public class Member extends TimeStamped {
         this.openTeam = openTeam;
     }
 
-    public Member(MemberRegisterRequest params, MemberRoleEnum role, Ability ability) {
+    public Member(MemberRegisterRequest params, MemberRoleEnum role) {
         this.username = params.getEmail();
         this.password = params.getPassword();
         this.role = role;
         this.kakaoId = null;
-        this.ability = ability;
+//        this.secessionState = false;
     }
 
-    public Member(String password, MemberRoleEnum role, Long kakaoId, Ability ability) {
+    public Member(String password, MemberRoleEnum role, Long kakaoId) {
         this.username = null;
         this.password = password;
         this.role = role;
         this.kakaoId = kakaoId;
+//        this.secessionState = false;
+    }
+
+    public void newMemberUpdate(MemberEditRequest params, Ability ability) {
+        this.nickname = params.getNickname();
+        this.position = params.getPosition();
+        this.contact = params.getContact();
+        this.phone = params.getPhone();
         this.ability = ability;
     }
 
@@ -79,9 +88,15 @@ public class Member extends TimeStamped {
         this.phone = params.getPhone();
     }
 
-    public void memberproFileImageUpdate(Map<String, String> profileImg) {
+    public void memberProFileImageUpdate(Map<String, String> profileImg) {
         this.profileName = profileImg.get("transImgFileName");
         this.profileUrl = profileImg.get("url");
+    }
+
+    public void memberSecession(String username, String nickname) {
+        this.username = username;
+        this.nickname = nickname;
+        this.secessionState = true;
     }
 
     public void encryptPassword(PasswordEncoder passwordEncoder) {

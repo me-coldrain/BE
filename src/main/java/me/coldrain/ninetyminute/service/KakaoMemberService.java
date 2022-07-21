@@ -112,19 +112,17 @@ public class KakaoMemberService {
 
     private Member registerKakaoUserIfNeeded(Long kakaoUserId) {
         // DB 에 중복된 Kakao Id 가 있는지 확인
-        Member kakaomember = memberRepository.findByKakaoId(kakaoUserId)
-                .orElse(null);
+        Member kakaomember = memberRepository.findByKakaoId(kakaoUserId).orElse(null);
         if (kakaomember == null) {
             // 회원가입
             // password: random UUID
-            final Ability emptyAbility = abilityRepository.save(new Ability());
             String password = UUID.randomUUID().toString();
             String encodedPassword = passwordEncoder.encode(password);
 
             // role: 소셜 로그인 사용자
             MemberRoleEnum role = MemberRoleEnum.SOCIAL;
 
-            kakaomember = new Member(encodedPassword, role, kakaoUserId, emptyAbility);
+            kakaomember = new Member(encodedPassword, role, kakaoUserId);
             return memberRepository.save(kakaomember);
         }
         return kakaomember;
@@ -147,8 +145,6 @@ public class KakaoMemberService {
             String accessToken = jwtTokenProvider.createnewAccessToken(kakaoMember);
             jwtTokenResponse.setAccesstoken(accessToken);
         }
-//        jwtTokenResponse.setCode(201);
-//        jwtTokenResponse.setMessage("Access토큰이 발급되었습니다.");
         return jwtTokenResponse;
     }
 }
