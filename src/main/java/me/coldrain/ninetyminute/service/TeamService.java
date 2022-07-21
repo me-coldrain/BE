@@ -407,11 +407,10 @@ public class TeamService {
     @Transactional
     public void disbandTeam(Long teamId, Member member) {
         if (member.getOpenTeam().getId().equals(teamId)) {
-//            Team team = teamRepository.findById(teamId).orElseThrow(
-//                    () -> new IllegalArgumentException("해당 팀을 찾을 수 없습니다."));
-//            teamRepository.delete(team);
             teamRepository.deleteById(teamId);
-            member.setOpenTeam(null);
+            Member my = memberRepository.findById(member.getId()).orElseThrow(
+                    () -> new IllegalArgumentException("해당 맴버를 찾을 수 없습니다."));
+            my.setOpenTeam(null);
         } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
     }
 }
