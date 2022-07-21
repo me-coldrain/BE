@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString(exclude = {"weekdays", "timeList"})
 @Getter
-@Where(clause = "deleted is null")
+@Where(clause = "deleted = false")
 @SQLDelete(sql = "UPDATE Team SET deleted = true where id = ?")
 public class Team extends TimeStamped {
 
@@ -48,7 +48,7 @@ public class Team extends TimeStamped {
     @JoinColumn(name = "history_id")
     private History history;
 
-    private Boolean deleted;
+    private Boolean deleted = Boolean.FALSE;
 
     public void changeRecruit(Boolean recruit) {
         this.recruit = recruit;
