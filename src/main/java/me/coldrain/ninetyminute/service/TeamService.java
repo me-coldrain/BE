@@ -7,6 +7,8 @@ import me.coldrain.ninetyminute.dto.request.ApplyRequest;
 import me.coldrain.ninetyminute.dto.request.RecruitStartRequest;
 import me.coldrain.ninetyminute.dto.request.TeamModifyRequest;
 import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
+import me.coldrain.ninetyminute.dto.response.ApplyTeamResponse;
+import me.coldrain.ninetyminute.dto.response.MatchResponse;
 import me.coldrain.ninetyminute.dto.response.TeamInfoResponse;
 import me.coldrain.ninetyminute.entity.*;
 import me.coldrain.ninetyminute.repository.*;
@@ -371,5 +373,34 @@ public class TeamService {
                 request.getWeekdays(),
                 request.getTime()
         );
+    }
+
+    public List<ApplyTeamResponse> searchApplyTeams(Member member) {
+        List<Participation> participationList = participationRepository.findAllByMemberId(member.getId());
+        List<ApplyTeamResponse> applyTeamResponseList = new ArrayList<>();
+        for (Participation participation : participationList) {
+            Integer teamMemberCnt = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size();
+            ApplyTeamResponse applyTeamResponse = ApplyTeamResponse.builder()
+                    .teamId(participation.getTeam().getId())
+                    .isCaptain(false)
+                    .teamName(participation.getTeam().getName())
+                    .teamMemberCount(teamMemberCnt)
+                    .teamPoint(participation.getTeam().getRecord().getWinPoint())
+                    .teamWinRate(participation.getTeam().getRecord().getWinRate())
+                    .teamTotalGameCount(participation.getTeam().getRecord().getTotalGameCount())
+                    .teamWinCount(participation.getTeam().getRecord().getWinCount())
+                    .teamDrawCount(participation.getTeam().getRecord().getDrawCount())
+                    .teamLoseCount(participation.getTeam().getRecord().getLoseCount())
+                    .mainArea(participation.getTeam().getMainArea())
+                    .createdDate(participation.getCreatedDate())
+                    .modifiedDate(participation.getModifiedDate())
+                    .applyStatus(false)
+                    .build();
+
+            if (participation.getTeam().getId().equals(member.getOpenTeam().getId())) applyTeamResponse.changeIsCaptain(true);
+            if (participation.getApproved()) applyTeamResponse.changeApplyStatus(true);
+            applyTeamResponseList.add(applyTeamResponse);
+        }
+        return applyTeamResponseList;
     }
 }
