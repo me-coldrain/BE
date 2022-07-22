@@ -89,10 +89,14 @@ public class MatchingService {
             // 해당 팀에 신청된 경기가 없어도 null이 전달되야한다.
             if (!applyList.isEmpty()) {
                 for (Apply apply : applyList) {
+                    Member opposingTeamCaptain = memberRepository.findByOpenTeam(apply.getApplyTeam().getId()).orElseThrow(
+                            () -> new IllegalArgumentException("해당 팀이 존재 하지 않습니다."));
                     OfferMatchResponse offerMatchResponse = OfferMatchResponse.builder()
                             .applyId(apply.getId())
                             .opposingTeamId(apply.getApplyTeam().getId())
                             .opposingTeamName(apply.getApplyTeam().getName())
+                            .contact(opposingTeamCaptain.getContact())
+                            .phone(opposingTeamCaptain.getPhone())
                             .opposingTeamPoint(apply.getApplyTeam().getRecord().getWinPoint())
                             .winRate(apply.getApplyTeam().getRecord().getWinRate())
                             .greeting(apply.getGreeting())
