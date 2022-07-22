@@ -41,7 +41,7 @@ public class RankService {
             if (i == 0) {
                 RankerTeamResponse rankerTeamResponse = new RankerTeamResponse(
                         rankerTeam.getId(),
-                        rankerTeam.getMainArea(),
+                        rankerTeam.getTeamProfileUrl(),
                         rankerTeam.getName(),
                         rankerTeam.getRecord().getWinPoint(),
                         rank
@@ -51,7 +51,7 @@ public class RankService {
                     rankerTeamList.get(i - 1).getWinRate().equals(rankerTeamList.get(i).getWinRate())) {
                 RankerTeamResponse rankerTeamResponse = new RankerTeamResponse(
                         rankerTeam.getId(),
-                        rankerTeam.getMainArea(),
+                        rankerTeam.getTeamProfileUrl(),
                         rankerTeam.getName(),
                         rankerTeam.getRecord().getWinPoint(),
                         rank
@@ -62,7 +62,7 @@ public class RankService {
                 rank++;
                 RankerTeamResponse rankerTeamResponse = new RankerTeamResponse(
                         rankerTeam.getId(),
-                        rankerTeam.getMainArea(),
+                        rankerTeam.getTeamProfileUrl(),
                         rankerTeam.getName(),
                         rankerTeam.getRecord().getWinPoint(),
                         rank
@@ -72,7 +72,7 @@ public class RankService {
                 rank++;
                 RankerTeamResponse rankerTeamResponse = new RankerTeamResponse(
                         rankerTeam.getId(),
-                        rankerTeam.getMainArea(),
+                        rankerTeam.getTeamProfileUrl(),
                         rankerTeam.getName(),
                         rankerTeam.getRecord().getWinPoint(),
                         rank
@@ -92,56 +92,6 @@ public class RankService {
         List<RankerMemberResponse> rankerMemberResponseList = new ArrayList<>();
 
         switch (ability) {
-
-            case "mvp":
-                int mvpRank = 1;
-
-                List<Member> rankerMvpPointMemberList = memberRepository.findAllByMvpPoint();
-                for (int i = 0; i < rankerMvpPointMemberList.size(); i++) {
-
-                    if (i == 0) {
-                        RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
-                                rankerMvpPointMemberList.get(i).getId(),
-                                rankerMvpPointMemberList.get(i).getProfileUrl(),
-                                rankerMvpPointMemberList.get(i).getNickname(),
-                                rankerMvpPointMemberList.get(i).getPosition(),
-                                rankerMvpPointMemberList.get(i).getAbility().getMvpPoint(),
-                                rankerMvpPointMemberList.get(i).getAbility().getMvpPoint(),
-                                mvpRank
-                        );
-                        rankerMemberResponseList.add(rankerMemberResponse);
-                    } else if (rankerMvpPointMemberList.get(i - 1).getAbility().getMvpPoint()
-                            .equals(rankerMvpPointMemberList.get(i).getAbility().getMvpPoint())) {
-                        RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
-                                rankerMvpPointMemberList.get(i).getId(),
-                                rankerMvpPointMemberList.get(i).getProfileUrl(),
-                                rankerMvpPointMemberList.get(i).getNickname(),
-                                rankerMvpPointMemberList.get(i).getPosition(),
-                                rankerMvpPointMemberList.get(i).getAbility().getMvpPoint(),
-                                rankerMvpPointMemberList.get(i).getAbility().getMvpPoint(),
-                                mvpRank
-                        );
-                        rankerMemberResponseList.add(rankerMemberResponse);
-                    } else {
-                        mvpRank++;
-                        RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
-                                rankerMvpPointMemberList.get(i).getId(),
-                                rankerMvpPointMemberList.get(i).getProfileUrl(),
-                                rankerMvpPointMemberList.get(i).getNickname(),
-                                rankerMvpPointMemberList.get(i).getPosition(),
-                                rankerMvpPointMemberList.get(i).getAbility().getMvpPoint(),
-                                rankerMvpPointMemberList.get(i).getAbility().getMvpPoint(),
-                                mvpRank
-                        );
-                        rankerMemberResponseList.add(rankerMemberResponse);
-                    }
-
-                    if (rankerMemberResponseList.size() == 10) {
-                        break;
-                    }
-                }
-                break;
-
             case "striker":
                 int strikerRank = 1;
 
@@ -386,6 +336,54 @@ public class RankService {
                     }
                 }
                 break;
+
+            default:
+                int defaultMvpRank = 1;
+
+                List<Member> defaultRankerMvpPointMemberList = memberRepository.findAllByMvpPoint();
+                for (int i = 0; i < defaultRankerMvpPointMemberList.size(); i++) {
+
+                    if (i == 0) {
+                        RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
+                                defaultRankerMvpPointMemberList.get(i).getId(),
+                                defaultRankerMvpPointMemberList.get(i).getProfileUrl(),
+                                defaultRankerMvpPointMemberList.get(i).getNickname(),
+                                defaultRankerMvpPointMemberList.get(i).getPosition(),
+                                defaultRankerMvpPointMemberList.get(i).getAbility().getMvpPoint(),
+                                defaultRankerMvpPointMemberList.get(i).getAbility().getMvpPoint(),
+                                defaultMvpRank
+                        );
+                        rankerMemberResponseList.add(rankerMemberResponse);
+                    } else if (defaultRankerMvpPointMemberList.get(i - 1).getAbility().getMvpPoint()
+                            .equals(defaultRankerMvpPointMemberList.get(i).getAbility().getMvpPoint())) {
+                        RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
+                                defaultRankerMvpPointMemberList.get(i).getId(),
+                                defaultRankerMvpPointMemberList.get(i).getProfileUrl(),
+                                defaultRankerMvpPointMemberList.get(i).getNickname(),
+                                defaultRankerMvpPointMemberList.get(i).getPosition(),
+                                defaultRankerMvpPointMemberList.get(i).getAbility().getMvpPoint(),
+                                defaultRankerMvpPointMemberList.get(i).getAbility().getMvpPoint(),
+                                defaultMvpRank
+                        );
+                        rankerMemberResponseList.add(rankerMemberResponse);
+                    } else {
+                        defaultMvpRank++;
+                        RankerMemberResponse rankerMemberResponse = new RankerMemberResponse(
+                                defaultRankerMvpPointMemberList.get(i).getId(),
+                                defaultRankerMvpPointMemberList.get(i).getProfileUrl(),
+                                defaultRankerMvpPointMemberList.get(i).getNickname(),
+                                defaultRankerMvpPointMemberList.get(i).getPosition(),
+                                defaultRankerMvpPointMemberList.get(i).getAbility().getMvpPoint(),
+                                defaultRankerMvpPointMemberList.get(i).getAbility().getMvpPoint(),
+                                defaultMvpRank
+                        );
+                        rankerMemberResponseList.add(rankerMemberResponse);
+                    }
+
+                    if (rankerMemberResponseList.size() == 10) {
+                        break;
+                    }
+                }
         }
         return new ResponseEntity<>(rankerMemberResponseList, HttpStatus.OK);
     }
@@ -397,8 +395,8 @@ public class RankService {
         Member member = memberRepository.findById(userDetails.getUser().getId())
                 .orElseThrow(() -> new NullPointerException("회원이 존재하지 않습니다."));
 
-        if(member.getAbility() == null){
-            return new ResponseEntity<>("회원정보를 입력해주세요.",HttpStatus.BAD_REQUEST);
+        if (member.getAbility() == null) {
+            return new ResponseEntity<>("회원정보를 입력해주세요.", HttpStatus.BAD_REQUEST);
         }
 
         int myRank = 1;

@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class RankerTeamResponse {
     private Long teamId;
-    private String mainArea;
+    private String teamProfileUrl;
     private String teamName;
     private int winPoint;
     private int rank;
