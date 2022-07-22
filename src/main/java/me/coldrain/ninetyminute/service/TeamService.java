@@ -119,12 +119,24 @@ public class TeamService {
         boolean otherCaptain = false;
         boolean approved = false;
         boolean participate = false;
+        boolean matching = false;
+        boolean apply = false;
 
         if (userDetails.getUser().getOpenTeam() != null) {
             if (teamId.equals(userDetails.getUser().getOpenTeam().getId())) {
                 teamCaptain = true;
             } else {
                 otherCaptain = true;
+                Optional<Apply> matchingCheck = applyRepository.findByApplyTeamIdAndTeamIdTrue(userDetails.getUser().getOpenTeam().getId(), teamId);
+                if (matchingCheck.isPresent()) {
+                    matching = true;
+                    apply = true;
+                }
+
+                Optional<Apply> applyCheck = applyRepository.findByApplyTeamIdAndTeamId(userDetails.getUser().getOpenTeam().getId(), teamId);
+                if (applyCheck.isPresent()) {
+                    apply = true;
+                }
             }
         }
 
@@ -186,6 +198,8 @@ public class TeamService {
                 otherCaptain,
                 approved,
                 participate,
+                matching,
+                apply,
                 recentMatchHistory,
                 infoTeam.getCreatedDate(),
                 infoTeam.getModifiedDate()
