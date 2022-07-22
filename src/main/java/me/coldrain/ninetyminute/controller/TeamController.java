@@ -155,11 +155,11 @@ public class TeamController {
      * 대결 등록 API
      */
     @PostMapping("/home/teams/{team_id}/match/regist")
-    public void registMatch(
+    public void registerMatch(
             final @PathVariable("team_id") Long teamId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        teamService.registMatch(teamId, userDetails.getUser());
+        teamService.registerMatch(teamId, userDetails.getUser());
     }
 
     /**
