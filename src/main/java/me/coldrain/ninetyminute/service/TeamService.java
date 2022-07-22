@@ -117,9 +117,10 @@ public class TeamService {
 
         boolean teamCaptain = false;
         boolean otherCaptain = false;
+        boolean approved = false;
         boolean participate = false;
 
-        if (userDetails.getUser().getOpenTeam().getId() != null) {
+        if (userDetails.getUser().getOpenTeam() != null) {
             if (teamId.equals(userDetails.getUser().getOpenTeam().getId())) {
                 teamCaptain = true;
             } else {
@@ -127,8 +128,13 @@ public class TeamService {
             }
         }
 
-        Optional<Participation> teamMember = participationRepository.findByMemberIdAndTeamIdTrue(userDetails.getUser().getId(), teamId);
-        if (teamMember.isPresent()) {
+        Optional<Participation> approvedTeamMember = participationRepository.findByMemberIdAndTeamIdTrue(userDetails.getUser().getId(), teamId);
+        if (approvedTeamMember.isPresent()) {
+            approved = true;
+        }
+
+        Optional<Participation> participateTeam = participationRepository.findByTeamIdAndMemberId(teamId, userDetails.getUser().getId());
+        if (participateTeam.isPresent()) {
             participate = true;
         }
 
@@ -178,6 +184,7 @@ public class TeamService {
                 headCount,
                 teamCaptain,
                 otherCaptain,
+                approved,
                 participate,
                 recentMatchHistory,
                 infoTeam.getCreatedDate(),
