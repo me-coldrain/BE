@@ -114,7 +114,7 @@ public class MemberService {
             }
 
             Member member = memberRepository.findById(userDetails.getUser().getId()).orElseThrow();
-            if (member.getNickname() == null) {
+            if (member.getAbility() == null) {
                 final Ability emptyAbility = abilityRepository.save(new Ability());
                 member.newMemberUpdate(memberEditRequest, emptyAbility);
             } else {
@@ -191,10 +191,10 @@ public class MemberService {
     }
 
     //JWT 토큰 생성기
-    private JwtTokenResponse jwtTokenCreate(Member member) {
+    public JwtTokenResponse jwtTokenCreate(Member member) {
         JwtTokenResponse jwtTokenResponse = new JwtTokenResponse();
 
-        if (member.getNickname() == null) {
+        if (member.getAbility() == null) {
             String accessToken = jwtTokenProvider.createnewAccessToken(member);
             jwtTokenResponse.setAccesstoken(accessToken);
             jwtTokenResponse.setFirst(true);
