@@ -58,6 +58,7 @@ public class TeamService {
         if (openTeam != null) {
             throw new IllegalArgumentException("이미 개설한 팀이 존재 합니다.");
         }
+//        if (openTeam.getDeleted()) { throw new IllegalArgumentException("해당 팀은 해체 되었습니다."); }
 
         final Record emptyRecord = recordRepository.save(new Record());
         final Team team = Team.builder()
@@ -119,12 +120,24 @@ public class TeamService {
         boolean otherCaptain = false;
         boolean approved = false;
         boolean participate = false;
+        boolean matching = false;
+        boolean apply = false;
 
         if (userDetails.getUser().getOpenTeam() != null) {
             if (teamId.equals(userDetails.getUser().getOpenTeam().getId())) {
                 teamCaptain = true;
             } else {
                 otherCaptain = true;
+                Optional<Apply> matchingCheck = applyRepository.findByApplyTeamIdAndTeamIdTrue(userDetails.getUser().getOpenTeam().getId(), teamId);
+                if (matchingCheck.isPresent()) {
+                    matching = true;
+                    apply = true;
+                }
+
+                Optional<Apply> applyCheck = applyRepository.findByApplyTeamIdAndTeamId(userDetails.getUser().getOpenTeam().getId(), teamId);
+                if (applyCheck.isPresent()) {
+                    apply = true;
+                }
             }
         }
 
@@ -186,6 +199,8 @@ public class TeamService {
                 otherCaptain,
                 approved,
                 participate,
+                matching,
+                apply,
                 recentMatchHistory,
                 infoTeam.getCreatedDate(),
                 infoTeam.getModifiedDate()
@@ -250,8 +265,8 @@ public class TeamService {
     }
 
     @Transactional
-    public void registMatch(final Long teamId, final Member member) {
-        final Team team = teamRepository.findById(teamId)
+    public void registerMatch(final Long teamId, final Member member) {
+        final Team team = teamRepository.findByIdAndDeletedFalse(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         final Long openTeamId = member.getOpenTeam().getId();
@@ -302,11 +317,11 @@ public class TeamService {
 
     @Transactional
     public void applyMatch(final Long applyTeamId, ApplyRequest applyRequest, final Long teamId) {
-        final Team team = teamRepository.findById(teamId)
+        final Team team = teamRepository.findByIdAndDeletedFalse(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
         if (team.getMatches()) {
             if (!applyTeamId.equals(teamId)) {
-                final Team applyTeam = teamRepository.findById(applyTeamId)
+                final Team applyTeam = teamRepository.findByIdAndDeletedFalse(applyTeamId)
                         .orElseThrow(() -> new IllegalArgumentException("대결 신청 팀을 찾을 수 없습니다."));
                 if (applyRepository.findByApplyTeamIdAndTeamId(applyTeamId, teamId).orElse(null) == null) {
                     final Apply apply = Apply.builder()

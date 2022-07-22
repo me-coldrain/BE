@@ -238,15 +238,15 @@ public class MatchingService {
 
     @Transactional
     public void makeTeamFormation(Long teamId, Long matchId, List<MatchMemberRequest> matchMemberRequestList, Member member) {
-        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다.")
-        );
-        if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getTeam().getId()) || member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
-            Team team = teamRepository.findById(member.getOpenTeam().getId()).orElseThrow(
-                    () -> new IllegalArgumentException("해당 팀을 찾을 수 없습니다.")
+        if (matchMemberRequestList.size() > 4) {
+            BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
+                    () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다.")
             );
-            for (MatchMemberRequest matchMemberRequest : matchMemberRequestList) {
-                if (matchMemberRequest.getAnonymous()) {
+            if (teamId.equals(beforeMatching.getApply().getTeam().getId()) || teamId.equals(beforeMatching.getApply().getApplyTeam().getId())) {
+                Team team = teamRepository.findById(member.getOpenTeam().getId()).orElseThrow(
+                        () -> new IllegalArgumentException("해당 팀을 찾을 수 없습니다.")
+                );
+                for (MatchMemberRequest matchMemberRequest : matchMemberRequestList) {
                     FieldMember fieldMember = FieldMember.builder()
                             .position(matchMemberRequest.getPosition())
                             .anonymous(matchMemberRequest.getAnonymous())
@@ -255,22 +255,15 @@ public class MatchingService {
                             .beforeMatching(beforeMatching)
                             .afterMatching(null)
                             .build();
-                    fieldMemberRepository.save(fieldMember);
-                } else {
-                    Member registerMember = memberRepository.findById(matchMemberRequest.getMemberId()).orElseThrow(
-                            () -> new IllegalArgumentException("해당 맴버를 찾을 수 없습니다."));
-                    FieldMember fieldMember = FieldMember.builder()
-                            .position(matchMemberRequest.getPosition())
-                            .anonymous(matchMemberRequest.getAnonymous())
-                            .member(registerMember)
-                            .team(team)
-                            .beforeMatching(beforeMatching)
-                            .afterMatching(null)
-                            .build();
+                    if (!matchMemberRequest.getAnonymous()) {
+                        Member registerMember = memberRepository.findById(matchMemberRequest.getMemberId()).orElseThrow(
+                                () -> new IllegalArgumentException("해당 맴버를 찾을 수 없습니다."));
+                        fieldMember.changeMember(registerMember);
+                    }
                     fieldMemberRepository.save(fieldMember);
                 }
-            }
-        } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
+            } else throw new IllegalArgumentException("해당 팀은 성사된 대결의 팀이 아닙니다.");
+        } else throw new IllegalArgumentException("최소 5명 이상의 선발 선수를 등록해 주세요.");
     }
 
     public MatchMemberResponse showFormation(Long teamId, Long matchId, Member member) {
