@@ -384,7 +384,7 @@ public class MatchingService {
                     if (afterMatching.getScore() == matchResultRequest.getScorers().size()) { // home team
                         for (MatchMemberRequest scorer : matchResultRequest.getScorers()) {
                             if (!scorer.getAnonymous()) {
-                                FieldMember fieldMember = fieldMemberRepository.findByMemberIdAndTeamId(scorer.getMemberId(), member.getOpenTeam().getId()).orElse(null);
+                                FieldMember fieldMember = fieldMemberRepository.findByMemberIdAndTeamIdAndBeforeMatchingId(scorer.getMemberId(), member.getOpenTeam().getId(), beforeMatching.getId()).orElse(null);
                                 SubstituteMember substituteMember = searchSubMember(substituteMembers, scorer.getMemberId());
                                 if (fieldMember == null && substituteMember == null) throw new IllegalArgumentException("해당 선수는 팀에 소속되어 있지 않습니다.");
                                 Scorer scorerMember = Scorer.builder()
@@ -421,7 +421,7 @@ public class MatchingService {
                     if (afterMatching.getOpponentScore() == matchResultRequest.getScorers().size()) {
                         for (MatchMemberRequest scorer : matchResultRequest.getScorers()) {
                             if (!scorer.getAnonymous()) {
-                                FieldMember fieldMember = fieldMemberRepository.findByMemberIdAndTeamId(scorer.getMemberId(), member.getOpenTeam().getId()).orElse(null);
+                                FieldMember fieldMember = fieldMemberRepository.findByMemberIdAndTeamIdAndBeforeMatchingId(scorer.getMemberId(), member.getOpenTeam().getId(), beforeMatching.getId()).orElse(null);
                                 SubstituteMember substituteMember = searchSubMember(substituteMembers, scorer.getMemberId());
                                 if (fieldMember == null && substituteMember == null) throw new IllegalArgumentException("해당 선수는 팀에 소속되어 있지 않습니다.");
                                 Scorer scorerMember = Scorer.builder()
