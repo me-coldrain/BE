@@ -323,7 +323,8 @@ public class TeamService {
             if (!applyTeamId.equals(teamId)) {
                 final Team applyTeam = teamRepository.findByIdAndDeletedFalse(applyTeamId)
                         .orElseThrow(() -> new IllegalArgumentException("대결 신청 팀을 찾을 수 없습니다."));
-                if (applyRepository.findByApplyTeamIdAndTeamId(applyTeamId, teamId).orElse(null) == null) {
+                if (applyRepository.findByApplyTeamIdAndTeamId(applyTeamId, teamId).orElse(null) == null
+                        || applyRepository.findByApplyTeamIdAndTeamIdAndEndMatch(applyTeamId, teamId).orElse(null) != null) {
                     final Apply apply = Apply.builder()
                             .applyTeam(applyTeam)
                             .team(team)
