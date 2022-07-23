@@ -282,10 +282,7 @@ public class MatchingService {
             }
             fieldMembers.add(matchMemberRequest);
         }
-        return MatchMemberResponse.builder()
-                .matchId(matchId)
-                .fieldMembers(fieldMembers)
-                .build();
+        return new MatchMemberResponse(matchId, fieldMembers);
     }
 
     @Transactional
