@@ -62,91 +62,98 @@ public class HistoryService {
 
     public HistoryDetailResponse searchMatchHistoryDetail(Long teamId, Long historyId, Member member) {
         History history = historyRepository.findById(historyId).orElseThrow(() -> new IllegalArgumentException("히스토리가 존재하지 않습니다."));
-
-        // param 인 teamId 가 HomeTeam
-        List<Scorer> homeScorerList;
-        List<FieldMember> teamFieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(teamId, history.getBeforeMatching().getId());
-        List<SubstituteMember> teamSubMembers = substituteRepository.findAllByMatchSubstituteMembersAndAnonymousFalse(teamId, history.getAfterMatching().getId());
+        List<String> homeScorers = new ArrayList<>();
+        List<String> awayScorers = new ArrayList<>();
         HistoryDetailResponse historyDetailResponse = new HistoryDetailResponse(history.getId(), history.getBeforeMatching().getMatchDate(), null, null);
-        HistoryDetailResponse.TeamResponse homeTeamResponse;
-        HistoryDetailResponse.TeamResponse awayTeamResponse;
-        HistoryDetailResponse.TeamResponse.MemberResponse memberResponse = new HistoryDetailResponse.TeamResponse.MemberResponse(null, null);
+
+        HistoryDetailResponse.TeamResponse.PlayerResponse homeFieldPlayerResponse = new HistoryDetailResponse.TeamResponse.PlayerResponse(null, null, null, null);
+        HistoryDetailResponse.TeamResponse.PlayerResponse homeSubPlayerResponse = new HistoryDetailResponse.TeamResponse.PlayerResponse(null, null, null, null);
+        HistoryDetailResponse.TeamResponse.PlayerResponse awayFieldPlayerResponse = new HistoryDetailResponse.TeamResponse.PlayerResponse(null, null, null, null);
+        HistoryDetailResponse.TeamResponse.PlayerResponse awaySubPlayerResponse = new HistoryDetailResponse.TeamResponse.PlayerResponse(null, null, null, null);
+
+        HistoryDetailResponse.TeamResponse.MemberResponse homeFieldMemberResponse = new HistoryDetailResponse.TeamResponse.MemberResponse(null, null, null, null);
+        HistoryDetailResponse.TeamResponse.MemberResponse homeSubMemberResponse = new HistoryDetailResponse.TeamResponse.MemberResponse(null, null, null, null);
+        HistoryDetailResponse.TeamResponse.MemberResponse awayFieldMemberResponse = new HistoryDetailResponse.TeamResponse.MemberResponse(null, null, null, null);
+        HistoryDetailResponse.TeamResponse.MemberResponse awaySubMemberResponse = new HistoryDetailResponse.TeamResponse.MemberResponse(null, null, null, null);
 
         if (teamId.equals(history.getBeforeMatching().getApply().getTeam().getId())) {
             // home team
-            homeTeamResponse = HistoryDetailResponse.TeamResponse.builder()
+            List<FieldMember> homeTeamFieldMembers = fieldMemberRepository.findAllByAfterMatchingFieldMembers(teamId, history.getAfterMatching().getId());
+            List<SubstituteMember> homeTeamSubMembers = substituteRepository.findAllByAllMatchSubstituteMembers(teamId, history.getAfterMatching().getId());
+            List<Scorer> homeTeamScorerList = scorerRepository.findAllByAfterMatchingIdAndTeamId(history.getAfterMatching().getId(), teamId);
+            HistoryDetailResponse.TeamResponse homeTeamResponse = HistoryDetailResponse.TeamResponse.builder()
                     .mvp(history.getAfterMatching().getMvpNickname())
-                    .name(history.getBeforeMatching().getTeamName())
-                    .record(history.getAfterMatching().getResult())
+                    .teamName(history.getBeforeMatching().getTeamName())
                     .score(history.getAfterMatching().getScore())
+                    .record(history.getAfterMatching().getResult())
                     .scorer(null)
                     .fieldMembers(null)
                     .substituteMembers(null)
                     .build();
-
-            homeScorerList = scorerRepository.findAllByAfterMatchingIdAndTeamId(history.getAfterMatching().getId(), teamId);
-            homeTeamResponse.setScorer(homeScorerList);
-            homeTeamResponse.setFieldMembers(teamFieldMembers, memberResponse);
-            homeTeamResponse.setSubstituteMembers(teamSubMembers, memberResponse);
+            homeScorers = homeTeamResponse.updateScorer(homeTeamScorerList, homeScorers);
+            homeTeamResponse.setScorer(homeScorers);
+            homeTeamResponse.setFieldMembers(homeTeamFieldMembers, homeFieldMemberResponse, homeFieldPlayerResponse);
+            homeTeamResponse.setSubstituteMembers(homeTeamSubMembers, homeSubMemberResponse, homeSubPlayerResponse);
 
             // away team
-            List<FieldMember> awayTeamFieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(history.getBeforeMatching().getApply().getApplyTeam().getId(), history.getBeforeMatching().getId());
+            List<FieldMember> awayTeamFieldMembers = fieldMemberRepository.findAllByAfterMatchingFieldMembers(history.getBeforeMatching().getApply().getApplyTeam().getId(), history.getAfterMatching().getId());
             List<SubstituteMember> awayTeamSubMembers = substituteRepository.findAllByAllMatchSubstituteMembers(history.getBeforeMatching().getApply().getApplyTeam().getId(), history.getAfterMatching().getId());
-
-            awayTeamResponse = HistoryDetailResponse.TeamResponse.builder()
-                    .mvp(history.getAfterMatching().getBeforeMatching().getApply().getApplyTeam().getHistory().getAfterMatching().getMvpNickname())
-                    .name(history.getBeforeMatching().getOpposingTeamName())
-                    .record(history.getAfterMatching().getOpponentResult())
+            List<Scorer> awayTeamScorerList = scorerRepository.findAllByAfterMatchingIdAndTeamId(history.getAfterMatching().getId(), history.getBeforeMatching().getApply().getApplyTeam().getId());
+            HistoryDetailResponse.TeamResponse awayTeamResponse = HistoryDetailResponse.TeamResponse.builder()
+                    .mvp(history.getAfterMatching().getOpponentMvpNickname())
+                    .teamName(history.getBeforeMatching().getOpposingTeamName())
                     .score(history.getAfterMatching().getOpponentScore())
+                    .record(history.getAfterMatching().getOpponentResult())
                     .scorer(null)
                     .fieldMembers(null)
                     .substituteMembers(null)
                     .build();
-
-            List<Scorer> awayScorerList = scorerRepository.findAllByAfterMatchingIdAndApplyTeamId(history.getAfterMatching().getId(), history.getBeforeMatching().getApply().getApplyTeam().getId());
-            awayTeamResponse.setScorer(awayScorerList);
-            awayTeamResponse.setFieldMembers(awayTeamFieldMembers, memberResponse);
-            awayTeamResponse.setSubstituteMembers(awayTeamSubMembers, memberResponse);
+            awayScorers = awayTeamResponse.updateScorer(awayTeamScorerList, awayScorers);
+            awayTeamResponse.setScorer(awayScorers);
+            awayTeamResponse.setFieldMembers(awayTeamFieldMembers, awayFieldMemberResponse, awayFieldPlayerResponse);
+            awayTeamResponse.setSubstituteMembers(awayTeamSubMembers, awaySubMemberResponse, awaySubPlayerResponse);
 
             historyDetailResponse.addTeams(homeTeamResponse, awayTeamResponse);
-        } else { // param 인 teamId 가 AwayTeam 즉, 히스토리 상세에서 away team 기준으로 보여야한다.
+        } else if (teamId.equals(history.getBeforeMatching().getApply().getApplyTeam().getId())) {
             // home team
-            homeTeamResponse = HistoryDetailResponse.TeamResponse.builder()
-                    .mvp(history.getAfterMatching().getBeforeMatching().getApply().getApplyTeam().getHistory().getAfterMatching().getMvpNickname())
-                    .name(history.getBeforeMatching().getOpposingTeamName())
-                    .record(history.getAfterMatching().getOpponentResult())
+            List<FieldMember> homeTeamFieldMembers = fieldMemberRepository.findAllByAfterMatchingFieldMembers(teamId, history.getAfterMatching().getId());
+            List<SubstituteMember> homeTeamSubMembers = substituteRepository.findAllByAllMatchSubstituteMembers(teamId, history.getAfterMatching().getId());
+            List<Scorer> homeTeamScorerList = scorerRepository.findAllByAfterMatchingIdAndTeamId(history.getAfterMatching().getId(), teamId);
+            HistoryDetailResponse.TeamResponse homeTeamResponse = HistoryDetailResponse.TeamResponse.builder()
+                    .mvp(history.getAfterMatching().getOpponentMvpNickname())
+                    .teamName(history.getBeforeMatching().getOpposingTeamName())
                     .score(history.getAfterMatching().getOpponentScore())
+                    .record(history.getAfterMatching().getOpponentResult())
                     .scorer(null)
                     .fieldMembers(null)
                     .substituteMembers(null)
                     .build();
+            homeScorers = homeTeamResponse.updateScorer(homeTeamScorerList, homeScorers);
+            homeTeamResponse.setScorer(homeScorers);
+            homeTeamResponse.setFieldMembers(homeTeamFieldMembers, homeFieldMemberResponse, homeFieldPlayerResponse);
+            homeTeamResponse.setSubstituteMembers(homeTeamSubMembers, homeSubMemberResponse, homeSubPlayerResponse);
 
-            homeScorerList = scorerRepository.findAllByAfterMatchingIdAndApplyTeamId(history.getAfterMatching().getId(), history.getBeforeMatching().getApply().getApplyTeam().getId());
-            homeTeamResponse.setScorer(homeScorerList);
-            homeTeamResponse.setFieldMembers(teamFieldMembers, memberResponse);
-            homeTeamResponse.setSubstituteMembers(teamSubMembers, memberResponse);
-
-            // away team
-            List<FieldMember> awayTeamFieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(history.getBeforeMatching().getApply().getApplyTeam().getId(), history.getBeforeMatching().getId());
-            List<SubstituteMember> awayTeamSubMembers = substituteRepository.findAllByAllMatchSubstituteMembers(history.getBeforeMatching().getApply().getApplyTeam().getId(), history.getAfterMatching().getId());
-
-            awayTeamResponse = HistoryDetailResponse.TeamResponse.builder()
+            //away team
+            List<FieldMember> awayTeamFieldMembers = fieldMemberRepository.findAllByAfterMatchingFieldMembers(history.getBeforeMatching().getApply().getTeam().getId(), history.getAfterMatching().getId());
+            List<SubstituteMember> awayTeamSubMembers = substituteRepository.findAllByAllMatchSubstituteMembers(history.getBeforeMatching().getApply().getTeam().getId(), history.getAfterMatching().getId());
+            List<Scorer> awayTeamScorerList = scorerRepository.findAllByAfterMatchingIdAndTeamId(history.getAfterMatching().getId(), history.getBeforeMatching().getApply().getTeam().getId());
+            HistoryDetailResponse.TeamResponse awayTeamResponse = HistoryDetailResponse.TeamResponse.builder()
                     .mvp(history.getAfterMatching().getMvpNickname())
-                    .name(history.getBeforeMatching().getTeamName())
-                    .record(history.getAfterMatching().getResult())
+                    .teamName(history.getBeforeMatching().getTeamName())
                     .score(history.getAfterMatching().getScore())
+                    .record(history.getAfterMatching().getResult())
                     .scorer(null)
                     .fieldMembers(null)
                     .substituteMembers(null)
                     .build();
+            awayScorers = awayTeamResponse.updateScorer(awayTeamScorerList, awayScorers);
+            awayTeamResponse.setScorer(awayScorers);
+            awayTeamResponse.setFieldMembers(awayTeamFieldMembers, awayFieldMemberResponse, awayFieldPlayerResponse);
+            awayTeamResponse.setSubstituteMembers(awayTeamSubMembers, awaySubMemberResponse, awaySubPlayerResponse);
 
-            List<Scorer> awayScorerList = scorerRepository.findAllByAfterMatchingIdAndTeamId(history.getAfterMatching().getId(), teamId);
-            awayTeamResponse.setScorer(awayScorerList);
-            awayTeamResponse.setFieldMembers(awayTeamFieldMembers, memberResponse);
-            awayTeamResponse.setSubstituteMembers(awayTeamSubMembers, memberResponse);
-
+//            System.out.println(homeFieldMemberResponse == awayFieldMemberResponse);
             historyDetailResponse.addTeams(homeTeamResponse, awayTeamResponse);
-        }
+        } else throw new IllegalArgumentException("해당 팀의 경기 히스토리가 아닙니다.");
         return historyDetailResponse;
     }
 }
