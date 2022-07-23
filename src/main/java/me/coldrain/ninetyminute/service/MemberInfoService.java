@@ -36,9 +36,9 @@ public class MemberInfoService {
         Member member = memberRepository.findById(memberId).orElse(null);
         if (member == null) {
             return new ResponseEntity<>("존재하지 않는 회원입니다.", HttpStatus.BAD_REQUEST);
-        }
-
-        if (memberService.secessionMemberCheck(member.getUsername())) {
+        } else if (member.getAbility() == null) {
+            return new ResponseEntity<>("회원정보를 입력하지 않은 회원입니다.", HttpStatus.BAD_REQUEST);
+        } else if (memberService.secessionMemberCheck(member.getUsername())) {
             return new ResponseEntity<>("탈퇴 처리된 회원 입니다.", HttpStatus.BAD_REQUEST);
         }
 
@@ -107,9 +107,9 @@ public class MemberInfoService {
         Member member = memberRepository.findById(memberId).orElse(null);
         if (member == null) {
             return new ResponseEntity<>("존재하지 않는 회원입니다.", HttpStatus.BAD_REQUEST);
-        }
-
-        if (memberService.secessionMemberCheck(member.getUsername())) {
+        } else if (member.getAbility() == null) {
+            return new ResponseEntity<>("회원정보를 입력하지 않은 회원입니다.", HttpStatus.BAD_REQUEST);
+        } else if (memberService.secessionMemberCheck(member.getUsername())) {
             return new ResponseEntity<>("탈퇴 처리된 회원 입니다.", HttpStatus.BAD_REQUEST);
         }
 
