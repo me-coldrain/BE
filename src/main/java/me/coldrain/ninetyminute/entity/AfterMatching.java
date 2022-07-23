@@ -21,6 +21,8 @@ public class AfterMatching extends TimeStamped {
 
     private String mvpNickname;
     private String moodMaker;
+    private String opponentMvpNickname;
+    private String opponentMoodMaker;
     private Integer score;
     private Integer opponentScore;
     private String result;
@@ -40,6 +42,12 @@ public class AfterMatching extends TimeStamped {
         this.moodMaker = moodMaker;
     }
 
+    public void editOpponentMVPNickname(String opponentMvpNickname) { this.opponentMvpNickname = opponentMvpNickname; }
+
+    public void editOpponentMoodMaker(String opponentMoodMaker) {
+        this.opponentMoodMaker = opponentMoodMaker;
+    }
+
     public void editResult(String result, String opponentResult) {
         this.result = result;
         this.opponentResult = opponentResult;
@@ -50,10 +58,12 @@ public class AfterMatching extends TimeStamped {
     }
 
     @Builder
-    public AfterMatching(BeforeMatching beforeMatching, String mvpNickname, String moodMaker, Integer score, Integer opponentScore, String result, String opponentResult, Boolean admitStatus) {
+    public AfterMatching(BeforeMatching beforeMatching, String mvpNickname, String moodMaker, String opponentMvpNickname, String opponentMoodMaker, Integer score, Integer opponentScore, String result, String opponentResult, Boolean admitStatus) {
         this.beforeMatching = beforeMatching;
         this.mvpNickname = mvpNickname;
         this.moodMaker = moodMaker;
+        this.opponentMvpNickname = opponentMvpNickname;
+        this.opponentMoodMaker = opponentMoodMaker;
         this.score = score;
         this.opponentScore = opponentScore;
         this.result = result;
