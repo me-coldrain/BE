@@ -65,6 +65,7 @@ public class MemberInfoService {
 
         MemberInfoResponse memberInfoResponse = new MemberInfoResponse(
                 myInfo,
+                memberId,
                 member.getNickname(),
                 member.getProfileUrl(),
                 member.getContact(),
