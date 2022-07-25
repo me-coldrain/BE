@@ -28,7 +28,8 @@ public class JwtTokenProvider {
     private String secretKey;
 
 
-    private final long accessTokenValidTime = 30 * 24 * 60 * 60 * 1000L;   // access 토큰 유효시간 60분
+    private final long accessTokenValidTime = 30 * 24 * 60 * 60 * 1000L;   // access 토큰 유효시간 30일
+//    private final long accessTokenValidTime = 60 * 60 * 1000L;   // access 토큰 유효시간 테스트용
 
 //    private final long refreshTokenValidTime = 60 * 60 * 1000L; // refresh 토큰 유효시간 60분
 
@@ -109,26 +110,28 @@ public class JwtTokenProvider {
 
     // 토큰의 유효성 + 만료일자 확인 + 인증 예외 처리 + 서명 에러 처리 + 권한 에러 처리
     public boolean validateJwtToken(ServletRequest request, String jwtToken) {
-        String secessionUsername = "secession-" + Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken).getBody().getSubject();
+        try {
+            String secessionUsername = "secession-" + Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken).getBody().getSubject();
 
-        Optional<Member> userCheck = memberRepository.findByUsernameSecessionStateTrue(Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken).getBody().getSubject());
-        Optional<Member> secessionUserCheck = memberRepository.findByUsernameSecessionStateTrue(secessionUsername);
+            Optional<Member> userCheck = memberRepository.findByUsernameSecessionStateTrue(Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken).getBody().getSubject());
+            Optional<Member> secessionUserCheck = memberRepository.findByUsernameSecessionStateTrue(secessionUsername);
 
-        if (userCheck.isEmpty() && secessionUserCheck.isEmpty()) {
-            try {
-                Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
-                return true;
-            } catch (MalformedJwtException e) {
-                request.setAttribute("exception", "MalformedJwtException");
-            } catch (ExpiredJwtException e) {
-                request.setAttribute("exception", "ExpiredJwtException");
-            } catch (UnsupportedJwtException e) {
-                request.setAttribute("exception", "UnsupportedJwtException");
-            } catch (SignatureException e) {
-                request.setAttribute("exception", "SignatureJwtException");
-            } catch (IllegalArgumentException e) {
-                request.setAttribute("exception", "IllegalArgumentException");
+            if (userCheck.isPresent() || secessionUserCheck.isPresent()) {
+                return false;
             }
+
+            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
+            return true;
+        } catch (MalformedJwtException e) {
+            request.setAttribute("exception", "MalformedJwtException");
+        } catch (ExpiredJwtException e) {
+            request.setAttribute("exception", "ExpiredJwtException");
+        } catch (UnsupportedJwtException e) {
+            request.setAttribute("exception", "UnsupportedJwtException");
+        } catch (SignatureException e) {
+            request.setAttribute("exception", "SignatureJwtException");
+        } catch (IllegalArgumentException e) {
+            request.setAttribute("exception", "IllegalArgumentException");
         }
         return false;
     }
