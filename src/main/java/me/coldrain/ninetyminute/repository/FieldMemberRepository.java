@@ -13,6 +13,9 @@ public interface FieldMemberRepository extends JpaRepository<FieldMember, Long> 
     @Query("select fm from FieldMember fm where fm.member.id = :memberId and fm.team.id = :teamId")
     Optional<FieldMember> findByMemberIdAndTeamId(Long memberId, Long teamId);
 
+    @Query("select fm from FieldMember fm where fm.member.id = :memberId and fm.team.id = :teamId and fm.beforeMatching.id = :beforeMatchingId")
+    Optional<FieldMember> findByMemberIdAndTeamIdAndBeforeMatchingId(Long memberId, Long teamId, Long beforeMatchingId);
+
     @Query("select fm from FieldMember fm where fm.team.id = :teamId and fm.beforeMatching.id = :beforeMatchId and fm.anonymous = false ")
     List<FieldMember> findAllByMatchFieldMembersAndAnonymousFalse(Long teamId, Long beforeMatchId);
 
