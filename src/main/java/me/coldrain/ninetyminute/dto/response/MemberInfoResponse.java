@@ -9,6 +9,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class MemberInfoResponse {
     private boolean myInfo;
+    private Long memberId;
     private String nickname;
     private String profileImageUrl;
     private String contact;

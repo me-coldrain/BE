@@ -12,8 +12,17 @@ public interface ApplyRepository extends JpaRepository<Apply, Long> {
     @Query("SELECT a FROM Apply a WHERE a.applyTeam.id = :applyTeamId AND a.team.id = :teamId")
     Optional<Apply> findByApplyTeamIdAndTeamId(final Long applyTeamId, final Long teamId);
 
-//    @Query("select a from Apply a where a.team.id =: teamId order by a.createdDate desc ")
-//    List<Apply> findAllByTeamId(final Long teamId);
+    @Query("SELECT a FROM Apply a WHERE a.applyTeam.id = :applyTeamId AND a.team.id = :teamId and a.endMatchStatus = true and a.opposingTeamEndMatchStatus = true")
+    Optional<Apply> findByApplyTeamIdAndTeamIdAndEndMatch(final Long applyTeamId, final Long teamId);
+
+    @Query("SELECT a FROM Apply a WHERE a.applyTeam.id = :applyTeamId AND a.team.id = :teamId AND a.approved = true")
+    Optional<Apply> findByApplyTeamIdAndTeamIdTrue(final Long applyTeamId, final Long teamId);
+
+    @Query("select a from Apply a where a.team.id = :teamId AND a.approved = true  AND a.endMatchStatus = true  AND  a.opposingTeamEndMatchStatus = true")
+    List<Apply> findAllByApplyEndTeamId(final Long teamId);
+
+    @Query("select a from Apply a where a.applyTeam.id = :ApplyTeamId AND a.approved = true  AND a.endMatchStatus = true  AND  a.opposingTeamEndMatchStatus = true")
+    List<Apply> findAllByApplyEndApplyTeamId(final Long ApplyTeamId);
 
     @Query("select a from Apply a where a.team.id = :teamId order by a.createdDate desc ")
     List<Apply> findAllByTeamIdOrderByCreatedDate(final Long teamId);

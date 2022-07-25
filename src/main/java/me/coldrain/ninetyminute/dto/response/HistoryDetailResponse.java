@@ -34,17 +34,17 @@ public class HistoryDetailResponse {
     @NoArgsConstructor
     public static class TeamResponse {
         private String mvp;
-        private String name;
+        private String teamName;
         private String record;
         private Integer score;
-        private List<String> scorer;
-        private List<List<MemberResponse>> fieldMembers = new ArrayList<>();
-        private List<List<MemberResponse>> substituteMembers = new ArrayList<>();
+        private List<String> scorer = new ArrayList<>();
+        private PlayerResponse fieldMembers;
+        private PlayerResponse substituteMembers;
 
         @Builder
-        public TeamResponse(String mvp, String name, String record, Integer score, List<String> scorer, List<List<MemberResponse>> fieldMembers, List<List<MemberResponse>> substituteMembers) {
+        public TeamResponse(String mvp, String teamName, String record, Integer score, List<String> scorer, PlayerResponse fieldMembers, PlayerResponse substituteMembers) {
             this.mvp = mvp;
-            this.name = name;
+            this.teamName = teamName;
             this.record = record;
             this.score = score;
             this.scorer = scorer;
@@ -55,146 +55,184 @@ public class HistoryDetailResponse {
         @Getter
         @Setter
         @AllArgsConstructor
+        public static class PlayerResponse {
+            private List<MemberResponse> striker = new ArrayList<>();
+            private List<MemberResponse> midfielder = new ArrayList<>();
+            private List<MemberResponse> defender = new ArrayList<>();
+            private List<MemberResponse> goalkeeper = new ArrayList<>();
+
+            private void resetPlayerResponse(PlayerResponse playerResponse) {
+                playerResponse.setStriker(null);
+                playerResponse.setMidfielder(null);
+                playerResponse.setDefender(null);
+                playerResponse.setGoalkeeper(null);
+            }
+        }
+
+        @Getter
+        @Builder
+        @AllArgsConstructor
         public static class MemberResponse {
+            private Long memberId;
             private String nickName;
+            private String memberProfileUrl;
             private Integer positionPoint;      // 개인의 능력치 총 합
+
+            public MemberResponse changeMemberResponse(Long memberId, String nickName, String memberProfileUrl, Integer positionPoint) {
+                return MemberResponse.builder()
+                        .memberId(memberId)
+                        .nickName(nickName)
+                        .memberProfileUrl(memberProfileUrl)
+                        .positionPoint(positionPoint)
+                        .build();
+            }
+
         }
 
-        public void setScorer(List<Scorer> scorerList) {
+        public List<String> updateScorer(List<Scorer> scorerList, List<String> scorer) {
+            scorer.clear();
             for (Scorer scorerMember : scorerList) {
-                if (!scorerMember.getFieldMember().getAnonymous()) {
-                    this.scorer.add(scorerMember.getFieldMember().getMember().getNickname());
-                } else {
-                    this.scorer.add("비회원");
-                }
-                if (!scorerMember.getSubstituteMember().getAnonymous()) {
-                    this.scorer.add(scorerMember.getSubstituteMember().getMember().getNickname());
-                } else {
-                    this.scorer.add("비회원");
-                }
+                if (scorerMember.getFieldMember() != null) {
+                    if (!scorerMember.getFieldMember().getAnonymous()) {
+                        scorer.add(scorerMember.getFieldMember().getMember().getNickname());
+                    }
+                } else if (scorerMember.getSubstituteMember() != null) {
+                    if (!scorerMember.getSubstituteMember().getAnonymous()) {
+                        scorer.add(scorerMember.getSubstituteMember().getMember().getNickname());
+                    }
+                } else scorer.add("비회원");
             }
+            return scorer;
         }
 
-        public void setFieldMembers(List<FieldMember> fieldMembers, MemberResponse memberResponse) {
+        public void setScorer(List<String> scorer) {
+            this.scorer = scorer;
+        }
+
+        public void setFieldMembers(List<FieldMember> fieldMemberList, MemberResponse memberResponse, PlayerResponse fieldMembers) {
+//            fieldMembers.resetPlayerResponse(fieldMembers);
             List<MemberResponse> strikers = new ArrayList<>();
             List<MemberResponse> midfielders = new ArrayList<>();
             List<MemberResponse> defenders = new ArrayList<>();
             List<MemberResponse> goalkeeper = new ArrayList<>();
+            MemberResponse tempMember = new MemberResponse(null, null, null, null);
 
-            for (FieldMember fieldMember : fieldMembers) {
-                if (!fieldMember.getAnonymous()) {
-                    switch (fieldMember.getPosition()) {
-                        case "striker":
-                            memberResponse.setNickName(fieldMember.getMember().getNickname());
-                            memberResponse.setPositionPoint(fieldMember.getMember().getAbility().getTotalPositionPoint());
-                            strikers.add(memberResponse);
-                            break;
-                        case "midfielder":
-                            memberResponse.setNickName(fieldMember.getMember().getNickname());
-                            memberResponse.setPositionPoint(fieldMember.getMember().getAbility().getTotalPositionPoint());
-                            midfielders.add(memberResponse);
-                            break;
-                        case "defender":
-                            memberResponse.setNickName(fieldMember.getMember().getNickname());
-                            memberResponse.setPositionPoint(fieldMember.getMember().getAbility().getTotalPositionPoint());
-                            defenders.add(memberResponse);
-                            break;
-                        default:
-                            memberResponse.setNickName(fieldMember.getMember().getNickname());
-                            memberResponse.setPositionPoint(fieldMember.getMember().getAbility().getTotalPositionPoint());
-                            goalkeeper.add(memberResponse);
-                            break;
-                    }
-                } else {
-                    switch (fieldMember.getPosition()) {
-                        case "striker":
-                            memberResponse.setNickName("비회원");
-                            memberResponse.setPositionPoint(null);
-                            strikers.add(memberResponse);
-                            break;
-                        case "midfielder":
-                            memberResponse.setNickName("비회원");
-                            memberResponse.setPositionPoint(null);
-                            midfielders.add(memberResponse);
-                            break;
-                        case "defender":
-                            memberResponse.setNickName("비회원");
-                            memberResponse.setPositionPoint(null);
-                            defenders.add(memberResponse);
-                            break;
-                        default:
-                            memberResponse.setNickName("비회원");
-                            memberResponse.setPositionPoint(null);
-                            goalkeeper.add(memberResponse);
-                            break;
-                    }
+            for (FieldMember fieldMember : fieldMemberList) {
+                switch (fieldMember.getPosition()) {
+                    case "striker":
+                        if (fieldMember.getAnonymous()) {
+                            tempMember = memberResponse.changeMemberResponse(null, "비회원", null, null);
+                        } else {
+                            tempMember = memberResponse.changeMemberResponse(fieldMember.getMember().getId(),
+                                    fieldMember.getMember().getNickname(),
+                                    fieldMember.getMember().getProfileUrl(),
+                                    fieldMember.getMember().getAbility().getTotalPositionPoint());
+                        }
+                        strikers.add(tempMember);
+                        break;
+                    case "midfielder":
+                        if (fieldMember.getAnonymous()) {
+                            tempMember = memberResponse.changeMemberResponse(null, "비회원", null, null);
+                        } else {
+                            tempMember = memberResponse.changeMemberResponse(fieldMember.getMember().getId(),
+                                    fieldMember.getMember().getNickname(),
+                                    fieldMember.getMember().getProfileUrl(),
+                                    fieldMember.getMember().getAbility().getTotalPositionPoint());
+                        }
+                        midfielders.add(tempMember);
+                        break;
+                    case "defender":
+                        if (fieldMember.getAnonymous()) {
+                            tempMember = memberResponse.changeMemberResponse(null, "비회원", null, null);
+                        } else {
+                            tempMember = memberResponse.changeMemberResponse(fieldMember.getMember().getId(),
+                                    fieldMember.getMember().getNickname(),
+                                    fieldMember.getMember().getProfileUrl(),
+                                    fieldMember.getMember().getAbility().getTotalPositionPoint());
+                        }
+                        defenders.add(tempMember);
+                        break;
+                    case "goalkeeper":
+                        if (fieldMember.getAnonymous()) {
+                            tempMember = memberResponse.changeMemberResponse(null, "비회원", null, null);
+                        } else {
+                            tempMember = memberResponse.changeMemberResponse(fieldMember.getMember().getId(),
+                                    fieldMember.getMember().getNickname(),
+                                    fieldMember.getMember().getProfileUrl(),
+                                    fieldMember.getMember().getAbility().getTotalPositionPoint());
+                        }
+                        goalkeeper.add(tempMember);
+                        break;
                 }
             }
-            this.fieldMembers.add(strikers);
-            this.fieldMembers.add(midfielders);
-            this.fieldMembers.add(defenders);
-            this.fieldMembers.add(goalkeeper);
+            fieldMembers.setStriker(strikers);
+            fieldMembers.setMidfielder(midfielders);
+            fieldMembers.setDefender(defenders);
+            fieldMembers.setGoalkeeper(goalkeeper);
+            this.fieldMembers = fieldMembers;
         }
 
-        public void setSubstituteMembers(List<SubstituteMember> substituteMembers, MemberResponse memberResponse) {
+        public void setSubstituteMembers(List<SubstituteMember> substituteMemberList, MemberResponse memberResponse, PlayerResponse substituteMembers) {
+//            substituteMembers.resetPlayerResponse(substituteMembers);
             List<MemberResponse> strikers = new ArrayList<>();
             List<MemberResponse> midfielders = new ArrayList<>();
             List<MemberResponse> defenders = new ArrayList<>();
             List<MemberResponse> goalkeeper = new ArrayList<>();
+            MemberResponse tempMember = new MemberResponse(null, null, null, null);
 
-            for (SubstituteMember substituteMember : substituteMembers) {
-                if (!substituteMember.getAnonymous()) {
-                    switch (substituteMember.getPosition()) {
-                        case "striker":
-                            memberResponse.setNickName(substituteMember.getMember().getNickname());
-                            memberResponse.setPositionPoint(substituteMember.getMember().getAbility().getTotalPositionPoint());
-                            strikers.add(memberResponse);
-                            break;
-                        case "midfielder":
-                            memberResponse.setNickName(substituteMember.getMember().getNickname());
-                            memberResponse.setPositionPoint(substituteMember.getMember().getAbility().getTotalPositionPoint());
-                            midfielders.add(memberResponse);
-                            break;
-                        case "defender":
-                            memberResponse.setNickName(substituteMember.getMember().getNickname());
-                            memberResponse.setPositionPoint(substituteMember.getMember().getAbility().getTotalPositionPoint());
-                            defenders.add(memberResponse);
-                            break;
-                        default:
-                            memberResponse.setNickName(substituteMember.getMember().getNickname());
-                            memberResponse.setPositionPoint(substituteMember.getMember().getAbility().getTotalPositionPoint());
-                            goalkeeper.add(memberResponse);
-                            break;
-                    }
-                } else {
-                    switch (substituteMember.getPosition()) {
-                        case "striker":
-                            memberResponse.setNickName("비회원");
-                            memberResponse.setPositionPoint(null);
-                            strikers.add(memberResponse);
-                            break;
-                        case "midfielder":
-                            memberResponse.setNickName("비회원");
-                            memberResponse.setPositionPoint(null);
-                            midfielders.add(memberResponse);
-                            break;
-                        case "defender":
-                            memberResponse.setNickName("비회원");
-                            memberResponse.setPositionPoint(null);
-                            defenders.add(memberResponse);
-                            break;
-                        default:
-                            memberResponse.setNickName("비회원");
-                            memberResponse.setPositionPoint(null);
-                            goalkeeper.add(memberResponse);
-                            break;
-                    }
+            for (SubstituteMember substituteMember : substituteMemberList) {
+                switch (substituteMember.getPosition()) {
+                    case "striker":
+                        if (substituteMember.getAnonymous()) {
+                            tempMember = memberResponse.changeMemberResponse(null, "비회원", null, null);
+                        } else {
+                            tempMember = memberResponse.changeMemberResponse(substituteMember.getMember().getId(),
+                                    substituteMember.getMember().getNickname(),
+                                    substituteMember.getMember().getProfileUrl(),
+                                    substituteMember.getMember().getAbility().getTotalPositionPoint());
+                        }
+                        strikers.add(tempMember);
+                        break;
+                    case "midfielder":
+                        if (substituteMember.getAnonymous()) {
+                            tempMember = memberResponse.changeMemberResponse(null, "비회원", null, null);
+                        } else {
+                            tempMember = memberResponse.changeMemberResponse(substituteMember.getMember().getId(),
+                                    substituteMember.getMember().getNickname(),
+                                    substituteMember.getMember().getProfileUrl(),
+                                    substituteMember.getMember().getAbility().getTotalPositionPoint());
+                        }
+                        midfielders.add(tempMember);
+                        break;
+                    case "defender":
+                        if (substituteMember.getAnonymous()) {
+                            tempMember = memberResponse.changeMemberResponse(null, "비회원", null, null);
+                        } else {
+                            tempMember = memberResponse.changeMemberResponse(substituteMember.getMember().getId(),
+                                    substituteMember.getMember().getNickname(),
+                                    substituteMember.getMember().getProfileUrl(),
+                                    substituteMember.getMember().getAbility().getTotalPositionPoint());
+                        }
+                        defenders.add(tempMember);
+                        break;
+                    case "goalkeeper":
+                        if (substituteMember.getAnonymous()) {
+                            tempMember = memberResponse.changeMemberResponse(null, "비회원", null, null);
+                        } else {
+                            tempMember = memberResponse.changeMemberResponse(substituteMember.getMember().getId(),
+                                    substituteMember.getMember().getNickname(),
+                                    substituteMember.getMember().getProfileUrl(),
+                                    substituteMember.getMember().getAbility().getTotalPositionPoint());
+                        }
+                        goalkeeper.add(tempMember);
+                        break;
                 }
-                this.substituteMembers.add(strikers);
-                this.substituteMembers.add(midfielders);
-                this.substituteMembers.add(defenders);
-                this.substituteMembers.add(goalkeeper);
             }
+            substituteMembers.setStriker(strikers);
+            substituteMembers.setMidfielder(midfielders);
+            substituteMembers.setDefender(defenders);
+            substituteMembers.setGoalkeeper(goalkeeper);
+            this.substituteMembers = substituteMembers;
         }
     }
 }
