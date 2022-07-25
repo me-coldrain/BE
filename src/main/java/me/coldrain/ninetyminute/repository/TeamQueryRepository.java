@@ -57,7 +57,7 @@ public class TeamQueryRepository {
                                 team.modifiedDate))
                 .from(team)
                 .innerJoin(team.record, record)
-                .where(containsIgnoreCaseTeamName(searchCondition.getTeamName()),   // 팀 이름
+                .where(containsIgnoreCaseTeamName(searchCondition.getInput()),   // 팀 이름
                         containsAddress(searchCondition.getAddress()),  // 주소
                         eqMatch(searchCondition.getMatch()),    // 대결 등록 상태
                         eqRecruit(searchCondition.getRecruit()) // 모집 상태

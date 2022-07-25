@@ -10,7 +10,7 @@ import java.util.List;
 public class TeamListSearchCondition {
 
     private String address;
-    private String teamName;
+    private String input;
 
     private List<String> weekdays;
 
@@ -22,9 +22,9 @@ public class TeamListSearchCondition {
 
     private Boolean match;
 
-    public TeamListSearchCondition(String address, String teamName, List<String> weekdays, List<String> time, String winRate, Boolean recruit, Boolean match) {
+    public TeamListSearchCondition(String address, String input, List<String> weekdays, List<String> time, String winRate, Boolean recruit, Boolean match) {
         this.address = address;
-        this.teamName = teamName;
+        this.input = input;
         this.weekdays = weekdays;
         this.time = time;
         this.winRate = winRate;
