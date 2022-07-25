@@ -155,11 +155,11 @@ public class TeamController {
      * 대결 등록 API
      */
     @PostMapping("/home/teams/{team_id}/match/regist")
-    public void registMatch(
+    public void registerMatch(
             final @PathVariable("team_id") Long teamId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        teamService.registMatch(teamId, userDetails.getUser());
+        teamService.registerMatch(teamId, userDetails.getUser());
     }
 
     /**
@@ -254,5 +254,18 @@ public class TeamController {
     public List<ApplyTeamResponse> searchApplyTeams(
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return teamService.searchApplyTeams(userDetails.getUser());
+    }
+
+    /*
+     * Author: 병민
+     * 팀 해체 API
+     * 자신이 개설한 팀의 해체
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping("/home/teams/{team_id}/disband")
+    public void disbandTeam(
+            final @PathVariable("team_id") Long teamId,
+            final @AuthenticationPrincipal UserDetailsImpl userDetails ) {
+        teamService.disbandTeam(teamId, userDetails.getUser());
     }
 }

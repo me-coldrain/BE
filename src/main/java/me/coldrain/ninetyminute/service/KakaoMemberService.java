@@ -30,7 +30,7 @@ import java.util.UUID;
 public class KakaoMemberService {
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
-    private final AbilityRepository abilityRepository;
+    private final MemberService memberService;
     private final JwtTokenProvider jwtTokenProvider;
 
     public ResponseEntity<?> kakaoLogin(String code) throws JsonProcessingException {
@@ -47,7 +47,7 @@ public class KakaoMemberService {
         forceLogin(kakaoMember);
 
         // 5. JWT 토큰 생성
-        JwtTokenResponse jwtTokenResponse = jwtTokenCreate(kakaoMember);
+        JwtTokenResponse jwtTokenResponse = memberService.jwtTokenCreate(kakaoMember);
 
         return new ResponseEntity<>(jwtTokenResponse, HttpStatus.CREATED);
     }
@@ -132,19 +132,5 @@ public class KakaoMemberService {
         UserDetails userDetails = new UserDetailsImpl(kakaoMember);
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
-
-    private JwtTokenResponse jwtTokenCreate(Member kakaoMember) {
-        JwtTokenResponse jwtTokenResponse = new JwtTokenResponse();
-
-        if (kakaoMember.getNickname() == null) {
-            String accessToken = jwtTokenProvider.createnewAccessToken(kakaoMember);
-            jwtTokenResponse.setAccesstoken(accessToken);
-            jwtTokenResponse.setFirst(true);
-        } else {
-            String accessToken = jwtTokenProvider.createnewAccessToken(kakaoMember);
-            jwtTokenResponse.setAccesstoken(accessToken);
-        }
-        return jwtTokenResponse;
     }
 }

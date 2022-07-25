@@ -32,7 +32,10 @@ public class TeamInfoResponse {
     private int headCount;
     private boolean teamCaptain;
     private boolean otherCaptain;
+    private boolean approved;
     private boolean participate;
+    private boolean matching;
+    private boolean apply;
     private RecentMatchHistory recentMatchHistory;
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
