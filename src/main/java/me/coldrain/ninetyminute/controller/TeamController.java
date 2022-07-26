@@ -37,7 +37,7 @@ public class TeamController {
      * 한 명당 하나의 팀만 개설할 수 있습니다.
      */
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(value = "/home/teams", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/home/teams")
     public void registerTeam(
             final TeamRegisterRequest request,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
