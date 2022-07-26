@@ -3,12 +3,10 @@ package me.coldrain.ninetyminute.service;
 import lombok.RequiredArgsConstructor;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
-import me.coldrain.ninetyminute.dto.request.ApplyRequest;
-import me.coldrain.ninetyminute.dto.request.RecruitStartRequest;
-import me.coldrain.ninetyminute.dto.request.TeamModifyRequest;
-import me.coldrain.ninetyminute.dto.request.TeamRegisterRequest;
+import me.coldrain.ninetyminute.dto.request.*;
 import me.coldrain.ninetyminute.dto.response.ApplyTeamResponse;
 import me.coldrain.ninetyminute.dto.response.MatchResponse;
+import me.coldrain.ninetyminute.dto.response.TeamDuplicateResponse;
 import me.coldrain.ninetyminute.dto.response.TeamInfoResponse;
 import me.coldrain.ninetyminute.entity.*;
 import me.coldrain.ninetyminute.repository.*;
@@ -54,6 +52,9 @@ public class TeamService {
             throw new IllegalArgumentException("이미 개설한 팀이 존재 합니다.");
         }
 //        if (openTeam.getDeleted()) { throw new IllegalArgumentException("해당 팀은 해체 되었습니다."); }
+        if (teamRepository.findByTeamName(request.getTeamName()).orElse(null) != null) {
+            throw new IllegalArgumentException("중복된 팀 이름 입니다.");
+        }
 
         final Record emptyRecord = recordRepository.save(new Record());
         final Team team = Team.builder()
@@ -439,5 +440,17 @@ public class TeamService {
         }
         final Map<String, String> uploadFile = awsS3Service.uploadFile(teamImageFile);
         return uploadFile.get("url");
+    }
+
+    public TeamDuplicateResponse checkDuplicatedTeamName(TeamNameDuplicateRequest teamNameDuplicateRequest, Member member) {
+        TeamDuplicateResponse teamDuplicateResponse = TeamDuplicateResponse.builder()
+                .exist(true)
+                .message("중복된 팀 이름입니다.")
+                .build();
+        if (teamRepository.findByTeamName(teamNameDuplicateRequest.getTeamName()).orElse(null) == null) {
+            teamDuplicateResponse.updateExist(false);
+            teamDuplicateResponse.updateMessage("사용 가능한 팀 이름입니다.");
+        }
+        return teamDuplicateResponse;
     }
 }
