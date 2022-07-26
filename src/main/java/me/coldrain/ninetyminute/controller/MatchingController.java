@@ -88,12 +88,12 @@ public class MatchingController {
      * 성사 된 대결의 상세 페이지 정보
      */
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/teams/{team_id}/apply/{apply_id}/detail")
+    @GetMapping("/teams/{team_id}/matches/{match_id}/detail")
     public MatchResponse searchApprovedMatchDetail(
             @PathVariable("team_id") Long teamId,
-            @PathVariable("apply_id") Long applyId,
+            @PathVariable("match_id") Long matchId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return matchingService.searchApprovedMatchDetail(teamId, applyId, userDetails.getUser());
+        return matchingService.searchApprovedMatchDetail(teamId, matchId, userDetails.getUser());
     }
 
     /*

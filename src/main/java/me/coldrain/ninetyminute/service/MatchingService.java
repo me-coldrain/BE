@@ -199,11 +199,11 @@ public class MatchingService {
         return participationTeamMatchResponseList;
     }
 
-    public MatchResponse searchApprovedMatchDetail(Long teamId, Long applyId, Member member) {
+    public MatchResponse searchApprovedMatchDetail(Long teamId, Long matchId, Member member) {
         Participation participation = participationRepository.findByMemberIdAndTeamIdTrue(member.getId(), teamId).orElse(null);
 
         if (participation != null || member.getOpenTeam().getId().equals(teamId)) { // 팀의 멤버인지 확인, 주장일 때 participation 에 등록 되지 않는 것을 고려해야한다.
-            BeforeMatching beforeMatching = beforeMatchingRepository.findByApplyIdApprovedTrue(applyId).orElseThrow(
+            BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
                     () -> new IllegalArgumentException("해당 대결을 찾지 못했습니다."));
             Member captainMember = memberRepository.findByOpenTeam(beforeMatching.getApply().getApplyTeam().getId()).orElseThrow(() -> new IllegalAccessError(
                     "해당 멤버을 찾을 수 없습니다."));
@@ -228,6 +228,7 @@ public class MatchingService {
                     .matchLocation(beforeMatching.getLocation())
                     .createdDate(beforeMatching.getCreatedDate())
                     .modifiedDate(beforeMatching.getModifiedDate())
+                    .matchStatus(beforeMatching.getApply().getApproved())
                     .build();
             if (member.getOpenTeam().getId().equals(teamId)) { // team의 주장의 경우
                 matchResponse.changeIsCaptain(true);
@@ -463,6 +464,7 @@ public class MatchingService {
                             .afterMatching(afterMatching)
                             .build();
                     historyRepository.save(saveHistory);
+//                    member.getOpenTeam().updateHistory(saveHistory);
                 }
             } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
         } else throw new IllegalArgumentException("상대 팀이 결과를 인정하지 않았습니다.");

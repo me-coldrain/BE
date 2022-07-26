@@ -13,6 +13,5 @@ public class ApprovedMatchRequest {
 
     private Date matchDate;
     private String meridiem;
-    private LocalTime time;
     private String matchLocation;
 }
