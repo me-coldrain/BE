@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString(exclude = {"weekdays", "timeList"})
 @Getter
-@SQLDelete(sql = "UPDATE Team SET deleted = true where team_id = ?")
+@SQLDelete(sql = "UPDATE team SET deleted = true where team_id = ?")
 @FilterDef(name = "deletedTeamFilter", parameters = @ParamDef(name = "isDeleted", type = "boolean"))
 @Filter(name = "deletedTeamFilter", condition = "deleted = :isDeleted")
 public class Team extends TimeStamped {
