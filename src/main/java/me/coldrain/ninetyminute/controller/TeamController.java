@@ -1,11 +1,14 @@
 package me.coldrain.ninetyminute.controller;
 
+import ch.qos.logback.classic.sift.AppenderFactoryUsingJoran;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.*;
 import me.coldrain.ninetyminute.dto.response.ApplyTeamResponse;
+import me.coldrain.ninetyminute.dto.response.TeamDuplicateResponse;
 import me.coldrain.ninetyminute.dto.response.TeamImageRegisterResponse;
 import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
@@ -279,5 +282,18 @@ public class TeamController {
             final @PathVariable("team_id") Long teamId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails ) {
         teamService.disbandTeam(teamId, userDetails.getUser());
+    }
+
+    /*
+     * Author: 병민
+     * 팀 이름 중복 확인 API
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/home/teams/name/exist")
+    public TeamDuplicateResponse checkDuplicatedTeamName(
+            @RequestBody TeamNameDuplicateRequest teamNameDuplicateRequest,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        return teamService.checkDuplicatedTeamName(teamNameDuplicateRequest, userDetails.getUser());
     }
 }
