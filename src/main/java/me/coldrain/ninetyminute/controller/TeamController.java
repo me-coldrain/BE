@@ -6,19 +6,18 @@ import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.*;
 import me.coldrain.ninetyminute.dto.response.ApplyTeamResponse;
-import me.coldrain.ninetyminute.dto.response.MatchResponse;
+import me.coldrain.ninetyminute.dto.response.TeamImageRegisterResponse;
 import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import me.coldrain.ninetyminute.service.ParticipationService;
 import me.coldrain.ninetyminute.service.TeamService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -37,14 +36,27 @@ public class TeamController {
      * 한 명당 하나의 팀만 개설할 수 있습니다.
      */
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(value = "/home/teams")
+    @PostMapping("/home/teams")
     public void registerTeam(
-            final TeamRegisterRequest request,
+            final @RequestBody TeamRegisterRequest request,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         log.info("registerTeam.TeamRegisterRequest = {}", request);
 
         teamService.registerTeam(request, userDetails.getUser().getId());
+    }
+
+    /**
+     * Author: 상운
+     * 팀 이미지 파일 등록 API
+     * S3에 저장 후 URL을 응답한다.
+     */
+    @PostMapping("/home/teams/image")
+    public TeamImageRegisterResponse registerTeamImage(final MultipartFile teamImageFile) {
+
+        log.info("registerImage.teamImageFile = {}", teamImageFile);
+        final String s3uploadFileUrl = teamService.registerTeamImage(teamImageFile);
+        return new TeamImageRegisterResponse(s3uploadFileUrl);
     }
 
     /**

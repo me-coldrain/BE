@@ -12,9 +12,9 @@ import java.util.List;
 @ToString
 public class TeamRegisterRequest {
 
-    private String teamName;
+    private String url;
 
-    private MultipartFile teamImageFile;
+    private String teamName;
 
     private String introduce;
 
