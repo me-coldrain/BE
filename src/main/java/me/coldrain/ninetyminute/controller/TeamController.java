@@ -39,7 +39,7 @@ public class TeamController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(value = "/home/teams")
     public void registerTeam(
-            final TeamRegisterRequest request,
+            final @RequestBody TeamRegisterRequest request,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         log.info("registerTeam.TeamRegisterRequest = {}", request);

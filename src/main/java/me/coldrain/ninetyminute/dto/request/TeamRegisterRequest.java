@@ -14,8 +14,6 @@ public class TeamRegisterRequest {
 
     private String teamName;
 
-    private MultipartFile teamImageFile;
-
     private String introduce;
 
     private String mainArea;
