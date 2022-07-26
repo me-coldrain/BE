@@ -58,6 +58,7 @@ public class TeamService {
         final Record emptyRecord = recordRepository.save(new Record());
         final Team team = Team.builder()
                 .name(request.getTeamName())
+                .teamProfileUrl(request.getUrl() != null ? request.getUrl() : null)
                 .introduce(request.getIntroduce())
                 .mainArea(request.getMainArea())
                 .preferredArea(request.getPreferredArea())

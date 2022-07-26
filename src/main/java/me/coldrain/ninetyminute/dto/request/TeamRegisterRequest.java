@@ -12,6 +12,8 @@ import java.util.List;
 @ToString
 public class TeamRegisterRequest {
 
+    private String url;
+
     private String teamName;
 
     private String introduce;
