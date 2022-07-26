@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,12 +46,6 @@ public class TeamService {
 
     @Transactional
     public void registerTeam(final TeamRegisterRequest request, final Long memberId) {
-//        String imageFileUrl = null;
-//        if (request.getTeamImageFile() != null && !request.getTeamImageFile().isEmpty()) {
-//            Map<String, String> uploadFile = awsS3Service.uploadFile(request.getTeamImageFile());
-//            imageFileUrl = uploadFile.get("url");
-//        }
-
         final Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
@@ -434,5 +429,14 @@ public class TeamService {
                     () -> new IllegalArgumentException("해당 맴버를 찾을 수 없습니다."));
             my.setOpenTeam(null);
         } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
+    }
+
+    @Transactional
+    public String registerTeamImage(MultipartFile teamImageFile) {
+        if (teamImageFile == null || teamImageFile.isEmpty()) {
+            return null;
+        }
+        final Map<String, String> uploadFile = awsS3Service.uploadFile(teamImageFile);
+        return uploadFile.get("url");
     }
 }
