@@ -25,4 +25,7 @@ public interface HistoryRepository extends JpaRepository<History, Long> {
 
     @Query("select h from History h where h.id = :historyId")
     List<History> findAllByHistoryId(Long historyId);
+
+    @Query("select h from History h where h.team.id = :teamId or h.opposingTeam.id = :teamId order by h.modifiedDate desc")
+    List<History> findAllByTeamId(Long teamId);
 }

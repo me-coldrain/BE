@@ -148,8 +148,8 @@ public class TeamService {
         }
 
         TeamInfoResponse.RecentMatchHistory recentMatchHistory = new TeamInfoResponse.RecentMatchHistory();
-        Team teamHistoryCheck = teamRepository.findById(teamId).orElseThrow();
-        if (teamHistoryCheck.getHistory() != null) {
+        List<History> teamHistoryCheck = historyRepository.findAllByTeamId(teamId);
+        if (!teamHistoryCheck.isEmpty()) {
             BeforeMatching recentTeamBeforeMatching = beforeMatchingRepository.findByRecentBeforeMatching(teamId).orElseThrow();
             History recentHistory = historyRepository.findByRecentHistory(recentTeamBeforeMatching.getId()).orElseThrow();
 
