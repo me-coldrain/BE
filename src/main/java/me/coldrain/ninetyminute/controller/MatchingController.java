@@ -71,15 +71,28 @@ public class MatchingController {
 
     /*
      * Author: 병민
-     * 소속 팀 대결 목록 조회 API
-     * 소속 팀의 대결 목록 조회
+     * 소속 팀 목록 조회 API
+     * 소속 팀 목록 조회
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/members/{member_id}/matches")         // teamId 가 아니라 memberId
     public List<ParticipationTeamMatchResponse> searchMatches(
             final @PathVariable("member_id") Long memberId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return matchingService.searchMatches(memberId, userDetails.getUser());
+        return matchingService.searchMyTeams(memberId, userDetails.getUser());
+    }
+
+    /*
+     * Author: 병민
+     * 예정된 대결 목록 조회 API
+     * 성사 된 대결 목록 조회
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/teams/{team_id}/matches")
+    public List<MatchResponse> searchApprovedMatches(
+            @PathVariable("team_id") Long teamId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return matchingService.searchMatches(teamId, userDetails.getUser());
     }
 
     /*
