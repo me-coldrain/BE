@@ -149,9 +149,18 @@ public class TeamService {
 
         TeamInfoResponse.RecentMatchHistory recentMatchHistory = new TeamInfoResponse.RecentMatchHistory();
         Team teamHistoryCheck = teamRepository.findById(teamId).orElseThrow();
+        BeforeMatching recentBeforeMatching;
         if (teamHistoryCheck.getHistory() != null) {
-            BeforeMatching recentTeamBeforeMatching = beforeMatchingRepository.findByRecentBeforeMatching(teamId).orElseThrow();
-            History recentHistory = historyRepository.findByRecentHistory(recentTeamBeforeMatching.getId()).orElseThrow();
+            BeforeMatching recentTeamBeforeMatching = beforeMatchingRepository.findByRecentTeamBeforeMatching(teamId).orElseThrow();
+            BeforeMatching recentOpposingTeamBeforeMatching = beforeMatchingRepository.findByRecentOpposingTeamBeforeMatching(teamId).orElseThrow();
+
+            if (recentTeamBeforeMatching.getMatchDate().after(recentOpposingTeamBeforeMatching.getMatchDate())) {
+                recentBeforeMatching = recentTeamBeforeMatching;
+            } else {
+                recentBeforeMatching = recentOpposingTeamBeforeMatching;
+            }
+
+            History recentHistory = historyRepository.findByRecentHistory(recentBeforeMatching.getId()).orElseThrow();
 
             TeamInfoResponse.RecentMatchHistory.Team recentMatchHistoryTeam = new TeamInfoResponse.RecentMatchHistory.Team(
                     recentHistory.getBeforeMatching().getTeamName(),
@@ -166,7 +175,7 @@ public class TeamService {
             );
 
             recentMatchHistory.setHistoryId(recentHistory.getId());
-            recentMatchHistory.setMatchDate(recentTeamBeforeMatching.getMatchDate());
+            recentMatchHistory.setMatchDate(recentBeforeMatching.getMatchDate());
             recentMatchHistory.setTeam(recentMatchHistoryTeam);
             recentMatchHistory.setOpposingTeam(recentMatchHistoryOpposingTeam);
         } else {
