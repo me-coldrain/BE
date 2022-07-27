@@ -395,7 +395,7 @@ public class TeamService {
     }
 
     public List<ApplyTeamResponse> searchApplyTeams(Member member) {
-        List<Participation> participationList = participationRepository.findAllByMemberId(member.getId());
+        List<Participation> participationList = participationRepository.findAllByMemberIdApprovedFalse(member.getId());
         List<ApplyTeamResponse> applyTeamResponseList = new ArrayList<>();
         for (Participation participation : participationList) {
             Integer teamMemberCnt = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size();
