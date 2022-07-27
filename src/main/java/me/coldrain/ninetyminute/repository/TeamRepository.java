@@ -12,7 +12,7 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     @Query("SELECT T.question FROM Team T WHERE T.id = :teamId AND T.deleted = false")
     Optional<String> findQuestionByTeamId(final Long teamId);
 
-
+    @Query("select t from Team t where t.record.id = :recordId and t.deleted = false")
     Optional<Team> findByRecord_Id(Long recordId);
 
     @Query("select t from Team t where t.id = :teamId and t.deleted = false")
