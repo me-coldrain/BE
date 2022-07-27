@@ -148,7 +148,7 @@ public class TeamService {
         }
 
         TeamInfoResponse.RecentMatchHistory recentMatchHistory = new TeamInfoResponse.RecentMatchHistory();
-        Team teamHistoryCheck = teamRepository.findByIdAndDeletedFalse(teamId).orElseThrow();
+        Team teamHistoryCheck = teamRepository.findById(teamId).orElseThrow();
         if (teamHistoryCheck.getHistory() != null) {
             BeforeMatching recentTeamBeforeMatching = beforeMatchingRepository.findByRecentBeforeMatching(teamId).orElseThrow();
             History recentHistory = historyRepository.findByRecentHistory(recentTeamBeforeMatching.getId()).orElseThrow();
@@ -221,7 +221,7 @@ public class TeamService {
 
     @Transactional
     public void startRecruit(final Long teamId, final Member member, final RecruitStartRequest request) {
-        final Team team = teamRepository.findByIdAndDeletedFalse(teamId)
+        final Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         if (member.getOpenTeam() == null) {
@@ -243,7 +243,7 @@ public class TeamService {
 
     @Transactional
     public void endRecruit(final Long teamId, final Member member) {
-        final Team team = teamRepository.findByIdAndDeletedFalse(teamId)
+        final Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         final Long openTeamId = member.getOpenTeam().getId();
@@ -279,7 +279,7 @@ public class TeamService {
 
     @Transactional
     public void cancelMatch(final Long teamId, final Member member) {
-        final Team team = teamRepository.findByIdAndDeletedFalse(teamId)
+        final Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         final Long openTeamId = member.getOpenTeam().getId();
@@ -369,7 +369,7 @@ public class TeamService {
     }
 
     public void modifyTeam(final Long teamId, final TeamModifyRequest request, final Long id) {
-        final Team team = teamRepository.findByIdAndDeletedFalse(teamId)
+        final Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         // 기존 파일 삭제
@@ -395,7 +395,7 @@ public class TeamService {
     }
 
     public List<ApplyTeamResponse> searchApplyTeams(Member member) {
-        List<Participation> participationList = participationRepository.findAllByMemberIdApprovedFalse(member.getId());
+        List<Participation> participationList = participationRepository.findAllByMemberId(member.getId());
         List<ApplyTeamResponse> applyTeamResponseList = new ArrayList<>();
         for (Participation participation : participationList) {
             Integer teamMemberCnt = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size();
@@ -415,9 +415,8 @@ public class TeamService {
                     .modifiedDate(participation.getModifiedDate())
                     .applyStatus(false)
                     .build();
-            if (member.getOpenTeam() != null) {
-                if (participation.getTeam().getId().equals(member.getOpenTeam().getId())) applyTeamResponse.changeIsCaptain(true);
-            }
+
+            if (participation.getTeam().getId().equals(member.getOpenTeam().getId())) applyTeamResponse.changeIsCaptain(true);
             if (participation.getApproved()) applyTeamResponse.changeApplyStatus(true);
             applyTeamResponseList.add(applyTeamResponse);
         }
