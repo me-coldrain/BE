@@ -91,12 +91,12 @@ public class TeamService {
     }
 
     public ResponseEntity<?> infoTeam(Long teamId, UserDetailsImpl userDetails) {
-        Optional<Team> found = teamRepository.findById(teamId);
+        Optional<Team> found = teamRepository.findByIdAndDeletedFalse(teamId);
         if (found.isEmpty()) {
             return new ResponseEntity<>("존재하지 않는 팀입니다.", HttpStatus.BAD_REQUEST);
         }
 
-        Team infoTeam = teamRepository.findById(teamId).orElseThrow();
+        Team infoTeam = teamRepository.findByIdAndDeletedFalse(teamId).orElseThrow();
 
         List<String> teamWeekDays = new ArrayList<>();
         List<Weekday> teamWeekdayList = weekdayRepository.findAllByTeamId(teamId);
@@ -369,7 +369,7 @@ public class TeamService {
     }
 
     public void modifyTeam(final Long teamId, final TeamModifyRequest request, final Long id) {
-        final Team team = teamRepository.findById(teamId)
+        final Team team = teamRepository.findByIdAndDeletedFalse(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         // 기존 파일 삭제
