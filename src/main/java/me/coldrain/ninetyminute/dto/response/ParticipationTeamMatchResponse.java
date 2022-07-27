@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ParticipationTeamMatchResponse {
 
-    private Long matchId;
+    private Long teamId;
     private Boolean isCaptain;
     private String teamName;
     private Integer teamMemberCount;
@@ -23,12 +23,7 @@ public class ParticipationTeamMatchResponse {
     private String matchLocation;
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
-
-    private Boolean matchStatus;    // true : 신청 완료, false : 팀 허가 대기중
-
-    public void changeMatchId(Long matchId) {
-        this.matchId = matchId;
-    }
+    private Boolean matchStatus;    // true : 대결 예정
 
     public void changeIsCaptain(Boolean isCaptain) {
         this.isCaptain = isCaptain;
@@ -43,13 +38,13 @@ public class ParticipationTeamMatchResponse {
     }
 
     @Builder
-    public ParticipationTeamMatchResponse(Long matchId, Boolean isCaptain,
+    public ParticipationTeamMatchResponse(Long teamId, Boolean isCaptain,
                                           String teamName, Integer teamMemberCount, Integer teamPoint,
                                           Double teamWinRate, Integer teamTotalGameCount, Integer teamWinCount,
                                           Integer teamDrawCount, Integer teamLoseCount, String matchLocation,
                                           LocalDateTime createdDate, LocalDateTime modifiedDate, Boolean matchStatus) {
 
-        this.matchId = matchId;
+        this.teamId = teamId;
         this.isCaptain = isCaptain;
         this.teamName = teamName;
         this.teamMemberCount = teamMemberCount;
