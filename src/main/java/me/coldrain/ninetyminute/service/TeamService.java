@@ -443,6 +443,7 @@ public class TeamService {
     public void disbandTeam(Long teamId, Member member) {
         if(teamRepository.findByIdAndDeletedTrue(teamId).orElse(null) != null)
             throw new IllegalArgumentException("팀을 찾을 수 없습니다.");
+        if (member.getOpenTeam() == null) throw new IllegalArgumentException("개설한 팀이 존재하지 않습니다.");
         if (member.getOpenTeam().getId().equals(teamId)) {
             teamRepository.deleteById(teamId);
             Member my = memberRepository.findById(member.getId()).orElseThrow(
