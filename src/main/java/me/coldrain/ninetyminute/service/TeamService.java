@@ -148,16 +148,21 @@ public class TeamService {
         }
 
         TeamInfoResponse.RecentMatchHistory recentMatchHistory = new TeamInfoResponse.RecentMatchHistory();
-        Team teamHistoryCheck = teamRepository.findById(teamId).orElseThrow();
-        BeforeMatching recentBeforeMatching;
-        if (teamHistoryCheck.getHistory() != null) {
-            BeforeMatching recentTeamBeforeMatching = beforeMatchingRepository.findByRecentTeamBeforeMatching(teamId).orElseThrow();
-            BeforeMatching recentOpposingTeamBeforeMatching = beforeMatchingRepository.findByRecentOpposingTeamBeforeMatching(teamId).orElseThrow();
 
-            if (recentTeamBeforeMatching.getMatchDate().after(recentOpposingTeamBeforeMatching.getMatchDate())) {
-                recentBeforeMatching = recentTeamBeforeMatching;
+        List<BeforeMatching> recentTeamBeforeMatchingList = beforeMatchingRepository.findByRecentTeamBeforeMatching(teamId);
+        List<BeforeMatching> recentOpposingTeamBeforeMatchingList = beforeMatchingRepository.findByRecentOpposingTeamBeforeMatching(teamId);
+
+        if (recentTeamBeforeMatchingList.size()!=0 || recentOpposingTeamBeforeMatchingList.size()!=0) {
+            BeforeMatching recentBeforeMatching;
+
+            if (recentTeamBeforeMatchingList.size() == 0) {
+                recentBeforeMatching = recentOpposingTeamBeforeMatchingList.get(0);
+            } else if (recentOpposingTeamBeforeMatchingList.size() == 0) {
+                recentBeforeMatching = recentTeamBeforeMatchingList.get(0);
+            } else if (recentTeamBeforeMatchingList.get(0).getMatchDate().after(recentOpposingTeamBeforeMatchingList.get(0).getMatchDate())) {
+                recentBeforeMatching = recentTeamBeforeMatchingList.get(0);
             } else {
-                recentBeforeMatching = recentOpposingTeamBeforeMatching;
+                recentBeforeMatching = recentOpposingTeamBeforeMatchingList.get(0);
             }
 
             History recentHistory = historyRepository.findByRecentHistory(recentBeforeMatching.getId()).orElseThrow();
@@ -425,7 +430,8 @@ public class TeamService {
                     .applyStatus(false)
                     .build();
 
-            if (participation.getTeam().getId().equals(member.getOpenTeam().getId())) applyTeamResponse.changeIsCaptain(true);
+            if (participation.getTeam().getId().equals(member.getOpenTeam().getId()))
+                applyTeamResponse.changeIsCaptain(true);
             if (participation.getApproved()) applyTeamResponse.changeApplyStatus(true);
             applyTeamResponseList.add(applyTeamResponse);
         }
