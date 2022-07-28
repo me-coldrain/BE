@@ -45,7 +45,7 @@ public class TeamInfoResponse {
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     public static class RecentMatchHistory {
         private Long historyId;
-        private Date matchDate;
+        private String matchDate;
         private Team team;
         private OpposingTeam opposingTeam;
 
