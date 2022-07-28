@@ -25,7 +25,7 @@ public class MatchResponse {
     private Integer opposingTeamLoseCount;
     private String contact;
     private String phone;
-    private Date matchDate;         // 대결이 이뤄 지는 날짜
+    private String matchDate;         // 대결이 이뤄 지는 날짜
     private Long dDay;
     private String matchLocation;
     private LocalDateTime createdDate;
@@ -44,7 +44,7 @@ public class MatchResponse {
                          String opposingTeamName, Integer opposingTeamMemberCount, Integer opposingTeamPoint, Double opposingTeamWinRate,
                          Integer opposingTeamTotalGameCount, Integer opposingTeamWinCount,
                          Integer opposingTeamDrawCount, Integer opposingTeamLoseCount,
-                         String contact, String phone, Date matchDate, Long dDay,
+                         String contact, String phone, String matchDate, Long dDay,
                          String matchLocation, LocalDateTime createdDate, LocalDateTime modifiedDate, Boolean matchStatus) {
         this.matchId = matchId;
         this.teamId = teamId;

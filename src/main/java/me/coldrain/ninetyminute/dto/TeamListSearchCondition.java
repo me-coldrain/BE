@@ -21,8 +21,9 @@ public class TeamListSearchCondition {
     private Boolean recruit;
 
     private Boolean match;
+    private Boolean deleted;
 
-    public TeamListSearchCondition(String address, String input, List<String> weekdays, List<String> time, String winRate, Boolean recruit, Boolean match) {
+    public TeamListSearchCondition(String address, String input, List<String> weekdays, List<String> time, String winRate, Boolean recruit, Boolean match, Boolean deleted) {
         this.address = address;
         this.input = input;
         this.weekdays = weekdays;
@@ -30,5 +31,6 @@ public class TeamListSearchCondition {
         this.winRate = winRate;
         this.recruit = recruit;
         this.match = match;
+        this.deleted = deleted;
     }
 }
