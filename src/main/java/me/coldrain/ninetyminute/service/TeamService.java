@@ -221,7 +221,7 @@ public class TeamService {
 
     @Transactional
     public void startRecruit(final Long teamId, final Member member, final RecruitStartRequest request) {
-        final Team team = teamRepository.findById(teamId)
+        final Team team = teamRepository.findByIdAndDeletedFalse(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         if (member.getOpenTeam() == null) {
@@ -243,7 +243,7 @@ public class TeamService {
 
     @Transactional
     public void endRecruit(final Long teamId, final Member member) {
-        final Team team = teamRepository.findById(teamId)
+        final Team team = teamRepository.findByIdAndDeletedFalse(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         final Long openTeamId = member.getOpenTeam().getId();
@@ -279,7 +279,7 @@ public class TeamService {
 
     @Transactional
     public void cancelMatch(final Long teamId, final Member member) {
-        final Team team = teamRepository.findById(teamId)
+        final Team team = teamRepository.findByIdAndDeletedFalse(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         final Long openTeamId = member.getOpenTeam().getId();
