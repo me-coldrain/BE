@@ -12,6 +12,7 @@ import java.util.Date;
 public class MatchResponse {
 
     private Long matchId;
+    private Long teamId;
     private Boolean isCaptain;
     private Long opposingTeamId;
     private String opposingTeamName;
@@ -24,26 +25,29 @@ public class MatchResponse {
     private Integer opposingTeamLoseCount;
     private String contact;
     private String phone;
-    private Date matchDate;         // 대결이 이뤄 지는 날짜
+    private String matchDate;         // 대결이 이뤄 지는 날짜
     private Long dDay;
     private String matchLocation;
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
-
     private Boolean matchStatus;
 
-    public void changeIsCaptain (Boolean isCaptain) {
+    public void updateContact(String contact) { this.contact = contact; }
+    public void updatePhone(String phone) { this.phone = phone; }
+
+    public void changeIsCaptain(Boolean isCaptain) {
         this.isCaptain = isCaptain;
     }
 
     @Builder
-    public MatchResponse(Long matchId, Boolean isCaptain, Long opposingTeamId,
+    public MatchResponse(Long matchId, Long teamId, Boolean isCaptain, Long opposingTeamId,
                          String opposingTeamName, Integer opposingTeamMemberCount, Integer opposingTeamPoint, Double opposingTeamWinRate,
                          Integer opposingTeamTotalGameCount, Integer opposingTeamWinCount,
                          Integer opposingTeamDrawCount, Integer opposingTeamLoseCount,
-                         String contact, String phone, Date matchDate, Long dDay,
+                         String contact, String phone, String matchDate, Long dDay,
                          String matchLocation, LocalDateTime createdDate, LocalDateTime modifiedDate, Boolean matchStatus) {
         this.matchId = matchId;
+        this.teamId = teamId;
         this.isCaptain = isCaptain;
         this.opposingTeamId = opposingTeamId;
         this.opposingTeamName = opposingTeamName;

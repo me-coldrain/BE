@@ -6,19 +6,19 @@ import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.*;
 import me.coldrain.ninetyminute.dto.response.ApplyTeamResponse;
-import me.coldrain.ninetyminute.dto.response.MatchResponse;
+import me.coldrain.ninetyminute.dto.response.TeamDuplicateResponse;
+import me.coldrain.ninetyminute.dto.response.TeamImageRegisterResponse;
 import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import me.coldrain.ninetyminute.service.ParticipationService;
 import me.coldrain.ninetyminute.service.TeamService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -37,14 +37,28 @@ public class TeamController {
      * 한 명당 하나의 팀만 개설할 수 있습니다.
      */
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(value = "/home/teams", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping("/home/teams")
     public void registerTeam(
-            final TeamRegisterRequest request,
+            final @RequestBody TeamRegisterRequest request,
             final @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         log.info("registerTeam.TeamRegisterRequest = {}", request);
 
         teamService.registerTeam(request, userDetails.getUser().getId());
+    }
+
+    /**
+     * Author: 상운
+     * 팀 이미지 파일 등록 API
+     * S3에 저장 후 URL을 응답한다.
+     */
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/home/teams/image")
+    public TeamImageRegisterResponse registerTeamImage(final MultipartFile teamImageFile) {
+
+        log.info("registerImage.teamImageFile = {}", teamImageFile);
+        final String s3uploadFileUrl = teamService.registerTeamImage(teamImageFile);
+        return new TeamImageRegisterResponse(s3uploadFileUrl);
     }
 
     /**
@@ -62,6 +76,7 @@ public class TeamController {
      * Author: 상운
      * 팀 목록 조회 API
      */
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/home/teams")
     public Slice<TeamListSearch> selectTeams(
             final TeamListSearchCondition searchCondition,
@@ -75,6 +90,7 @@ public class TeamController {
      * Author: 상운
      * 팀 참여 질문 조회 API
      */
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/teams/{team_id}/questions")
     public TeamParticipationQuestionResponse getQuestion(
             final @PathVariable("team_id") Long teamId) {
@@ -88,6 +104,7 @@ public class TeamController {
      * 팀 참여 신청 API
      * 한 번 참여 신청한 팀은 다시 참여 신청을 할 수 없습니다.
      */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/home/teams/{team_id}/participate")
     public void participate(
             final @PathVariable("team_id") Long teamId,
@@ -102,6 +119,7 @@ public class TeamController {
      * 신청한 팀원 승인 API
      * 팀 개설자만 승인을 할 수 있습니다.
      */
+    @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/teams/{team_id}/members/{member_id}/offer")
     public void approve(
             final @PathVariable("team_id") Long teamId,
@@ -116,6 +134,7 @@ public class TeamController {
      * 신청한 팀원 거절 API
      * 팀 개설자만 거절을 할 수 있습니다.
      */
+    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/teams/{team_id}/members/{member_id}/offer")
     public void disapprove(
             final @PathVariable("team_id") Long teamId,
@@ -129,6 +148,7 @@ public class TeamController {
      * Author: 상운
      * 팀원 모집 시작 API
      */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/home/teams/{team_id}/recruit/start")
     public void startRecruit(
             final @PathVariable("team_id") Long teamId,
@@ -142,6 +162,7 @@ public class TeamController {
      * Author: 상운
      * 팀원 모집 종료 API
      */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/home/teams/{team_id}/recruit/end")
     public void endRecruit(
             final @PathVariable("team_id") Long teamId,
@@ -154,6 +175,7 @@ public class TeamController {
      * Author: 상운
      * 대결 등록 API
      */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/home/teams/{team_id}/match/regist")
     public void registerMatch(
             final @PathVariable("team_id") Long teamId,
@@ -166,6 +188,7 @@ public class TeamController {
      * Author: 상운
      * 대결 등록 취소 API
      */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/home/teams/{team_id}/match/cancel")
     public void cancelMatch(
             final @PathVariable("team_id") Long teamId,
@@ -178,6 +201,7 @@ public class TeamController {
      * Author: 상운
      * 팀 탈퇴 API
      */
+    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/home/teams/{team_id}/leave")
     public void leaveTeam(
             final @PathVariable("team_id") Long teamId,
@@ -190,6 +214,7 @@ public class TeamController {
      * Author: 상운, 병민
      * 대결 신청 API
      */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/home/teams/{team_id}/match/apply")
     public void applyMatch(
             final @PathVariable("team_id") Long teamId,
@@ -207,6 +232,7 @@ public class TeamController {
      * Author: 상운
      * 대결 신청 취소 API
      */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/home/teams/{team_id}/match/apply/cancel")
     public void cancelApplyMatch(
             final @PathVariable("team_id") Long teamId,
@@ -235,6 +261,7 @@ public class TeamController {
      * Author: 상운
      * 팀 수정 API
      */
+    @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/home/teams/{team_id}")
     public void modifyTeam(
             final @PathVariable("team_id") Long teamId,
@@ -267,5 +294,18 @@ public class TeamController {
             final @PathVariable("team_id") Long teamId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails ) {
         teamService.disbandTeam(teamId, userDetails.getUser());
+    }
+
+    /*
+     * Author: 병민
+     * 팀 이름 중복 확인 API
+     */
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/home/teams/name/exist")
+    public TeamDuplicateResponse checkDuplicatedTeamName(
+            @RequestBody TeamNameDuplicateRequest teamNameDuplicateRequest,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        return teamService.checkDuplicatedTeamName(teamNameDuplicateRequest, userDetails.getUser());
     }
 }
