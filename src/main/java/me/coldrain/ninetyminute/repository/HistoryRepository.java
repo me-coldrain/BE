@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface HistoryRepository extends JpaRepository<History, Long> {
-    @Query("select h from History h where h.afterMatching.beforeMatching.apply.team.id = :teamId order by h.createdDate desc")
+    @Query("select h from History h where h.afterMatching.beforeMatching.apply.team.id = :teamId order by h.id desc")
     List<History> findAllByHomeTeamId(final Long teamId);
 
-    @Query("select h from History h where h.afterMatching.beforeMatching.apply.applyTeam.id = :teamId order by h.createdDate desc")
+    @Query("select h from History h where h.afterMatching.beforeMatching.apply.applyTeam.id = :teamId order by h.id desc")
     List<History> findAllByAwayTeamId(final Long teamId);
 
     @Query("select h from History h where h.beforeMatching.id = :RecentBeforeMatchingId")
@@ -20,9 +20,12 @@ public interface HistoryRepository extends JpaRepository<History, Long> {
     @Query("select h from History h where h.beforeMatching.id = :beforeMatchingId and h.afterMatching.id = :afterMatchingId")
     Optional<History> findByBeforeMatchingIdAndAfterMatchingId(final Long beforeMatchingId, final Long afterMatchingId);
     
-    @Query("select h from History h where h.afterMatching.id = :afterMatching")
-    Optional<History> findByMemberGameHistory(Long afterMatching);
+    @Query("select h from History h where h.beforeMatching.id = :beforeMatching")
+    Optional<History> findByMemberGameHistory(Long beforeMatching);
 
     @Query("select h from History h where h.id = :historyId")
     List<History> findAllByHistoryId(Long historyId);
+
+    @Query("select h from History h where h.team.id = :teamId or h.opposingTeam.id = :teamId order by h.id desc")
+    List<History> findAllByTeamId(Long teamId);
 }

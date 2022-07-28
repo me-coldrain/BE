@@ -13,6 +13,8 @@ public class OfferMatchResponse {
     private Long applyId;
     private Long opposingTeamId;
     private String opposingTeamName;
+    private String contact;
+    private String phone;
     private Integer opposingTeamPoint;
     private Double winRate;
     private String greeting;
@@ -21,11 +23,13 @@ public class OfferMatchResponse {
 
     @Builder
     public OfferMatchResponse(Long applyId, Long opposingTeamId, String opposingTeamName,
-                              Integer opposingTeamPoint, Double winRate,
+                              String contact, String phone, Integer opposingTeamPoint, Double winRate,
                               String greeting, LocalDateTime createdDate, LocalDateTime modifiedDate) {
         this.applyId = applyId;
         this.opposingTeamId = opposingTeamId;
         this.opposingTeamName = opposingTeamName;
+        this.contact = contact;
+        this.phone = phone;
         this.opposingTeamPoint = opposingTeamPoint;
         this.winRate = winRate;
         this.greeting = greeting;

@@ -25,29 +25,28 @@ public class AuthenticationEntryPointHandler implements AuthenticationEntryPoint
         if(exception == null) {
             errorCode = ErrorCode.UNAUTHORIZED;
             setResponse(response, errorCode);
-            return;
         }
 
         // 토큰이 만료된 경우 예외처리
-        if(exception.equals("ExpiredJwtException")) {
+        else if(exception.equals("ExpiredJwtException")) {
             errorCode = ErrorCode.EXPIRED_JWT;
             setResponse(response, errorCode);
         }
 
         // 구조적인 문제가 있는 토큰 예외처리(유효성)
-        if(exception.equals("MalformedJwtException")) {
+        else if(exception.equals("MalformedJwtException")) {
             errorCode = ErrorCode.MALFORMED_JWT;
             setResponse(response, errorCode);
         }
 
         // 형식이나 구성에 문제가 있는 토큰 예외처리(인증)
-        if(exception.equals("UnsupportedJwtException")) {
+        else if(exception.equals("UnsupportedJwtException")) {
             errorCode = ErrorCode.UNSUPPORTED_JWT;
             setResponse(response, errorCode);
         }
 
         // 올바른 서명이 아닌 토큰 예외처리(서명)
-        if(exception.equals("SignatureJwtException")) {
+        else if(exception.equals("SignatureJwtException")) {
             errorCode = ErrorCode.SIGNATURE_JWT;
             setResponse(response, errorCode);
         }

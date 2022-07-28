@@ -1,7 +1,10 @@
 package me.coldrain.ninetyminute.entity;
 
 import lombok.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+import org.hibernate.annotations.SQLDelete;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -12,6 +15,9 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString(exclude = {"weekdays", "timeList"})
 @Getter
+@SQLDelete(sql = "UPDATE team SET deleted = true where team_id = ?")
+@FilterDef(name = "deletedTeamFilter", parameters = @ParamDef(name = "isDeleted", type = "boolean"))
+@Filter(name = "deletedTeamFilter", condition = "deleted = :isDeleted")
 public class Team extends TimeStamped {
 
     @Id
@@ -40,9 +46,7 @@ public class Team extends TimeStamped {
     @JoinColumn(name = "record_id")
     private Record record;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "history_id")
-    private History history;
+    private Boolean deleted = Boolean.FALSE;
 
     public void changeRecruit(Boolean recruit) {
         this.recruit = recruit;
@@ -55,6 +59,8 @@ public class Team extends TimeStamped {
     public void setQuestion(String question) {
         this.question = question;
     }
+
+//    public void delete() { this.deleted = true; }
 
     public void modifyTeam(String teamImageFileUrl, String introduce, String mainArea, String preferredArea, List<String> weekdays, List<String> time) {
         this.teamProfileUrl = teamImageFileUrl;
@@ -78,7 +84,7 @@ public class Team extends TimeStamped {
     }
 
     @Builder
-    public Team(String name, String mainArea, String teamProfileUrl, String introduce, Boolean recruit, List<Weekday> weekdays, List<Time> timeList, String preferredArea, String question, Record record, History history, Boolean match) {
+    public Team(String name, String mainArea, String teamProfileUrl, String introduce, Boolean recruit, List<Weekday> weekdays, List<Time> timeList, String preferredArea, String question, Record record, Boolean match) {
         this.name = name;
         this.mainArea = mainArea;
         this.teamProfileUrl = teamProfileUrl;
@@ -89,7 +95,6 @@ public class Team extends TimeStamped {
         this.preferredArea = preferredArea;
         this.question = question;
         this.record = record;
-        this.history = history;
         this.matches = match;
     }
 }
