@@ -15,7 +15,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByUsername(String username);
     Optional<Member> findByNickname(String nickname);
     Optional<Member> findByKakaoId(Long kakaoId);
-    @Query("SELECT m FROM Member m WHERE m.openTeam.id = :teamId")
+    @Query("SELECT m FROM Member m WHERE m.openTeam.id = :teamId AND m.openTeam.deleted = false")
     Optional<Member> findByOpenTeam(Long teamId);
 
     //포지션 랭킹 조회
