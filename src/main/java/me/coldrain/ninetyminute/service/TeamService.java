@@ -180,7 +180,7 @@ public class TeamService {
             );
 
             recentMatchHistory.setHistoryId(recentHistory.getId());
-            recentMatchHistory.setMatchDate(recentTeamBeforeMatching.getMatchDate());
+            recentMatchHistory.setMatchDate(recentBeforeMatching.getMatchDate());
             recentMatchHistory.setTeam(recentMatchHistoryTeam);
             recentMatchHistory.setOpposingTeam(recentMatchHistoryOpposingTeam);
         } else {
