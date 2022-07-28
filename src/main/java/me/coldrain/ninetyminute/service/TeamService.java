@@ -180,7 +180,7 @@ public class TeamService {
             );
 
             recentMatchHistory.setHistoryId(recentHistory.getId());
-            recentMatchHistory.setMatchDate(recentBeforeMatching.getMatchDate());
+            recentMatchHistory.setMatchDate(recentBeforeMatching.calculatedDate());
             recentMatchHistory.setTeam(recentMatchHistoryTeam);
             recentMatchHistory.setOpposingTeam(recentMatchHistoryOpposingTeam);
         } else {
@@ -215,7 +215,6 @@ public class TeamService {
                 infoTeam.getCreatedDate(),
                 infoTeam.getModifiedDate()
         );
-
         return new ResponseEntity<>(teamInfoResponse, HttpStatus.OK);
     }
 
@@ -224,8 +223,9 @@ public class TeamService {
     }
 
     public String findQuestionByTeamId(final Long teamId) {
-        return teamRepository.findQuestionByTeamId(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("등록된 팀 질문이 존재하지 않습니다."));
+        Team team = teamRepository.findById(teamId).orElseThrow(() -> new IllegalArgumentException("등록된 팀 질문이 존재하지 않습니다."));
+        if (team.getDeleted()) throw new IllegalArgumentException("팀을 찾을 수 없습니다.");
+        return team.getQuestion();
     }
 
     public Team findById(final Long teamId) {
@@ -310,6 +310,8 @@ public class TeamService {
 
     @Transactional
     public void leaveTeam(final Long teamId, final Member member) {
+        if (teamRepository.findByIdAndDeletedTrue(teamId).orElse(null) != null)
+            throw new IllegalArgumentException("팀을 찾을 수 없습니다.");
         final Long openTeamId = member.getOpenTeam().getId();
         if (openTeamId.equals(teamId)) {
             throw new IllegalArgumentException("팀 개설자는 팀을 탈퇴 할 수 없습니다.");
@@ -360,8 +362,9 @@ public class TeamService {
     public ResponseEntity<?> releaseTeamMember(final Long teamId,
                                                final Long memberId,
                                                final UserDetailsImpl userDetails) {
+        if(teamRepository.findByIdAndDeletedTrue(teamId).orElse(null) != null)
+            throw new IllegalArgumentException("팀을 찾을 수 없습니다.");
         Long loginMemberOpenTeamId;
-
         if (userDetails.getUser().getOpenTeam() != null) {
             loginMemberOpenTeamId = userDetails.getUser().getOpenTeam().getId();
         } else {
@@ -440,6 +443,8 @@ public class TeamService {
 
     @Transactional
     public void disbandTeam(Long teamId, Member member) {
+        if(teamRepository.findByIdAndDeletedTrue(teamId).orElse(null) != null)
+            throw new IllegalArgumentException("팀을 찾을 수 없습니다.");
         if (member.getOpenTeam().getId().equals(teamId)) {
             teamRepository.deleteById(teamId);
             Member my = memberRepository.findById(member.getId()).orElseThrow(

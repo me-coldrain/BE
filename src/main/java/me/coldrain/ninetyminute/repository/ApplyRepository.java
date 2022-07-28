@@ -29,4 +29,7 @@ public interface ApplyRepository extends JpaRepository<Apply, Long> {
 
     @Query("select a from Apply a where a.applyTeam.id = :teamId or a.team.id = :teamId and a.team.deleted = false and a.applyTeam.deleted = false and a.approved = true and a.endMatchStatus = false and a.opposingTeamEndMatchStatus = false order by a.modifiedDate desc ")
     List<Apply> findAllByApprovedMatches(final Long teamId);
+
+    @Query("select a from Apply a where a.id = :applyId and a.endMatchStatus = false and a.opposingTeamEndMatchStatus = false ")
+    Optional<Apply> findByIdAndMatchesStatusFalse(Long applyId);
 }
