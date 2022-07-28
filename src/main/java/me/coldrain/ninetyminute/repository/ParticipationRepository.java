@@ -9,30 +9,30 @@ import java.util.Optional;
 
 public interface ParticipationRepository extends JpaRepository<Participation, Long> {
 
-    @Query("SELECT p FROM Participation p WHERE p.team.id = :teamId AND p.member.id = :memberId")
+    @Query("SELECT p FROM Participation p WHERE p.team.id = :teamId AND p.member.id = :memberId AND p.team.deleted = false")
     Optional<Participation> findByTeamIdAndMemberId(final Long teamId, final Long memberId);
 
-    @Query("SELECT p FROM Participation p WHERE p.member.id = :memberId AND p.approved = true")
+    @Query("SELECT p FROM Participation p WHERE p.member.id = :memberId AND p.approved = true AND p.team.deleted = false")
     List<Participation> findAllByMemberIdTrue(final Long memberId);
 
-    @Query("SELECT p FROM Participation p WHERE p.member.id = :memberId AND p.approved = false")
+    @Query("SELECT p FROM Participation p WHERE p.member.id = :memberId AND p.approved = false AND p.team.deleted = false")
     List<Participation> findAllByMemberIdFalse(final Long memberId);
 
-    @Query("SELECT p FROM Participation p WHERE p.member.id = :memberId AND p.team.id = :teamId AND p.approved = false")
+    @Query("SELECT p FROM Participation p WHERE p.member.id = :memberId AND p.team.id = :teamId AND p.approved = false AND p.team.deleted = false")
     Optional <Participation> findByTeamIdAndMemberIdFalse(final Long memberId, final Long teamId);
 
-    @Query("SELECT p FROM Participation p WHERE p.member.id = :memberId AND p.team.id = :teamId AND p.approved = true")
+    @Query("SELECT p FROM Participation p WHERE p.member.id = :memberId AND p.team.id = :teamId AND p.approved = true AND p.team.deleted = false")
     Optional<Participation> findByMemberIdAndTeamIdTrue(final Long memberId, final Long teamId);
 
     @Query("SELECT p FROM Participation p WHERE p.member.id = :memberId AND p.approved = true AND p.team.deleted = false")
     List<Participation> findAllByMembersTrue(final Long memberId);
 
-    @Query("SELECT p FROM Participation p WHERE p.team.id = :teamId AND p.approved = true")
+    @Query("SELECT p FROM Participation p WHERE p.team.id = :teamId AND p.approved = true AND p.team.deleted = false")
     List<Participation> findAllByTeamIdTrue(final Long teamId);
 
-    @Query("SELECT p FROM Participation p WHERE p.team.id = :teamId AND p.approved = false")
+    @Query("SELECT p FROM Participation p WHERE p.team.id = :teamId AND p.approved = false AND p.team.deleted = false")
     List<Participation> findAllByTeamIdFalse(final Long teamId);
 
-    @Query("SELECT p FROM Participation p WHERE p.member.id = :teamId")
-    List<Participation> findAllByMemberId(final Long teamId);
+    @Query("SELECT p FROM Participation p WHERE p.member.id = :memberId AND p.approved = false AND p.team.deleted = false")
+    List<Participation> findAllByMemberIdApprovedFalse(final Long memberId);
 }

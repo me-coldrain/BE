@@ -60,7 +60,8 @@ public class TeamQueryRepository {
                 .where(containsIgnoreCaseTeamName(searchCondition.getInput()),   // 팀 이름
                         containsAddress(searchCondition.getAddress()),  // 주소
                         eqMatch(searchCondition.getMatch()),    // 대결 등록 상태
-                        eqRecruit(searchCondition.getRecruit()) // 모집 상태
+                        eqRecruit(searchCondition.getRecruit()), // 모집 상태
+                        team.deleted.eq(false)  // 팀 해체 상태
                 )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1); // limit 보다 데이터를 1개 더 들고와서, 해당 데이터가 있다면 hasNext 변수에 true를 넣어서 알린다.
@@ -122,6 +123,7 @@ public class TeamQueryRepository {
     private BooleanExpression eqRecruit(Boolean recruit) {
         return recruit != null ? team.recruit.eq(recruit) : null;
     }
+
 
     private BooleanExpression containsIgnoreCaseTeamName(String teamName) {
         return teamName != null ? team.name.containsIgnoreCase(teamName) : null;
