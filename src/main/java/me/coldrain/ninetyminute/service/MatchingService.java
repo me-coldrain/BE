@@ -11,17 +11,17 @@ import me.coldrain.ninetyminute.dto.response.OfferMatchResponse;
 import me.coldrain.ninetyminute.dto.response.ParticipationTeamMatchResponse;
 import me.coldrain.ninetyminute.entity.*;
 import me.coldrain.ninetyminute.repository.*;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -89,8 +89,8 @@ public class MatchingService {
             // 해당 팀에 신청된 경기가 없어도 null이 전달되야한다.
             if (!applyList.isEmpty()) {
                 for (Apply apply : applyList) {
-                    Member opposingTeamCaptain = memberRepository.findByOpenTeam(apply.getApplyTeam().getId()).orElseThrow(
-                            () -> new IllegalArgumentException("해당 팀이 존재 하지 않습니다."));
+                    Member opposingTeamCaptain = memberRepository.findByOpenTeam(apply.getApplyTeam().getId()).orElse(null);
+                    if (opposingTeamCaptain == null) continue;
                     OfferMatchResponse offerMatchResponse = OfferMatchResponse.builder()
                             .applyId(apply.getId())
                             .opposingTeamId(apply.getApplyTeam().getId())
@@ -116,11 +116,12 @@ public class MatchingService {
         List<MatchResponse> matchResponseList = new ArrayList<>();
         if (participation != null) {
             for (Apply apply : applyList) {
+                BeforeMatching beforeMatching = beforeMatchingRepository.findByApplyId(apply.getId()).orElseThrow(
+                        () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
+                String matchDate = calDate(beforeMatching.getMatchDate());
+                LocalDateTime from = LocalDateTime.now();
+                LocalDateTime to = LocalDateTime.ofInstant(beforeMatching.getMatchDate().toInstant(), ZoneId.systemDefault());
                 if (apply.getTeam().getId().equals(teamId)) {   // 내 팀이 home team 인 경우
-                    BeforeMatching beforeMatching = beforeMatchingRepository.findByApplyId(apply.getId()).orElseThrow(
-                            () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
-                    LocalDateTime from = LocalDateTime.now();
-                    LocalDateTime to = LocalDateTime.ofInstant(beforeMatching.getMatchDate().toInstant(), ZoneId.systemDefault());
                     MatchResponse matchResponse = MatchResponse.builder()
                             .matchId(beforeMatching.getId())
                             .teamId(teamId)
@@ -137,25 +138,23 @@ public class MatchingService {
                             .matchLocation(beforeMatching.getLocation())
                             .contact(null)
                             .phone(null)
-                            .matchDate(beforeMatching.getMatchDate())
+                            .matchDate(matchDate)
                             .dDay(ChronoUnit.DAYS.between(from, to))
                             .createdDate(beforeMatching.getCreatedDate())
                             .modifiedDate(beforeMatching.getModifiedDate())
                             .matchStatus(true)
                             .build();
-                    if (member.getOpenTeam().getId().equals(teamId)) {  // home team 이며 주장 일때
-                        matchResponse.changeIsCaptain(true);
-                        matchResponse.updateContact(memberRepository.findByOpenTeam(apply.getApplyTeam().getId()).orElseThrow(
-                                () -> new IllegalArgumentException("해당 멤버를 찾을 수 없습니다.")).getContact());
-                        matchResponse.updatePhone(memberRepository.findByOpenTeam(apply.getApplyTeam().getId()).orElseThrow(
-                                () -> new IllegalArgumentException("해당 멤버를 찾을 수 없습니다.")).getPhone());
-                        matchResponseList.add(matchResponse);
+                    if (member.getOpenTeam() != null) {
+                        if (member.getOpenTeam().getId().equals(teamId)) { // home team 이며 주장 일때
+                            matchResponse.changeIsCaptain(true);
+                            matchResponse.updateContact(memberRepository.findByOpenTeam(apply.getApplyTeam().getId()).orElseThrow(
+                                    () -> new IllegalArgumentException("해당 멤버를 찾을 수 없습니다.")).getContact());
+                            matchResponse.updatePhone(memberRepository.findByOpenTeam(apply.getApplyTeam().getId()).orElseThrow(
+                                    () -> new IllegalArgumentException("해당 멤버를 찾을 수 없습니다.")).getPhone());
+                        }
                     }
+                    matchResponseList.add(matchResponse);
                 } else {   // 내 팀이 away team 인 경우
-                    BeforeMatching beforeMatching = beforeMatchingRepository.findByApplyId(apply.getId()).orElseThrow(
-                            () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
-                    LocalDateTime from = LocalDateTime.now();
-                    LocalDateTime to = LocalDateTime.ofInstant(beforeMatching.getMatchDate().toInstant(), ZoneId.systemDefault());
                     MatchResponse matchResponse = MatchResponse.builder()
                             .matchId(beforeMatching.getId())
                             .teamId(teamId)
@@ -172,18 +171,20 @@ public class MatchingService {
                             .matchLocation(beforeMatching.getLocation())
                             .contact(null)
                             .phone(null)
-                            .matchDate(beforeMatching.getMatchDate())
+                            .matchDate(matchDate)
                             .dDay(ChronoUnit.DAYS.between(from, to))
                             .createdDate(beforeMatching.getCreatedDate())
                             .modifiedDate(beforeMatching.getModifiedDate())
                             .matchStatus(true)
                             .build();
-                    if (member.getOpenTeam().getId().equals(teamId)) {  // away team 이며 주장 일때
-                        matchResponse.changeIsCaptain(true);
-                        matchResponse.updateContact(memberRepository.findByOpenTeam(apply.getTeam().getId()).orElseThrow(
-                                () -> new IllegalArgumentException("해당 멤버를 찾을 수 없습니다.")).getContact());
-                        matchResponse.updatePhone(memberRepository.findByOpenTeam(apply.getTeam().getId()).orElseThrow(
-                                () -> new IllegalArgumentException("해당 멤버를 찾을 수 없습니다.")).getPhone());
+                    if (member.getOpenTeam() != null) {
+                        if (member.getOpenTeam().getId().equals(teamId)) {  // away team 이며 주장 일때
+                            matchResponse.changeIsCaptain(true);
+                            matchResponse.updateContact(memberRepository.findByOpenTeam(apply.getTeam().getId()).orElseThrow(
+                                    () -> new IllegalArgumentException("해당 멤버를 찾을 수 없습니다.")).getContact());
+                            matchResponse.updatePhone(memberRepository.findByOpenTeam(apply.getTeam().getId()).orElseThrow(
+                                    () -> new IllegalArgumentException("해당 멤버를 찾을 수 없습니다.")).getPhone());
+                        }
                     }
                     matchResponseList.add(matchResponse);
                 }
@@ -229,11 +230,12 @@ public class MatchingService {
         Participation participation = participationRepository.findByMemberIdAndTeamIdTrue(member.getId(), teamId).orElse(null);
 
         if (participation != null || member.getOpenTeam().getId().equals(teamId)) { // 팀의 멤버인지 확인, 주장일 때 participation 에 등록 되지 않는 것을 고려해야한다.
-            BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                    () -> new IllegalArgumentException("해당 대결을 찾지 못했습니다."));
+            BeforeMatching beforeMatching = beforeMatchingRepository.findByBeforeMatchingId(matchId).orElseThrow(
+                    () -> new IllegalArgumentException("해당 대결을 찾지 못했거나 대결 팀 중 한팀이 해체되었습니다."));
             Member captainMember = memberRepository.findByOpenTeam(beforeMatching.getApply().getApplyTeam().getId()).orElseThrow(() -> new IllegalAccessError(
-                    "해당 멤버을 찾을 수 없습니다."));
+                    "해당 멤버을 찾을 수 없거나 소속된 팀이 해체되었습니다."));
             Team opposingTeam = beforeMatching.getApply().getApplyTeam();
+            String matchDate = calDate(beforeMatching.getMatchDate());
             LocalDateTime from = LocalDateTime.now();
             LocalDateTime to = LocalDateTime.ofInstant(beforeMatching.getMatchDate().toInstant(), ZoneId.systemDefault());
             MatchResponse matchResponse = MatchResponse.builder()
@@ -249,7 +251,7 @@ public class MatchingService {
                     .opposingTeamLoseCount(opposingTeam.getRecord().getLoseCount())
                     .contact(captainMember.getContact())
                     .phone(captainMember.getPhone())
-                    .matchDate(beforeMatching.getMatchDate())
+                    .matchDate(matchDate)
                     .dDay(ChronoUnit.DAYS.between(from, to))
                     .matchLocation(beforeMatching.getLocation())
                     .createdDate(beforeMatching.getCreatedDate())
@@ -267,8 +269,8 @@ public class MatchingService {
     public void makeTeamFormation(Long teamId, Long matchId, List<MatchMemberRequest> matchMemberRequestList, Member member) {
         if (teamId.equals(member.getOpenTeam().getId())) {
             if (matchMemberRequestList.size() > 4) {
-                BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                        () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다.")
+                BeforeMatching beforeMatching = beforeMatchingRepository.findByBeforeMatchingId(matchId).orElseThrow(
+                        () -> new IllegalArgumentException("해당 대결을 찾지 못했거나 대결 팀 중 한팀이 해체되었습니다.")
                 );
                 if (teamId.equals(beforeMatching.getApply().getTeam().getId()) || teamId.equals(beforeMatching.getApply().getApplyTeam().getId())) {
                     Team team = teamRepository.findById(member.getOpenTeam().getId()).orElseThrow(
@@ -316,8 +318,8 @@ public class MatchingService {
 
     @Transactional
     public void cancelApprovedMatch(Long matchId, Member member) {
-        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                () -> new IllegalArgumentException("해당 대결 정보가 존재하지 않습니다."));
+        BeforeMatching beforeMatching = beforeMatchingRepository.findByBeforeMatchingId(matchId).orElseThrow(
+                () -> new IllegalArgumentException("해당 대결을 찾지 못했거나 대결 팀 중 한팀이 해체되었습니다."));
         if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getTeam().getId()) || member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
             applyRepository.delete(beforeMatching.getApply());
             beforeMatchingRepository.delete(beforeMatching);
@@ -326,8 +328,8 @@ public class MatchingService {
 
     @Transactional
     public void confirmEndMatch(Long matchId, Member member) {
-        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                () -> new IllegalArgumentException("찾는 대결이 존재하지 않습니다.")
+        BeforeMatching beforeMatching = beforeMatchingRepository.findByBeforeMatchingId(matchId).orElseThrow(
+                () -> new IllegalArgumentException("해당 대결을 찾지 못했거나 대결 팀 중 한팀이 해체되었습니다.")
         );
 
         if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getTeam().getId())) {
@@ -339,8 +341,8 @@ public class MatchingService {
 
     @Transactional
     public void writeMatchScore(Long matchId, MatchScoreRequest matchScoreRequest, Member member) {
-        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다."));
+        BeforeMatching beforeMatching = beforeMatchingRepository.findByBeforeMatchingId(matchId).orElseThrow(
+                () -> new IllegalArgumentException("해당 대결을 찾지 못했거나 대결 팀 중 한팀이 해체되었습니다."));
         if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getTeam().getId())) {
             AfterMatching afterMatching = AfterMatching.builder()
                     .beforeMatching(beforeMatching)
@@ -356,8 +358,8 @@ public class MatchingService {
 
     @Transactional
     public void confirmMatchScore(Long matchId, Member member) {
-        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
+        BeforeMatching beforeMatching = beforeMatchingRepository.findByBeforeMatchingId(matchId).orElseThrow(
+                () -> new IllegalArgumentException("해당 대결을 찾지 못했거나 대결 팀 중 한팀이 해체되었습니다."));
         if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getTeam().getId()) || member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
             AfterMatching afterMatching = afterMatchingRepository.findByBeforeMatchingIdAdmitStatusFalse(matchId).orElseThrow(
                     () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다.")
@@ -368,8 +370,8 @@ public class MatchingService {
 
     @Transactional
     public void correctMatchScore(Long matchId, MatchScoreRequest matchScoreRequest, Member member) {
-        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
+        BeforeMatching beforeMatching = beforeMatchingRepository.findByBeforeMatchingId(matchId).orElseThrow(
+                () -> new IllegalArgumentException("해당 대결을 찾지 못했거나 대결 팀 중 한팀이 해체되었습니다."));
         if (member.getOpenTeam().getId().equals(beforeMatching.getApply().getApplyTeam().getId())) {
             AfterMatching afterMatching = afterMatchingRepository.findByBeforeMatchingIdAdmitStatusFalse(matchId).orElseThrow(
                     () -> new IllegalArgumentException("해댱 대결을 찾을 수 없습니다.")
@@ -381,8 +383,8 @@ public class MatchingService {
     @Transactional
     public void writeMatchResult(Long matchId, MatchResultRequest matchResultRequest, Member member) {
         Participation participation = participationRepository.findByTeamIdAndMemberId(member.getOpenTeam().getId(), member.getId()).orElse(null);
-        BeforeMatching beforeMatching = beforeMatchingRepository.findById(matchId).orElseThrow(
-                () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
+        BeforeMatching beforeMatching = beforeMatchingRepository.findByBeforeMatchingId(matchId).orElseThrow(
+                () -> new IllegalArgumentException("해당 대결을 찾지 못했거나 대결 팀 중 한팀이 해체되었습니다."));
         AfterMatching afterMatching = afterMatchingRepository.findByBeforeMatchingIdAdmitStatusTrue(matchId).orElseThrow(
                 () -> new IllegalArgumentException("해당 대결을 찾을 수 없습니다."));
         List<FieldMember> fieldMembers = fieldMemberRepository.findAllByMatchFieldMembers(member.getOpenTeam().getId(), beforeMatching.getId());
@@ -502,7 +504,7 @@ public class MatchingService {
     void distributePoint(Long teamId, Long afterMatchingId) {
         List<String> results = Arrays.asList("승리", "무승부", "패배");
         AfterMatching afterMatching = afterMatchingRepository.findById(afterMatchingId).orElseThrow(() -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
-        Team team = teamRepository.findById(teamId).orElseThrow(() -> new IllegalArgumentException("해당 팀을 찾을 수 없습니다."));
+        Team team = teamRepository.findByIdAndDeletedFalse(teamId).orElseThrow(() -> new IllegalArgumentException("해당 팀을 찾을 수 없습니다."));
         team.getRecord().updateTotalGameCount();
         List<FieldMember> fieldMembers = fieldMemberRepository.findAllByMatchFieldMembersAndAnonymousFalse(team.getId(), afterMatching.getBeforeMatching().getId());
 
@@ -606,10 +608,23 @@ public class MatchingService {
         return null;
     }
 
-//    public List<MatchResponse> searchMatches(Long teamId, Member member) {
-//        List<Apply> applyList = applyRepository.
-//        if (member.getOpenTeam().getId().equals(teamId)) {
-//
-//        }
-//    }
+    public String calDate (Date matchDate) {
+        String date = DateFormatUtils.format(matchDate, "yyyyMMddHHmm");
+        String matchDateInfo = "";
+        if (Integer.parseInt(date.substring(8,10)) > 12) {
+            int pm = Integer.parseInt(date.substring(8,10)) - 12;
+            String year = date.substring(0, 4) + "년";
+            String month = date.substring(4, 6) + "월";
+            String day = date.substring(6, 8) + "일";
+            String time = "오후 " + Integer.toString(pm) + "시" + " " + date.substring(10,12) + "분";
+            matchDateInfo = year + " " + month + " " + day + " " + time;
+        } else {
+            String year = date.substring(0,4) + "년";
+            String month = date.substring(4,6) + "월";
+            String day = date.substring(6, 8) + "일";
+            String time = "오전 " + date.substring(8,10) + "시" + " " + date.substring(10,12) + "분";
+            matchDateInfo = year + " " + month + " " + day + " " + time;
+        }
+        return matchDateInfo;
+    }
 }
