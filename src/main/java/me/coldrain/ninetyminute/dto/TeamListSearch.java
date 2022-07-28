@@ -37,7 +37,6 @@ public class TeamListSearch {
     private LocalDateTime modifiedDate;
 
     @QueryProjection
-
     public TeamListSearch(Long teamId, String teamName, Long headCount, String mainArea, String preferredArea, Double winRate, Boolean recruit, Boolean match, Integer totalGameCount, Integer winCount, Integer drawCount, Integer loseCount, LocalDateTime createdDate, LocalDateTime modifiedDate) {
         this.teamId = teamId;
         this.teamName = teamName;

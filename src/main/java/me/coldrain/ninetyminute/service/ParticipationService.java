@@ -26,7 +26,7 @@ public class ParticipationService {
             final Member member,
             final TeamParticipateRequest request) {
 
-        final Team team = teamRepository.findById(teamId)
+        final Team team = teamRepository.findByIdAndDeletedFalse(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("참여하려는 팀이 존재하지 않습니다."));
 
         if (team.getRecruit().equals(false)) {
@@ -50,7 +50,7 @@ public class ParticipationService {
 
     @Transactional
     public void approve(final Long teamId, final Long memberId, final Member member) {
-        teamRepository.findById(teamId)
+        teamRepository.findByIdAndDeletedFalse(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀이 존재하지 않습니다."));
         memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
