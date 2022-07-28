@@ -148,10 +148,24 @@ public class TeamService {
         }
 
         TeamInfoResponse.RecentMatchHistory recentMatchHistory = new TeamInfoResponse.RecentMatchHistory();
-        Team teamHistoryCheck = teamRepository.findById(teamId).orElseThrow();
-        if (teamHistoryCheck.getHistory() != null) {
-            BeforeMatching recentTeamBeforeMatching = beforeMatchingRepository.findByRecentBeforeMatching(teamId).orElseThrow();
-            History recentHistory = historyRepository.findByRecentHistory(recentTeamBeforeMatching.getId()).orElseThrow();
+
+        List<BeforeMatching> recentTeamBeforeMatchingList = beforeMatchingRepository.findByRecentTeamBeforeMatching(teamId);
+        List<BeforeMatching> recentOpposingTeamBeforeMatchingList = beforeMatchingRepository.findByRecentOpposingTeamBeforeMatching(teamId);
+
+        if (recentTeamBeforeMatchingList.size()!=0 || recentOpposingTeamBeforeMatchingList.size()!=0) {
+            BeforeMatching recentBeforeMatching;
+
+            if (recentTeamBeforeMatchingList.size() == 0) {
+                recentBeforeMatching = recentOpposingTeamBeforeMatchingList.get(0);
+            } else if (recentOpposingTeamBeforeMatchingList.size() == 0) {
+                recentBeforeMatching = recentTeamBeforeMatchingList.get(0);
+            } else if (recentTeamBeforeMatchingList.get(0).getMatchDate().after(recentOpposingTeamBeforeMatchingList.get(0).getMatchDate())) {
+                recentBeforeMatching = recentTeamBeforeMatchingList.get(0);
+            } else {
+                recentBeforeMatching = recentOpposingTeamBeforeMatchingList.get(0);
+            }
+
+            History recentHistory = historyRepository.findByRecentHistory(recentBeforeMatching.getId()).orElseThrow();
 
             TeamInfoResponse.RecentMatchHistory.Team recentMatchHistoryTeam = new TeamInfoResponse.RecentMatchHistory.Team(
                     recentHistory.getBeforeMatching().getTeamName(),
@@ -416,7 +430,8 @@ public class TeamService {
                     .applyStatus(false)
                     .build();
 
-            if (participation.getTeam().getId().equals(member.getOpenTeam().getId())) applyTeamResponse.changeIsCaptain(true);
+            if (participation.getTeam().getId().equals(member.getOpenTeam().getId()))
+                applyTeamResponse.changeIsCaptain(true);
             if (participation.getApproved()) applyTeamResponse.changeApplyStatus(true);
             applyTeamResponseList.add(applyTeamResponse);
         }

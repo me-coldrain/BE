@@ -14,6 +14,12 @@ public interface BeforeMatchingRepository extends JpaRepository<BeforeMatching, 
     @Query("select bm from BeforeMatching bm where bm.apply.team.id = :teamId and bm.apply.approved = true and bm.apply.team.deleted = false order by bm.createdDate desc")
     List<BeforeMatching> findAllByBeforeMatching(final Long teamId);
 
+    @Query("select bm from BeforeMatching bm where bm.apply.team.id = :teamId and bm.apply.approved = true order by bm.createdDate desc")
+    List<BeforeMatching> findByRecentTeamBeforeMatching(Long teamId);
+
+    @Query("select bm from BeforeMatching bm where bm.apply.applyTeam.id = :teamId and bm.apply.approved = true order by bm.createdDate desc")
+    List<BeforeMatching> findByRecentOpposingTeamBeforeMatching(Long teamId);
+
     @Query("select bm from BeforeMatching bm where bm.apply.team.id = :teamId and bm.apply.approved = true and bm.apply.team.deleted = false order by bm.createdDate desc")
     Optional<BeforeMatching> findByRecentBeforeMatching(Long teamId);
 
