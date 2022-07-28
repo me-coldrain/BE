@@ -42,13 +42,13 @@ public class MatchingService {
     @Transactional
     public String approveApplyMatch(Long applyTeamId, Long applyId, ApprovedMatchRequest approvedMatchRequest, Member member) {
         if (!member.getOpenTeam().getId().equals(applyTeamId)) {
-            String teamName = teamRepository.findById(member.getOpenTeam().getId()).orElseThrow(
+            String teamName = teamRepository.findByIdAndDeletedFalse(member.getOpenTeam().getId()).orElseThrow(
                     () -> new IllegalArgumentException("팀을 찾을 수 없습니다.")).getName();
 
-            String opposingTeamName = teamRepository.findById(applyTeamId).orElseThrow(
+            String opposingTeamName = teamRepository.findByIdAndDeletedFalse(applyTeamId).orElseThrow(
                     () -> new IllegalArgumentException("팀을 찾을 수 없습니다.")).getName();
 
-            Apply applyMatch = applyRepository.findById(applyId).orElseThrow(
+            Apply applyMatch = applyRepository.findByIdAndMatchesStatusFalse(applyId).orElseThrow(
                     () -> new IllegalArgumentException("신청한 대결을 찾을 수 없습니다.")
             );
 
@@ -118,7 +118,6 @@ public class MatchingService {
             for (Apply apply : applyList) {
                 BeforeMatching beforeMatching = beforeMatchingRepository.findByApplyId(apply.getId()).orElseThrow(
                         () -> new IllegalArgumentException("성사된 대결이 존재하지 않습니다."));
-                String matchDate = calDate(beforeMatching.getMatchDate());
                 LocalDateTime from = LocalDateTime.now();
                 LocalDateTime to = LocalDateTime.ofInstant(beforeMatching.getMatchDate().toInstant(), ZoneId.systemDefault());
                 if (apply.getTeam().getId().equals(teamId)) {   // 내 팀이 home team 인 경우
@@ -138,7 +137,7 @@ public class MatchingService {
                             .matchLocation(beforeMatching.getLocation())
                             .contact(null)
                             .phone(null)
-                            .matchDate(matchDate)
+                            .matchDate(beforeMatching.calculatedDate())
                             .dDay(ChronoUnit.DAYS.between(from, to))
                             .createdDate(beforeMatching.getCreatedDate())
                             .modifiedDate(beforeMatching.getModifiedDate())
@@ -171,7 +170,7 @@ public class MatchingService {
                             .matchLocation(beforeMatching.getLocation())
                             .contact(null)
                             .phone(null)
-                            .matchDate(matchDate)
+                            .matchDate(beforeMatching.calculatedDate())
                             .dDay(ChronoUnit.DAYS.between(from, to))
                             .createdDate(beforeMatching.getCreatedDate())
                             .modifiedDate(beforeMatching.getModifiedDate())
@@ -235,7 +234,6 @@ public class MatchingService {
             Member captainMember = memberRepository.findByOpenTeam(beforeMatching.getApply().getApplyTeam().getId()).orElseThrow(() -> new IllegalAccessError(
                     "해당 멤버을 찾을 수 없거나 소속된 팀이 해체되었습니다."));
             Team opposingTeam = beforeMatching.getApply().getApplyTeam();
-            String matchDate = calDate(beforeMatching.getMatchDate());
             LocalDateTime from = LocalDateTime.now();
             LocalDateTime to = LocalDateTime.ofInstant(beforeMatching.getMatchDate().toInstant(), ZoneId.systemDefault());
             MatchResponse matchResponse = MatchResponse.builder()
@@ -251,7 +249,7 @@ public class MatchingService {
                     .opposingTeamLoseCount(opposingTeam.getRecord().getLoseCount())
                     .contact(captainMember.getContact())
                     .phone(captainMember.getPhone())
-                    .matchDate(matchDate)
+                    .matchDate(beforeMatching.calculatedDate())
                     .dDay(ChronoUnit.DAYS.between(from, to))
                     .matchLocation(beforeMatching.getLocation())
                     .createdDate(beforeMatching.getCreatedDate())
@@ -607,25 +605,5 @@ public class MatchingService {
             }
         }
         return null;
-    }
-
-    public String calDate (Date matchDate) {
-        String date = DateFormatUtils.format(matchDate, "yyyyMMddHHmm");
-        String matchDateInfo = "";
-        if (Integer.parseInt(date.substring(8,10)) > 12) {
-            int pm = Integer.parseInt(date.substring(8,10)) - 12;
-            String year = date.substring(0, 4) + "년";
-            String month = date.substring(4, 6) + "월";
-            String day = date.substring(6, 8) + "일";
-            String time = "오후 " + Integer.toString(pm) + "시" + " " + date.substring(10,12) + "분";
-            matchDateInfo = year + " " + month + " " + day + " " + time;
-        } else {
-            String year = date.substring(0,4) + "년";
-            String month = date.substring(4,6) + "월";
-            String day = date.substring(6, 8) + "일";
-            String time = "오전 " + date.substring(8,10) + "시" + " " + date.substring(10,12) + "분";
-            matchDateInfo = year + " " + month + " " + day + " " + time;
-        }
-        return matchDateInfo;
     }
 }
