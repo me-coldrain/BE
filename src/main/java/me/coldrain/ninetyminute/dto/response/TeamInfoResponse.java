@@ -42,6 +42,7 @@ public class TeamInfoResponse {
 
     @NoArgsConstructor
     @Setter
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     public static class RecentMatchHistory {
         private Long historyId;
         private Date matchDate;
@@ -50,6 +51,7 @@ public class TeamInfoResponse {
 
         @AllArgsConstructor
         @Setter
+        @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
         public static class Team {
             private String name;
             private String result;
@@ -58,6 +60,7 @@ public class TeamInfoResponse {
 
         @AllArgsConstructor
         @Setter
+        @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
         public static class OpposingTeam {
             private String name;
             private String result;
