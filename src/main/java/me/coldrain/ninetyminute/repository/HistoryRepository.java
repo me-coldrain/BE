@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface HistoryRepository extends JpaRepository<History, Long> {
-    @Query("select h from History h where h.afterMatching.beforeMatching.apply.team.id = :teamId order by h.createdDate desc")
+    @Query("select h from History h where h.afterMatching.beforeMatching.apply.team.id = :teamId order by h.id desc")
     List<History> findAllByHomeTeamId(final Long teamId);
 
-    @Query("select h from History h where h.afterMatching.beforeMatching.apply.applyTeam.id = :teamId order by h.createdDate desc")
+    @Query("select h from History h where h.afterMatching.beforeMatching.apply.applyTeam.id = :teamId order by h.id desc")
     List<History> findAllByAwayTeamId(final Long teamId);
 
     @Query("select h from History h where h.beforeMatching.id = :RecentBeforeMatchingId")
@@ -25,4 +25,7 @@ public interface HistoryRepository extends JpaRepository<History, Long> {
 
     @Query("select h from History h where h.id = :historyId")
     List<History> findAllByHistoryId(Long historyId);
+
+    @Query("select h from History h where h.team.id = :teamId or h.opposingTeam.id = :teamId order by h.id desc")
+    List<History> findAllByTeamId(Long teamId);
 }

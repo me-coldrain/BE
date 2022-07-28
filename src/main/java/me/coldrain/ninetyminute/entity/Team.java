@@ -46,10 +46,6 @@ public class Team extends TimeStamped {
     @JoinColumn(name = "record_id")
     private Record record;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "history_id")
-    private History history;
-
     private Boolean deleted = Boolean.FALSE;
 
     public void changeRecruit(Boolean recruit) {
@@ -88,7 +84,7 @@ public class Team extends TimeStamped {
     }
 
     @Builder
-    public Team(String name, String mainArea, String teamProfileUrl, String introduce, Boolean recruit, List<Weekday> weekdays, List<Time> timeList, String preferredArea, String question, Record record, History history, Boolean match) {
+    public Team(String name, String mainArea, String teamProfileUrl, String introduce, Boolean recruit, List<Weekday> weekdays, List<Time> timeList, String preferredArea, String question, Record record, Boolean match) {
         this.name = name;
         this.mainArea = mainArea;
         this.teamProfileUrl = teamProfileUrl;
@@ -99,7 +95,6 @@ public class Team extends TimeStamped {
         this.preferredArea = preferredArea;
         this.question = question;
         this.record = record;
-        this.history = history;
         this.matches = match;
     }
 }

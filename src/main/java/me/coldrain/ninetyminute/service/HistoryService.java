@@ -26,36 +26,35 @@ public class HistoryService {
 
     public List<HistoryResponse> searchMatchHistory(Long teamId, Member member) {
         List<HistoryResponse> historyResponseList = new ArrayList<>();
-        List<History> homeHistoryList = historyRepository.findAllByHomeTeamId(teamId);
-        for (History homeHistory : homeHistoryList) {
-            HistoryResponse.TeamResponse team = new HistoryResponse.TeamResponse(
-                    homeHistory.getBeforeMatching().getTeamName(),
-                    homeHistory.getAfterMatching().getResult(),
-                    homeHistory.getAfterMatching().getScore()
-            );
-            HistoryResponse.TeamResponse opposingTeam = new HistoryResponse.TeamResponse(
-                    homeHistory.getBeforeMatching().getOpposingTeamName(),
-                    homeHistory.getAfterMatching().getOpponentResult(),
-                    homeHistory.getAfterMatching().getOpponentScore()
-            );
-            HistoryResponse historyResponse = new HistoryResponse(homeHistory.getId(), homeHistory.getBeforeMatching().getMatchDate(), team, opposingTeam);
-            historyResponseList.add(historyResponse);
-        }
-
-        List<History> awayHistoryList = historyRepository.findAllByAwayTeamId(teamId);
-        for (History awayHistory : awayHistoryList) {
-            HistoryResponse.TeamResponse team = new HistoryResponse.TeamResponse(
-                    awayHistory.getBeforeMatching().getOpposingTeamName(),
-                    awayHistory.getAfterMatching().getOpponentResult(),
-                    awayHistory.getAfterMatching().getOpponentScore()
-            );
-            HistoryResponse.TeamResponse opposingTeam = new HistoryResponse.TeamResponse(
-                    awayHistory.getBeforeMatching().getTeamName(),
-                    awayHistory.getAfterMatching().getResult(),
-                    awayHistory.getAfterMatching().getScore()
-            );
-            HistoryResponse historyResponse = new HistoryResponse(awayHistory.getId(), awayHistory.getBeforeMatching().getMatchDate(), team, opposingTeam);
-            historyResponseList.add(historyResponse);
+        List<History> historyList = historyRepository.findAllByTeamId(teamId);
+        for (History history : historyList) {
+            if (teamId.equals(history.getTeam().getId())) {
+                HistoryResponse.TeamResponse team = new HistoryResponse.TeamResponse(
+                        history.getTeam().getName(),
+                        history.getAfterMatching().getResult(),
+                        history.getAfterMatching().getScore()
+                );
+                HistoryResponse.TeamResponse opposingTeam = new HistoryResponse.TeamResponse(
+                        history.getOpposingTeam().getName(),
+                        history.getAfterMatching().getOpponentResult(),
+                        history.getAfterMatching().getOpponentScore()
+                );
+                HistoryResponse historyResponse = new HistoryResponse(history.getId(), history.getBeforeMatching().getMatchDate(), team, opposingTeam);
+                historyResponseList.add(historyResponse);
+            } else {
+                HistoryResponse.TeamResponse team = new HistoryResponse.TeamResponse(
+                        history.getOpposingTeam().getName(),
+                        history.getAfterMatching().getOpponentResult(),
+                        history.getAfterMatching().getOpponentScore()
+                );
+                HistoryResponse.TeamResponse opposingTeam = new HistoryResponse.TeamResponse(
+                        history.getTeam().getName(),
+                        history.getAfterMatching().getResult(),
+                        history.getAfterMatching().getScore()
+                );
+                HistoryResponse historyResponse = new HistoryResponse(history.getId(), history.getBeforeMatching().getMatchDate(), team, opposingTeam);
+                historyResponseList.add(historyResponse);
+            }
         }
         return historyResponseList;
     }
