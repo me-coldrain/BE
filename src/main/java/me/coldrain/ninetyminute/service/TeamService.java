@@ -91,12 +91,12 @@ public class TeamService {
     }
 
     public ResponseEntity<?> infoTeam(Long teamId, UserDetailsImpl userDetails) {
-        Optional<Team> found = teamRepository.findById(teamId);
+        Optional<Team> found = teamRepository.findByIdAndDeletedFalse(teamId);
         if (found.isEmpty()) {
             return new ResponseEntity<>("존재하지 않는 팀입니다.", HttpStatus.BAD_REQUEST);
         }
 
-        Team infoTeam = teamRepository.findById(teamId).orElseThrow();
+        Team infoTeam = teamRepository.findByIdAndDeletedFalse(teamId).orElseThrow();
 
         List<String> teamWeekDays = new ArrayList<>();
         List<Weekday> teamWeekdayList = weekdayRepository.findAllByTeamId(teamId);
@@ -221,7 +221,7 @@ public class TeamService {
 
     @Transactional
     public void startRecruit(final Long teamId, final Member member, final RecruitStartRequest request) {
-        final Team team = teamRepository.findById(teamId)
+        final Team team = teamRepository.findByIdAndDeletedFalse(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         if (member.getOpenTeam() == null) {
@@ -243,7 +243,7 @@ public class TeamService {
 
     @Transactional
     public void endRecruit(final Long teamId, final Member member) {
-        final Team team = teamRepository.findById(teamId)
+        final Team team = teamRepository.findByIdAndDeletedFalse(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         final Long openTeamId = member.getOpenTeam().getId();
@@ -279,7 +279,7 @@ public class TeamService {
 
     @Transactional
     public void cancelMatch(final Long teamId, final Member member) {
-        final Team team = teamRepository.findById(teamId)
+        final Team team = teamRepository.findByIdAndDeletedFalse(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("팀을 찾을 수 없습니다."));
 
         final Long openTeamId = member.getOpenTeam().getId();
@@ -395,7 +395,7 @@ public class TeamService {
     }
 
     public List<ApplyTeamResponse> searchApplyTeams(Member member) {
-        List<Participation> participationList = participationRepository.findAllByMemberId(member.getId());
+        List<Participation> participationList = participationRepository.findAllByMemberIdApprovedFalse(member.getId());
         List<ApplyTeamResponse> applyTeamResponseList = new ArrayList<>();
         for (Participation participation : participationList) {
             Integer teamMemberCnt = participationRepository.findAllByTeamIdTrue(participation.getTeam().getId()).size();
