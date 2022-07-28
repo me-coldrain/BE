@@ -5,6 +5,7 @@ import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.*;
 import me.coldrain.ninetyminute.dto.response.ApplyTeamResponse;
+import me.coldrain.ninetyminute.dto.response.ParticipatedTeamMemberResponse;
 import me.coldrain.ninetyminute.dto.response.TeamDuplicateResponse;
 import me.coldrain.ninetyminute.dto.response.TeamInfoResponse;
 import me.coldrain.ninetyminute.entity.*;
@@ -440,15 +441,30 @@ public class TeamService {
     }
 
     @Transactional
-    public void disbandTeam(Long teamId, Member member) {
+    public ParticipatedTeamMemberResponse disbandTeam(Long teamId, Member member) {
         if(teamRepository.findByIdAndDeletedTrue(teamId).orElse(null) != null)
             throw new IllegalArgumentException("팀을 찾을 수 없습니다.");
         if (member.getOpenTeam() == null) throw new IllegalArgumentException("개설한 팀이 존재하지 않습니다.");
         if (member.getOpenTeam().getId().equals(teamId)) {
+            List<Member> teamMembers = participationRepository.findAllTeamMembers(teamId);
+            List<ParticipatedTeamMemberResponse.TeamMember> teamMemberList = new ArrayList<>();
+            for (Member teamMember : teamMembers) {
+                if (!teamMember.getId().equals(member.getId())) {
+                    ParticipatedTeamMemberResponse.TeamMember participatedMember = ParticipatedTeamMemberResponse.TeamMember.builder()
+                            .memberId(teamMember.getId())
+                            .nickName(teamMember.getNickname())
+                            .build();
+                    teamMemberList.add(participatedMember);
+                }
+            }
             teamRepository.deleteById(teamId);
             Member my = memberRepository.findById(member.getId()).orElseThrow(
                     () -> new IllegalArgumentException("해당 맴버를 찾을 수 없습니다."));
             my.setOpenTeam(null);
+            return ParticipatedTeamMemberResponse.builder()
+                    .teamId(teamId)
+                    .teamMemberList(teamMemberList)
+                    .build();
         } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
     }
 
