@@ -1,7 +1,5 @@
 package me.coldrain.ninetyminute.controller;
 
-import ch.qos.logback.classic.sift.AppenderFactoryUsingJoran;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
@@ -54,6 +52,7 @@ public class TeamController {
      * 팀 이미지 파일 등록 API
      * S3에 저장 후 URL을 응답한다.
      */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/home/teams/image")
     public TeamImageRegisterResponse registerTeamImage(final MultipartFile teamImageFile) {
 
@@ -77,6 +76,7 @@ public class TeamController {
      * Author: 상운
      * 팀 목록 조회 API
      */
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/home/teams")
     public Slice<TeamListSearch> selectTeams(
             final TeamListSearchCondition searchCondition,
@@ -90,6 +90,7 @@ public class TeamController {
      * Author: 상운
      * 팀 참여 질문 조회 API
      */
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/teams/{team_id}/questions")
     public TeamParticipationQuestionResponse getQuestion(
             final @PathVariable("team_id") Long teamId) {
@@ -103,6 +104,7 @@ public class TeamController {
      * 팀 참여 신청 API
      * 한 번 참여 신청한 팀은 다시 참여 신청을 할 수 없습니다.
      */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/home/teams/{team_id}/participate")
     public void participate(
             final @PathVariable("team_id") Long teamId,
@@ -117,6 +119,7 @@ public class TeamController {
      * 신청한 팀원 승인 API
      * 팀 개설자만 승인을 할 수 있습니다.
      */
+    @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/teams/{team_id}/members/{member_id}/offer")
     public void approve(
             final @PathVariable("team_id") Long teamId,
@@ -131,6 +134,7 @@ public class TeamController {
      * 신청한 팀원 거절 API
      * 팀 개설자만 거절을 할 수 있습니다.
      */
+    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/teams/{team_id}/members/{member_id}/offer")
     public void disapprove(
             final @PathVariable("team_id") Long teamId,
@@ -144,6 +148,7 @@ public class TeamController {
      * Author: 상운
      * 팀원 모집 시작 API
      */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/home/teams/{team_id}/recruit/start")
     public void startRecruit(
             final @PathVariable("team_id") Long teamId,
@@ -157,6 +162,7 @@ public class TeamController {
      * Author: 상운
      * 팀원 모집 종료 API
      */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/home/teams/{team_id}/recruit/end")
     public void endRecruit(
             final @PathVariable("team_id") Long teamId,
@@ -169,6 +175,7 @@ public class TeamController {
      * Author: 상운
      * 대결 등록 API
      */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/home/teams/{team_id}/match/regist")
     public void registerMatch(
             final @PathVariable("team_id") Long teamId,
@@ -181,6 +188,7 @@ public class TeamController {
      * Author: 상운
      * 대결 등록 취소 API
      */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/home/teams/{team_id}/match/cancel")
     public void cancelMatch(
             final @PathVariable("team_id") Long teamId,
@@ -193,6 +201,7 @@ public class TeamController {
      * Author: 상운
      * 팀 탈퇴 API
      */
+    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/home/teams/{team_id}/leave")
     public void leaveTeam(
             final @PathVariable("team_id") Long teamId,
@@ -205,6 +214,7 @@ public class TeamController {
      * Author: 상운, 병민
      * 대결 신청 API
      */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/home/teams/{team_id}/match/apply")
     public void applyMatch(
             final @PathVariable("team_id") Long teamId,
@@ -222,6 +232,7 @@ public class TeamController {
      * Author: 상운
      * 대결 신청 취소 API
      */
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/home/teams/{team_id}/match/apply/cancel")
     public void cancelApplyMatch(
             final @PathVariable("team_id") Long teamId,
@@ -250,6 +261,7 @@ public class TeamController {
      * Author: 상운
      * 팀 수정 API
      */
+    @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/home/teams/{team_id}")
     public void modifyTeam(
             final @PathVariable("team_id") Long teamId,
