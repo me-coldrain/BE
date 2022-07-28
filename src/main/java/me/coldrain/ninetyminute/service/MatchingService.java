@@ -490,9 +490,10 @@ public class MatchingService {
                     History saveHistory = History.builder()
                             .beforeMatching(afterMatching.getBeforeMatching())
                             .afterMatching(afterMatching)
+                            .team(afterMatching.getBeforeMatching().getApply().getTeam())
+                            .opposingTeam(afterMatching.getBeforeMatching().getApply().getApplyTeam())
                             .build();
                     historyRepository.save(saveHistory);
-//                    member.getOpenTeam().updateHistory(saveHistory);
                 }
             } else throw new IllegalArgumentException("해당 팀의 주장이 아닙니다.");
         } else throw new IllegalArgumentException("상대 팀이 결과를 인정하지 않았습니다.");

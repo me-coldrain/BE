@@ -23,9 +23,19 @@ public class History extends TimeStamped {
     @JoinColumn(name = "before_matching_id")
     private BeforeMatching beforeMatching;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private Team team;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "opposing_team_id")
+    private Team opposingTeam;
+
     @Builder
-    public History(BeforeMatching beforeMatching, AfterMatching afterMatching) {
+    public History(BeforeMatching beforeMatching, AfterMatching afterMatching, Team team, Team opposingTeam) {
         this.beforeMatching = beforeMatching;
         this.afterMatching = afterMatching;
+        this.team = team;
+        this.opposingTeam = opposingTeam;
     }
 }

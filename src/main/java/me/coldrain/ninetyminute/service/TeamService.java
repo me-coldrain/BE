@@ -5,17 +5,15 @@ import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.*;
 import me.coldrain.ninetyminute.dto.response.ApplyTeamResponse;
-import me.coldrain.ninetyminute.dto.response.MatchResponse;
 import me.coldrain.ninetyminute.dto.response.TeamDuplicateResponse;
 import me.coldrain.ninetyminute.dto.response.TeamInfoResponse;
 import me.coldrain.ninetyminute.entity.*;
 import me.coldrain.ninetyminute.repository.*;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -445,6 +443,7 @@ public class TeamService {
     public void disbandTeam(Long teamId, Member member) {
         if(teamRepository.findByIdAndDeletedTrue(teamId).orElse(null) != null)
             throw new IllegalArgumentException("팀을 찾을 수 없습니다.");
+        if (member.getOpenTeam() == null) throw new IllegalArgumentException("개설한 팀이 존재하지 않습니다.");
         if (member.getOpenTeam().getId().equals(teamId)) {
             teamRepository.deleteById(teamId);
             Member my = memberRepository.findById(member.getId()).orElseThrow(
