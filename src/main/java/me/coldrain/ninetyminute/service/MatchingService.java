@@ -620,6 +620,8 @@ public class MatchingService {
             case "goalkeeper":
                 substituteMember.getMember().getAbility().updateGoalkeeperPoint();
                 break;
+            default:
+                break;
         }
     }
 
