@@ -65,8 +65,8 @@ public class Member extends TimeStamped {
 //        this.secessionState = false;
     }
 
-    public Member(String password, MemberRoleEnum role, Long kakaoId) {
-        this.username = null;
+    public Member(String username, String password, MemberRoleEnum role, Long kakaoId) {
+        this.username = username;
         this.password = password;
         this.role = role;
         this.kakaoId = kakaoId;
@@ -96,6 +96,13 @@ public class Member extends TimeStamped {
     public void memberSecession(String username, String nickname) {
         this.username = username;
         this.nickname = nickname;
+        this.secessionState = true;
+    }
+
+    public void kakaoMemberSecession(String username, String nickname, Long kakaoId) {
+        this.username = username;
+        this.nickname = nickname;
+        this.kakaoId = kakaoId;
         this.secessionState = true;
     }
 
