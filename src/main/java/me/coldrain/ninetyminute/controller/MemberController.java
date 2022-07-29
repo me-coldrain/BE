@@ -43,7 +43,7 @@ public class MemberController {
     @GetMapping("/api/members/kakao/login")
     public ResponseEntity<?> kakaoLogin(@RequestParam String code) throws JsonProcessingException {
         //프론트엔드 인가코드 요청 방법
-        //https://kauth.kakao.com/oauth/authorize?client_id=3c2e867a60400604cd64199c1ec0227a&redirect_uri=http://localhost:8080/api/members/kakao/login&response_type=code
+        //https://kauth.kakao.com/oauth/authorize?client_id=3c2e867a60400604cd64199c1ec0227a&redirect_uri=https://프론트엔드도메인/kakao&response_type=code
         return kakaoMemberService.kakaoLogin(code);
     }
 
