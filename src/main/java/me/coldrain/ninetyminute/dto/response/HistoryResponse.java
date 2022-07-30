@@ -13,12 +13,12 @@ import java.util.List;
 @NoArgsConstructor
 public class HistoryResponse {
     private Long historyId;
-    private Date matchDate;
+    private String matchDate;
     private TeamResponse team;
     private TeamResponse opposingTeam;
 
     @Builder
-    public HistoryResponse(Long historyId, Date matchDate, TeamResponse team, TeamResponse opposingTeam) {
+    public HistoryResponse(Long historyId, String matchDate, TeamResponse team, TeamResponse opposingTeam) {
         this.historyId = historyId;
         this.matchDate = matchDate;
         this.team = team;

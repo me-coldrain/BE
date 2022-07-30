@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import me.coldrain.ninetyminute.dto.request.KaKaoUserInfoRequest;
 import me.coldrain.ninetyminute.dto.response.JwtTokenResponse;
 import me.coldrain.ninetyminute.entity.Ability;
 import me.coldrain.ninetyminute.entity.Member;
@@ -31,17 +32,16 @@ public class KakaoMemberService {
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
     private final MemberService memberService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     public ResponseEntity<?> kakaoLogin(String code) throws JsonProcessingException {
         // 1. "인가 코드"로 "액세스 토큰" 요청
         String accessToken = getAccessToken(code);
 
         // 2. 토큰으로 카카오 API 호출
-        Long kakaoUserId = getKakaoUserInfo(accessToken);
+        KaKaoUserInfoRequest kaKaoUserInfoRequest = getKakaoUserInfo(accessToken);
 
         // 3. 카카오 회원 정보로 회원가입(이미 회원일 경우 회원정보 가져오기)
-        Member kakaoMember = registerKakaoUserIfNeeded(kakaoUserId);
+        Member kakaoMember = registerKakaoUserIfNeeded(kaKaoUserInfoRequest);
 
         // 4. 3번 과정 이후 생긴 회원 정보로 로그인 처리
         forceLogin(kakaoMember);
@@ -61,7 +61,7 @@ public class KakaoMemberService {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
         body.add("client_id", "3c2e867a60400604cd64199c1ec0227a");
-        body.add("redirect_uri", "http://localhost:8080/api/members/kakao/login");
+        body.add("redirect_uri", "http://localhost:3000/kakao");
         body.add("code", code);
 
         // HTTP 요청 보내기
@@ -82,7 +82,7 @@ public class KakaoMemberService {
         return jsonNode.get("access_token").asText();
     }
 
-    private Long getKakaoUserInfo(String accessToken) throws JsonProcessingException {
+    private KaKaoUserInfoRequest getKakaoUserInfo(String accessToken) throws JsonProcessingException {
         // HTTP Header 생성
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + accessToken);
@@ -101,18 +101,16 @@ public class KakaoMemberService {
         String responseBody = response.getBody();
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(responseBody);
-        return jsonNode.get("id").asLong();
-//        Long id = jsonNode.get("id").asLong();
-//        String nickname = jsonNode.get("properties").get("nickname").asText();
-//        String email = jsonNode.get("kakao_account").get("email").asText();
 
-//        System.out.println("카카오 사용자 정보: " + id + ", " + nickname + ", " + email);
-//        return new KakaoUserInfoDto(id, nickname, email);
+        Long id = jsonNode.get("id").asLong();
+        String email = jsonNode.get("kakao_account").get("email").asText();
+        //        String nickname = jsonNode.get("properties").get("nickname").asText();
+        return new KaKaoUserInfoRequest(id, email);
     }
 
-    private Member registerKakaoUserIfNeeded(Long kakaoUserId) {
+    private Member registerKakaoUserIfNeeded(KaKaoUserInfoRequest kaKaoUserInfoRequest) {
         // DB 에 중복된 Kakao Id 가 있는지 확인
-        Member kakaomember = memberRepository.findByKakaoId(kakaoUserId).orElse(null);
+        Member kakaomember = memberRepository.findByKakaoId(kaKaoUserInfoRequest.getId()).orElse(null);
         if (kakaomember == null) {
             // 회원가입
             // password: random UUID
@@ -122,7 +120,7 @@ public class KakaoMemberService {
             // role: 소셜 로그인 사용자
             MemberRoleEnum role = MemberRoleEnum.SOCIAL;
 
-            kakaomember = new Member(encodedPassword, role, kakaoUserId);
+            kakaomember = new Member(kaKaoUserInfoRequest.getEmail(), encodedPassword, role, kaKaoUserInfoRequest.getId());
             return memberRepository.save(kakaomember);
         }
         return kakaomember;

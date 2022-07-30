@@ -27,8 +27,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "https://fe-k4dakxscw-90bun.vercel.app/",
                         "https://fe-90bun.vercel.app",
                         "https://localhost:3000",
-                        "http://localhost:3000",
-                        "https://s3.ap-northeast-2.amazonaws.com/cloneprojectbucket")
+                        "http://localhost:3000")
                 .allowedMethods("POST", "GET","PATCH", "DELETE", "HEAD", "OPTIONS")
                 .allowCredentials(true);
     }

@@ -190,7 +190,13 @@ public class MemberInfoService {
 
             String username = "secession-" + member.getUsername();
             String nickname = "secession-" + member.getNickname();
-            member.memberSecession(username, nickname);
+            if (member.getKakaoId() != null) {
+                Long kakaoId = -member.getKakaoId();
+                member.kakaoMemberSecession(username, nickname, kakaoId);
+            } else {
+                member.memberSecession(username, nickname);
+            }
+
 
             return new ResponseEntity<>("회원탈퇴가 완료 되었습니다.", HttpStatus.OK);
         } else {

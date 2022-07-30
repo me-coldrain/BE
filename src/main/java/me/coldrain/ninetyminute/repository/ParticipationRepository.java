@@ -1,5 +1,6 @@
 package me.coldrain.ninetyminute.repository;
 
+import me.coldrain.ninetyminute.entity.Member;
 import me.coldrain.ninetyminute.entity.Participation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -35,4 +36,7 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
 
     @Query("SELECT p FROM Participation p WHERE p.member.id = :memberId AND p.approved = false AND p.team.deleted = false")
     List<Participation> findAllByMemberIdApprovedFalse(final Long memberId);
+
+    @Query("SELECT p.member FROM Participation p WHERE p.team.id = :teamId AND p.approved = true AND p.team.deleted = false")
+    List<Member> findAllTeamMembers(final Long teamId);
 }

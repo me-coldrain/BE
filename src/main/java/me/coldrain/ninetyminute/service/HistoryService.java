@@ -39,7 +39,7 @@ public class HistoryService {
                         history.getAfterMatching().getOpponentResult(),
                         history.getAfterMatching().getOpponentScore()
                 );
-                HistoryResponse historyResponse = new HistoryResponse(history.getId(), history.getBeforeMatching().getMatchDate(), team, opposingTeam);
+                HistoryResponse historyResponse = new HistoryResponse(history.getId(), history.getBeforeMatching().calculatedDate(), team, opposingTeam);
                 historyResponseList.add(historyResponse);
             } else {
                 HistoryResponse.TeamResponse team = new HistoryResponse.TeamResponse(
@@ -52,7 +52,7 @@ public class HistoryService {
                         history.getAfterMatching().getResult(),
                         history.getAfterMatching().getScore()
                 );
-                HistoryResponse historyResponse = new HistoryResponse(history.getId(), history.getBeforeMatching().getMatchDate(), team, opposingTeam);
+                HistoryResponse historyResponse = new HistoryResponse(history.getId(), history.getBeforeMatching().calculatedDate(), team, opposingTeam);
                 historyResponseList.add(historyResponse);
             }
         }
@@ -63,7 +63,7 @@ public class HistoryService {
         History history = historyRepository.findById(historyId).orElseThrow(() -> new IllegalArgumentException("히스토리가 존재하지 않습니다."));
         List<String> homeScorers = new ArrayList<>();
         List<String> awayScorers = new ArrayList<>();
-        HistoryDetailResponse historyDetailResponse = new HistoryDetailResponse(history.getId(), history.getBeforeMatching().getMatchDate(), null, null);
+        HistoryDetailResponse historyDetailResponse = new HistoryDetailResponse(history.getId(), history.getBeforeMatching().calculatedDate(), null, null);
 
         HistoryDetailResponse.TeamResponse.PlayerResponse homeFieldPlayerResponse = new HistoryDetailResponse.TeamResponse.PlayerResponse(null, null, null, null);
         HistoryDetailResponse.TeamResponse.PlayerResponse homeSubPlayerResponse = new HistoryDetailResponse.TeamResponse.PlayerResponse(null, null, null, null);
@@ -150,7 +150,6 @@ public class HistoryService {
             awayTeamResponse.setFieldMembers(awayTeamFieldMembers, awayFieldMemberResponse, awayFieldPlayerResponse);
             awayTeamResponse.setSubstituteMembers(awayTeamSubMembers, awaySubMemberResponse, awaySubPlayerResponse);
 
-//            System.out.println(homeFieldMemberResponse == awayFieldMemberResponse);
             historyDetailResponse.addTeams(homeTeamResponse, awayTeamResponse);
         } else throw new IllegalArgumentException("해당 팀의 경기 히스토리가 아닙니다.");
         return historyDetailResponse;

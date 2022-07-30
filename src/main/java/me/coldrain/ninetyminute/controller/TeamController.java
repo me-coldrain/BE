@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.coldrain.ninetyminute.dto.TeamListSearch;
 import me.coldrain.ninetyminute.dto.TeamListSearchCondition;
 import me.coldrain.ninetyminute.dto.request.*;
-import me.coldrain.ninetyminute.dto.response.ApplyTeamResponse;
-import me.coldrain.ninetyminute.dto.response.TeamDuplicateResponse;
-import me.coldrain.ninetyminute.dto.response.TeamImageRegisterResponse;
-import me.coldrain.ninetyminute.dto.response.TeamParticipationQuestionResponse;
+import me.coldrain.ninetyminute.dto.response.*;
 import me.coldrain.ninetyminute.security.UserDetailsImpl;
 import me.coldrain.ninetyminute.service.ParticipationService;
 import me.coldrain.ninetyminute.service.TeamService;
@@ -290,10 +287,10 @@ public class TeamController {
      */
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/home/teams/{team_id}/disband")
-    public void disbandTeam(
+    public ParticipatedTeamMemberResponse disbandTeam(
             final @PathVariable("team_id") Long teamId,
             final @AuthenticationPrincipal UserDetailsImpl userDetails ) {
-        teamService.disbandTeam(teamId, userDetails.getUser());
+        return teamService.disbandTeam(teamId, userDetails.getUser());
     }
 
     /*
