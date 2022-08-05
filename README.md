@@ -12,7 +12,7 @@
   
 ## 구현 기능
 > 1. 회원가입/로그인
-- Spring Security, JWT 인증 방식으로 로그인 구현(refresh token 사용)<br><br>
+- Spring Security, JWT 인증 방식으로 로그인 구현<br><br>
 
 > 2. 팀 등록/가입
 - 새로운 팀을 등록하거나 기존에 있는 팀에 가입
