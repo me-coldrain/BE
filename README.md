@@ -26,7 +26,7 @@
 
  <br/>
  
-## 👥 BACKEND MEMBERS
+## 🧒 BACKEND MEMBERS
 - **인상운 (Spring)** 🔰 
   - 팀 API <br/><br/>
  
