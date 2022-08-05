@@ -64,4 +64,4 @@
 
 ## Link
 <a href = "https://morning-shamrock-bba.notion.site/8-SA-9220e4c5777b49e6b2d2a007b83b49e8">notion<br>
-<a href = "[https://github.com/CloneCoding-Team8/front-end](https://github.com/me-coldrain/FE)">frontend github<br><br><br>
+<a href = "https://github.com/me-coldrain/FE">frontend github<br>
