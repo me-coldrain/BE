@@ -6,7 +6,8 @@
 
   
 ## ERD
-<a href = "">Link<br><br><br>
+<a href = "![축구팀매칭플랫폼_90분_ERD(완성)](https://user-images.githubusercontent.com/105046055/182979899-4011ef77-4c27-4be8-8a77-5bf26180280d.png)
+">Link<br><br><br>
 
   
 ## 구현 기능
