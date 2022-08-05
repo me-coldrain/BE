@@ -98,7 +98,7 @@
  
 ## 🔥 TROUBLE SHOOTING
 
-### DB 사용 중 "too many to connections" 발생
+### 1️⃣ DB 사용 중 "too many to connections" 발생
  
 **문제:** 
  
@@ -122,7 +122,7 @@ AWS RDS MariaDB에서 최대로 연결할 수 있는 커넥션 수가 31로 적�
 interactive_timeout 파라미터 값을 설정 후 적용
  
 
-### DB 사용 중 "HttpHostConnectException" 발생
+### 2️⃣ DB 사용 중 "HttpHostConnectException" 발생
  
 **문제**
 
