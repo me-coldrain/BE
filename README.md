@@ -4,6 +4,7 @@
 <a href = "https://nasal-peony-253.notion.site/90-64b09693ce5f45bc8b3a14f13f579120">> 서비스 소개 바로가기<br>
 <a href = "https://youtu.be/QC6GeZKvQvI">> 발표 영상 바로가기<br>
 <a href = "https://github.com/me-coldrain/FE">> 프론트 엔드 Github 바로가기<br>
+<a href = "https://github.com/me-coldrain/BE">> 백엔드 Github 바로가기<br>
 <a href = "https://undefined-374.gitbook.io/api-docs/">> API 명세서 바로가기(Gitbook API Docs)<br><br><br>
  
 
