@@ -11,6 +11,7 @@
 > 22.06.24 - 22.08.05 (6주)
 
  <br/>
+ 
 ## 👥 BACKEND MEMBERS
 - **인상운** 🔰 
   - 팀 API <br/><br/>
@@ -22,7 +23,8 @@
 - **최병민** 
   - 대결 API
   - 경기 API <br/><br/>
-<br/><br/>
+<br/>
+ 
 ## 🔀 ERD(Entity Relationship Diagram)
 ![image](https://user-images.githubusercontent.com/105046055/182979899-4011ef77-4c27-4be8-8a77-5bf26180280d.png)<br><br><br>
   
