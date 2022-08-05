@@ -1,27 +1,39 @@
-# Back-end
-
-# 📌 축구팀 매칭 플랫폼 [90분]
+# ⚽ 축구팀 매칭 플랫폼 [90분]
 <a href = "https://www.ninety.site/">![image](https://user-images.githubusercontent.com/105046055/182977241-f6c3d9f6-981f-4766-8b0e-179fe6776f22.png)
 <a href = "https://www.ninety.site/">> 사이트 바로가기<br>
 <a href = "https://nasal-peony-253.notion.site/90-64b09693ce5f45bc8b3a14f13f579120">> 서비스 소개 바로가기<br>
 <a href = "https://youtu.be/QC6GeZKvQvI">> 발표 영상 바로가기<br>
 <a href = "https://github.com/me-coldrain/FE">> 프론트 엔드 Github 바로가기<br>
 <a href = "https://undefined-374.gitbook.io/api-docs/">> API 명세서 바로가기(Gitbook)<br><br><br>
+ 
 
+## 💌 프로젝트 소개
+👉 90분은 축구팀을 모집하고 대결 상대를 찾을 수 있는 서비스입니다.
+
+1️⃣ 함께 축구할 팀원을 모집하고 대결할 팀을 찾아보세요!
+
+2️⃣ 장소, 시간을 확인하고 새로운 팀에 가입할 수 있어요.
+
+3️⃣ 개인 포지션 점수를 쌓아 나의 축구 기록을 만들어보세요.
+
+4️⃣ 경기 후 경기를 기록하고 팀의 성장을 확인 할 수 있어요.
+
+<br><br>
+ 
 ## ⏱ 프로젝트 기간
 > 22.06.24 - 22.08.05 (6주)
 
  <br/>
  
 ## 👥 BACKEND MEMBERS
-- **인상운** 🔰 
+- **인상운 (Spring)** 🔰 
   - 팀 API <br/><br/>
  
-- **문범수** 
+- **문범수 (Spring)** 
   - 회원 API
   - 랭킹 API <br/><br/>
   
-- **최병민** 
+- **최병민 (Spring)** 
   - 대결 API
   - 경기 API <br/><br/>
 <br/>
