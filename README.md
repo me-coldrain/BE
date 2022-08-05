@@ -4,11 +4,11 @@
 <a href = "https://www.ninety.site/">![image](https://user-images.githubusercontent.com/105046055/182977241-f6c3d9f6-981f-4766-8b0e-179fe6776f22.png)
 <a href = "https://www.ninety.site/">> 사이트 바로가기<br>
 <a href = "https://nasal-peony-253.notion.site/90-64b09693ce5f45bc8b3a14f13f579120">> 서비스 소개 바로가기<br>
-<a href = "https://youtu.be/QC6GeZKvQvI">> 발표 영상 바로가기<br><br><br>
+<a href = "https://youtu.be/QC6GeZKvQvI">> 발표 영상 바로가기<br>
+<a href = "https://github.com/me-coldrain/FE">>프론트 엔드 Github 바로가기<br><br><br>
   
 ## ERD
 ![image](https://user-images.githubusercontent.com/105046055/182979899-4011ef77-4c27-4be8-8a77-5bf26180280d.png)<br><br><br>
-
   
 ## 구현 기능
 > 1. 회원가입/로그인
@@ -48,12 +48,13 @@
   
 ## 팀원
 ### Backend(Spring)<br>
-- 인상운(팀장) - 팀api<br>
-- 문범수 - 회원api, 랭킹api<br>
-- 최병민 - 대결api, 경기히스토리api<br><br><br>
+- 인상운(팀장) - 팀API<br>
+- 문범수 - 회원API, 랭킹API<br>
+- 최병민 - 대결API, 경기히스토리API<br><br><br>
 
 
 ## Link
-<a href = "https://www.ninety.site/">>서비스 Link<br>
-<a href = "https://nasal-peony-253.notion.site/90-64b09693ce5f45bc8b3a14f13f579120">>서비스 소개 notion<br>
-<a href = "https://github.com/me-coldrain/FE">>frontend github<br>
+<a href = "https://www.ninety.site/">> 사이트 바로가기<br>
+<a href = "https://nasal-peony-253.notion.site/90-64b09693ce5f45bc8b3a14f13f579120">> 서비스 소개 바로가기<br>
+<a href = "https://youtu.be/QC6GeZKvQvI">> 발표 영상 바로가기<br>
+<a href = "https://github.com/me-coldrain/FE">>프론트 엔드 Github 바로가기<br><br><br>
