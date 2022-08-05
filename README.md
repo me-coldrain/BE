@@ -6,6 +6,7 @@
 
   
 ## ERD
+![image](https://user-images.githubusercontent.com/105046055/182979899-4011ef77-4c27-4be8-8a77-5bf26180280d.png)
 <a href = "https://user-images.githubusercontent.com/105046055/182979899-4011ef77-4c27-4be8-8a77-5bf26180280d.png">Link<br><br><br>
 
   
