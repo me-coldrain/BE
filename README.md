@@ -2,8 +2,7 @@
 
 # 축구팀 매칭 플랫폼 [90분]
 <a href = "https://www.ninety.site/">![image](https://user-images.githubusercontent.com/105046055/182977241-f6c3d9f6-981f-4766-8b0e-179fe6776f22.png)
-<a href = "https://www.ninety.site/">>Link<br>
-<br><br><br>
+<a href = "https://www.ninety.site/">>Link<br><br><br>
 
   
 ## ERD
