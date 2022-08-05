@@ -2,7 +2,7 @@
 
 # 축구팀 매칭 플랫폼 [90분]
 <a href = "https://www.ninety.site/">![image](https://user-images.githubusercontent.com/105046055/182977241-f6c3d9f6-981f-4766-8b0e-179fe6776f22.png)
-<a href = "https://www.ninety.site/">>서비스 Link
+<a href = "https://www.ninety.site/">>서비스 Link<br>
 <a href = "https://nasal-peony-253.notion.site/90-64b09693ce5f45bc8b3a14f13f579120">>서비스 소개 notion<br><br><br>
 
   
