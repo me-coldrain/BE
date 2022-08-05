@@ -8,8 +8,9 @@
 <a href = "https://github.com/me-coldrain/FE">> 프론트 엔드 Github 바로가기<br><br><br>
 
 ## ⏱ 프로젝트 기간
-22.06.24 - 22.08.05 (6주) <br/><br/><br/>
-  
+> 22.06.24 - 22.08.05 (6주)
+
+ <br/>
 ## 👥 BACKEND MEMBERS
 - **인상운** 🔰 
   - 팀 API <br/><br/>
