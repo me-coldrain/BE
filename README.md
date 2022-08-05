@@ -84,7 +84,7 @@
 - 로그인한 사용자의 개인의 순위와 자신이 참여하고 있는 팀들 순위를 따로 조회 가능<br><br><br>
  
  
-## TROUBLE SHOOTING
+## 🔥 TROUBLE SHOOTING
 
 ### DB 사용 중 "too many to connections" 발생
  
