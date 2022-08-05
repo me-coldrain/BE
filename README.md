@@ -37,7 +37,7 @@
 
 
 ## 기술 스택
-<img src="https://img.shields.io/badge/java-004B8D?style=flat&logo=java&logoColor=white"/> <img src="https://img.shields.io/badge/spring-6DB33F?style=flat&logo=spring&logoColor=white"/> <img src="https://img.shields.io/badge/springboot-6DB33F?style=flat&logo=springboot&logoColor=white"/> <img src="https://img.shields.io/badge/SpringSecurity-6DB33F?style=flat&logo=SpringSecurity&logoColor=white"/><img src="https://img.shields.io/badge/-JWT-black?style=flat&logo=JWT&logoColor=black">
+<img src="https://img.shields.io/badge/java-004B8D?style=flat&logo=java&logoColor=white"/> <img src="https://img.shields.io/badge/spring-6DB33F?style=flat&logo=spring&logoColor=white"/> <img src="https://img.shields.io/badge/springboot-6DB33F?style=flat&logo=springboot&logoColor=white"/> <img src="https://img.shields.io/badge/SpringSecurity-6DB33F?style=flat&logo=SpringSecurity&logoColor=white"/><img src="https://img.shields.io/badge/-JWT-black?style=flat&logo=JSON%20Web%20Tokens&logoColor=lightgrey">
 
 <img src="https://img.shields.io/badge/git-F05032?style=flat&logo=git&logoColor=white"/> <img src="https://img.shields.io/badge/github-181717?style=flat&logo=github&logoColor=white"/>
 
