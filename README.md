@@ -68,9 +68,3 @@
 ![Slack](https://img.shields.io/badge/Slack-4A154B.svg?&style=for-the-badge&logo=Slack&logoColor=white)
 ![Figma](https://img.shields.io/badge/Figma-F24E1E.svg?&style=for-the-badge&logo=Figma&logoColor=white)
 ![Notion](https://img.shields.io/badge/Notion-000000.svg?&style=for-the-badge&logo=Notion&logoColor=white)
-
-## Link
-<a href = "https://www.ninety.site/">> 사이트 바로가기<br>
-<a href = "https://nasal-peony-253.notion.site/90-64b09693ce5f45bc8b3a14f13f579120">> 서비스 소개 바로가기<br>
-<a href = "https://youtu.be/QC6GeZKvQvI">> 발표 영상 바로가기<br>
-<a href = "https://github.com/me-coldrain/FE">> 프론트 엔드 Github 바로가기<br><br><br>
