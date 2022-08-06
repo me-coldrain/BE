@@ -146,5 +146,4 @@ interactive_timeout 파라미터 값을 설정 후 적용
 ## 유저 피드백
 ![image](https://user-images.githubusercontent.com/81298415/183227076-edcb46a9-5f07-4055-9df2-c077fbc182ab.png)
 ![image](https://user-images.githubusercontent.com/81298415/183227090-7e01427e-5f0a-4ed5-9008-4fc0e8de0d58.png)
-![image](https://user-images.githubusercontent.com/81298415/183227033-82037481-e0d0-49d8-ae51-416649524a2a.png)
 
